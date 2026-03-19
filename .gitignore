@@ -1,0 +1,4 @@
+tmp/
+frontend/data/*.json
+.env
+.bundle/

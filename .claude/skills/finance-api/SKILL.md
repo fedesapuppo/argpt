@@ -1,0 +1,103 @@
+---
+name: finance-api
+description: Documents Data912 and finance-query.com API schemas, endpoints, ticker conventions, rate limits, and fixture capture patterns. Use when working with API clients, writing webmock stubs, or debugging API responses.
+---
+
+Reference for the two data sources used in ARGPT. For full details, see
+`data912_analysis.md` and `finance_query_analysis.md` in the project root.
+
+## Data912 (`https://data912.com`)
+
+**Auth**: None. **Rate limit**: 120 req/min. **Cache**: 2-hour Cloudflare.
+
+### Key endpoints
+
+| Endpoint              | Returns                                        |
+|-----------------------|------------------------------------------------|
+| `GET /live/mep`       | MEP rates via every CEDEAR/bond pair           |
+| `GET /live/ccl`       | CCL rates via every ADR pair                   |
+| `GET /live/cedears`   | All CEDEARs (ARS, USD, Cable variants)         |
+| `GET /live/arg`       | Argentine equities                             |
+| `GET /live/usa`       | US stocks                                      |
+| `GET /live/bonds`     | Argentine government bonds                     |
+| `GET /live/letras`    | Argentine government notes                     |
+| `GET /live/corp`      | Argentine corporate debt                       |
+| `GET /hist/{ticker}`  | Historical OHLC data                           |
+
+### Ticker conventions
+
+- No suffix = ARS price (e.g., `AAPL`, `GGAL`, `AL30`)
+- `D` suffix = USD/MEP price (e.g., `AAPLD`, `AL30D`)
+- `C` suffix = Cable/CCL price (e.g., `AAPLC`, `AL30C`)
+
+### Common response fields
+
+| Field    | Meaning                              |
+|----------|--------------------------------------|
+| `ticker` | Instrument identifier                |
+| `bid`    | Best bid price                       |
+| `ask`    | Best ask price                       |
+| `close`  | Last trade price                     |
+| `mark`   | Midpoint (bid+ask)/2                 |
+| `v_ars`  | Volume in ARS                        |
+| `v_usd`  | Volume in USD                        |
+| `panel`  | Source panel (cedear, bond, etc.)     |
+
+## finance-query.com
+
+**GraphQL**: `https://finance-query.com/graphql`
+**REST**: `https://finance-query.com/v2/*`
+**Auth**: None. **Rate limit**: No stated limit.
+
+### Key GraphQL queries
+
+```graphql
+# Quote with fundamentals
+{ ticker(symbol: "AAPL") { quote { regularMarketPrice trailingPe forwardPe marketCap dividendYield } } }
+
+# Financial statements
+{ ticker(symbol: "GGAL.BA") { financials(statement: INCOME) } }
+{ ticker(symbol: "GGAL.BA") { financials(statement: BALANCE) } }
+{ ticker(symbol: "GGAL.BA") { financials(statement: CASH_FLOW) } }
+
+# Technical indicators
+{ ticker(symbol: "AAPL") { technicals { sma { fiftyDay twoHundredDay } rsi macd { macd signal histogram } } } }
+
+# Risk metrics
+{ ticker(symbol: "AAPL") { riskMetrics(range: ONE_YEAR) { sharpeRatio maxDrawdown valueAtRisk beta } } }
+```
+
+### Key REST endpoints
+
+| Endpoint                         | Returns                          |
+|----------------------------------|----------------------------------|
+| `GET /v2/quotes?symbols=X,Y`    | Batch quotes (130+ fields each)  |
+| `GET /v2/search?query=X`        | Ticker search                    |
+
+### Ticker conventions
+
+- US tickers as-is: `AAPL`, `MSFT`, `GGAL` (ADR)
+- Argentine tickers: `.BA` suffix — `GGAL.BA`, `YPFD.BA`, `ALUA.BA`
+
+## Fixture Capture Patterns
+
+When adding webmock stubs for API tests:
+
+1. **Capture real response** (once, manually):
+   ```bash
+   curl -s https://data912.com/live/mep | python3 -m json.tool > spec/fixtures/data912_mep.json
+   curl -s "https://finance-query.com/v2/quotes?symbols=AAPL" | python3 -m json.tool > spec/fixtures/fq_quote_aapl.json
+   ```
+
+2. **Trim to relevant fields** — keep only the fields your code actually uses.
+   Smaller fixtures are easier to maintain and make test intent clearer.
+
+3. **Stub in spec**:
+   ```ruby
+   stub_request(:get, "https://data912.com/live/mep")
+     .to_return(body: load_fixture("data912_mep.json"), headers: { "Content-Type" => "application/json" })
+   ```
+
+4. **Name convention**: `{source}_{endpoint}_{qualifier}.json`
+   - `data912_mep.json`, `data912_cedears.json`
+   - `fq_quote_aapl.json`, `fq_financials_ggal_ba.json`
