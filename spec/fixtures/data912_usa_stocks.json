@@ -1,0 +1,4 @@
+[
+  {"ticker": "AAPL", "last": 185.50, "change": 1.2, "volume": 45000000},
+  {"ticker": "MSFT", "last": 420.30, "change": 0.5, "volume": 30000000}
+]

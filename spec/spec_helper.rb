@@ -1,3 +1,4 @@
+require_relative "../lib/argpt"
 require "webmock/rspec"
 
 WebMock.disable_net_connect!

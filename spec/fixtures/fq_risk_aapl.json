@@ -1,0 +1,7 @@
+{
+  "data": {
+    "ticker": {
+      "risk": {"beta": 1.25, "sharpeRatio": 1.8, "maxDrawdown": -0.15}
+    }
+  }
+}
