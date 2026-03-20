@@ -69,6 +69,26 @@ RSpec.describe Argpt::DataSources::Data912 do
     end
   end
 
+  describe "error propagation" do
+    it "raises HttpError on 4xx response" do
+      stub_request(:get, "https://data912.com/live/mep")
+        .to_return(status: 404, body: "Not Found")
+
+      source = Argpt::DataSources::Data912.new(client: Argpt::HttpClient.new(delay: 0))
+
+      expect { source.mep_rates }.to raise_error(Argpt::HttpError)
+    end
+
+    it "raises ServerError on 5xx response" do
+      stub_request(:get, "https://data912.com/live/mep")
+        .to_return(status: 500)
+
+      source = Argpt::DataSources::Data912.new(client: Argpt::HttpClient.new(delay: 0, max_retries: 1))
+
+      expect { source.mep_rates }.to raise_error(Argpt::ServerError)
+    end
+  end
+
   describe "#historical" do
     it "returns historical data for a ticker" do
       stub_data912("/historical/stocks/GGAL", "data912_historical_stocks_ggal.json")

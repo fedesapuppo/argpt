@@ -1,6 +1,6 @@
 module Argpt
   class HttpClient
-    RETRYABLE_ERRORS = [Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET].freeze
+    RETRYABLE_ERRORS = [Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET, Argpt::ServerError].freeze
 
     def initialize(delay: 0.5, max_retries: 3)
       @delay = delay
@@ -8,36 +8,30 @@ module Argpt
     end
 
     def get(url, params: {})
-      cache_key = cache_key_for(url, params)
-      cached = read_cache(cache_key)
-      return cached if cached
-
-      result = with_retry do
-        sleep(@delay) if @delay > 0
+      with_cache("GET", url, params) do
         response = HTTParty.get(url, query: params)
         handle_response(response)
       end
-
-      write_cache(cache_key, result)
-      result
     end
 
     def post(url, body:, headers: {})
-      cache_key = cache_key_for(url, body)
-      cached = read_cache(cache_key)
-      return cached if cached
-
-      result = with_retry do
-        sleep(@delay) if @delay > 0
+      with_cache("POST", url, body) do
         response = HTTParty.post(url, body: body.to_json, headers: headers)
         handle_response(response)
       end
-
-      write_cache(cache_key, result)
-      result
     end
 
     private
+
+    def with_cache(method, url, params, &block)
+      key = cache_key_for(method, url, params)
+      cached = read_cache(key)
+      return cached if cached
+
+      result = with_retry(&block)
+      write_cache(key, result)
+      result
+    end
 
     def with_retry(&block)
       attempts = 0
@@ -45,35 +39,39 @@ module Argpt
         attempts += 1
         block.call
       rescue *RETRYABLE_ERRORS => e
-        raise HttpError, e.message if attempts >= @max_retries
+        if attempts >= @max_retries
+          raise e.is_a?(HttpError) ? e : HttpError.new(e.message)
+        end
         sleep(@delay) if @delay > 0
         retry
       end
     end
 
     def handle_response(response)
-      if response.code >= 500
-        raise Net::OpenTimeout, "Server error #{response.code}"
-      end
+      raise ServerError, "Server error #{response.code}" if response.code >= 500
+      raise HttpError, "HTTP #{response.code}" if response.code >= 400
 
       JSON.parse(response.body, symbolize_names: true)
     end
 
-    def cache_key_for(url, params)
-      Digest::SHA256.hexdigest("#{url}#{params}")
+    def caching_enabled?
+      ENV["CACHE_JSON"] == "1"
+    end
+
+    def cache_key_for(method, url, params)
+      Digest::SHA256.hexdigest("#{method}\n#{url}\n#{params.to_json}")
     end
 
     def read_cache(key)
-      return nil unless ENV["CACHE_JSON"] == "1"
+      return nil unless caching_enabled?
 
-      path = cache_path(key)
-      return nil unless File.exist?(path)
-
-      JSON.parse(File.read(path), symbolize_names: true)
+      JSON.parse(File.read(cache_path(key)), symbolize_names: true)
+    rescue Errno::ENOENT
+      nil
     end
 
     def write_cache(key, data)
-      return unless ENV["CACHE_JSON"] == "1"
+      return unless caching_enabled?
 
       path = cache_path(key)
       FileUtils.mkdir_p(File.dirname(path))

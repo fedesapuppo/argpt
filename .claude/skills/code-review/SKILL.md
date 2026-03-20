@@ -48,9 +48,11 @@ These override the checklists when they conflict.
 - Ruby beauty: code should read like well-written prose. Prefer `each` over
   `for`, `map`/`select`/`reject` over manual accumulation, guard clauses over
   nested conditionals, `then`/`yield_self` for pipelines, keyword arguments
-  for clarity. Short methods that reveal intent through their name. No
-  metaprogramming unless it genuinely simplifies. Flag verbose, procedural,
-  or Java-in-Ruby style code — suggest the idiomatic rewrite.
+  for clarity. Use Ruby 3.1+ hash/keyword shorthand (`interval:` instead of
+  `interval: interval`) when forwarding keyword arguments. Short methods that
+  reveal intent through their name. No metaprogramming unless it genuinely
+  simplifies. Flag verbose, procedural, or Java-in-Ruby style code — suggest
+  the idiomatic rewrite.
 - Ruby conventions: `Argpt::` namespace, domain naming (holding, MEP, CCL,
   CEDEAR, arg_stock, us_stock), `snake_case` everything, `?` for predicates,
   `!` for mutation/danger
