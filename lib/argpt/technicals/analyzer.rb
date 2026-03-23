@@ -8,7 +8,7 @@ module Argpt
 
       def call
         result = extract_indicators
-        result.merge!(compute_ath) if @historical&.any?
+        result.merge!(compute_ath) if @historical.is_a?(Array) && @historical.any?
         result
       end
 
@@ -39,9 +39,12 @@ module Argpt
       end
 
       def compute_ath
-        ath = @historical.max_by { |h| h[:high] }[:high]
+        highs = @historical.filter_map { |h| h[:high] }
+        return { ath: nil, pct_below_ath: nil } if highs.empty?
+
+        ath = highs.max
         current_close = @historical.first[:close]
-        pct_below = ath.positive? ? (ath - current_close) / ath * 100 : nil
+        pct_below = ath&.positive? && current_close ? (ath - current_close) / ath * 100 : nil
 
         { ath:, pct_below_ath: pct_below }
       end

@@ -36,7 +36,7 @@ module Argpt
           roe:,
           eps_growth:,
           dividend_yield:,
-          debt_to_equity: @quote[:debtToEquity],
+          debt_to_equity: numeric_or_nil(@quote[:debtToEquity]),
           profit_margin:,
           operating_margin:,
           sector: @quote[:sector],
@@ -56,19 +56,25 @@ module Argpt
       private
 
       def safe_divide(numerator, denominator)
-        return nil if numerator.nil? || denominator.nil? || denominator.zero?
+        return nil if numerator.nil? || denominator.nil?
+        return nil unless numerator.is_a?(Numeric) && denominator.is_a?(Numeric)
+        return nil if denominator.zero?
 
         numerator.to_f / denominator
       end
 
+      def numeric_or_nil(value)
+        value.is_a?(Numeric) ? value : nil
+      end
+
       def to_pct(value)
-        return nil if value.nil?
+        return nil unless value.is_a?(Numeric)
 
         value * 100
       end
 
       def threshold(metric, value)
-        return nil if value.nil?
+        return nil unless value.is_a?(Numeric)
 
         benchmark = @benchmarks&.dig(metric)
         benchmark ? relative_threshold(metric, value, benchmark) : absolute_threshold(metric, value)

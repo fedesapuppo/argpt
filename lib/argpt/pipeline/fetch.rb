@@ -51,12 +51,14 @@ module Argpt
         tickers.each_with_object({}) do |ticker, result|
           entry = entry_by_ticker[ticker]
           fq_sym = fq_symbol(ticker, entry)
-          raw = @finance_query.indicators(fq_sym, interval: "1d", range: "3mo")
+          raw = @finance_query.indicators(fq_sym, interval: "ONE_DAY", range: "THREE_MONTHS")
           indicators = raw[:indicators] || raw
 
           historical = fetch_historical(ticker, entry[:type])
 
           result[ticker] = Technicals::Analyzer.new(indicators:, historical:).call
+        rescue Argpt::GraphqlError, Argpt::HttpError => e
+          warn "  [skip technicals] #{ticker}: #{e.message}"
         end
       end
 
@@ -65,7 +67,11 @@ module Argpt
           entry = entry_by_ticker[ticker]
           fq_sym = fq_symbol(ticker, entry)
           quote = @finance_query.quote(fq_sym)
+          next unless quote
+
           result[ticker] = Fundamentals::Analyzer.new(quote:).call
+        rescue Argpt::GraphqlError, Argpt::HttpError => e
+          warn "  [skip fundamentals] #{ticker}: #{e.message}"
         end
       end
 
