@@ -1,0 +1,24 @@
+{
+  "data": {
+    "ticker": {
+      "indicators": {
+        "rsi14": 38.91,
+        "macd": {"histogram": -2.15, "macd": -5.83, "signal": -3.68},
+        "stochastic": {"%K": 24.56, "%D": 31.12},
+        "sma20": 255.30,
+        "sma50": 240.15,
+        "sma200": 228.70,
+        "bollingerBands": {"lower": 238.50, "middle": 255.30, "upper": 272.10},
+        "supertrend": {"trend": "down", "value": 263.44},
+        "atr14": 5.57,
+        "ema20": 254.80,
+        "ema50": 241.20,
+        "adx14": 23.37,
+        "cci20": -77.47,
+        "williamsR14": -75.04,
+        "obv": -274139350,
+        "vwap": 262.05
+      }
+    }
+  }
+}

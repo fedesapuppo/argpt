@@ -1,0 +1,26 @@
+{
+  "data": {
+    "ticker": {
+      "quote": {
+        "regularMarketPrice": 251.12,
+        "regularMarketChange": 2.30,
+        "regularMarketChangePercent": 0.92,
+        "trailingEps": 7.91,
+        "forwardEps": 9.32,
+        "priceToBook": 41.87,
+        "returnOnEquity": 1.5202,
+        "profitMargins": 0.2704,
+        "operatingMargins": 0.3537,
+        "debtToEquity": 102.63,
+        "dividendYield": 0.0042,
+        "earningsGrowth": 0.104,
+        "fiftyTwoWeekHigh": 288.62,
+        "fiftyTwoWeekLow": 169.21,
+        "sector": "Technology",
+        "industry": "Consumer Electronics",
+        "shortName": "Apple Inc.",
+        "marketCap": 3800000000000
+      }
+    }
+  }
+}

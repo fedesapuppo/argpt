@@ -81,6 +81,29 @@ RSpec.describe Argpt::DataSources::FinanceQuery do
     end
   end
 
+  describe "#quote" do
+    it "returns fundamental fields for a symbol" do
+      stub_fq_graphql("fq_quote_detail_aapl.json", body_pattern: /AAPL.*quote/)
+      source = Argpt::DataSources::FinanceQuery.new(client: Argpt::HttpClient.new(delay: 0))
+
+      result = source.quote("AAPL")
+
+      expect(result[:regularMarketPrice]).to eq(251.12)
+      expect(result[:returnOnEquity]).to eq(1.5202)
+      expect(result[:sector]).to eq("Technology")
+      expect(result[:trailingEps]).to eq(7.91)
+    end
+
+    it "returns nil when ticker not found" do
+      stub_fq_graphql("fq_empty_ticker.json")
+      source = Argpt::DataSources::FinanceQuery.new(client: Argpt::HttpClient.new(delay: 0))
+
+      result = source.quote("UNKNOWN")
+
+      expect(result).to be_nil
+    end
+  end
+
   describe "input validation" do
     it "rejects symbols with injection characters" do
       source = Argpt::DataSources::FinanceQuery.new(client: Argpt::HttpClient.new(delay: 0))

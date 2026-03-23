@@ -28,6 +28,21 @@ module Argpt
         ticker_query(symbol, "chart", interval:, range:)
       end
 
+      QUOTE_FIELDS = %w[
+        regularMarketPrice regularMarketChange regularMarketChangePercent
+        trailingEps forwardEps priceToBook
+        returnOnEquity profitMargins operatingMargins
+        debtToEquity dividendYield earningsGrowth
+        fiftyTwoWeekHigh fiftyTwoWeekLow
+        sector industry shortName marketCap
+      ].join(" ").freeze
+
+      def quote(symbol)
+        validate_inputs!(symbol)
+        query = "{ ticker(symbol: \"#{symbol}\") { quote { #{QUOTE_FIELDS} } } }"
+        graphql(query)&.dig(:quote)
+      end
+
       private
 
       def ticker_query(symbol, field, **params)
