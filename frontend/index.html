@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARGPT — Argentine Portfolio Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: { DEFAULT: '#0d1117', secondary: '#161b22', tertiary: '#21262d', border: '#30363d' },
+            gain: '#3fb950',
+            loss: '#f85149',
+            caution: '#d29922',
+            accent: '#58a6ff',
+            muted: '#8b949e',
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+            sans: ['IBM Plex Sans', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #0d1117; color: #e6edf3; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    table th { cursor: pointer; user-select: none; }
+    table th:hover { color: #58a6ff; }
+    .sort-asc::after { content: ' ▲'; font-size: 0.7em; }
+    .sort-desc::after { content: ' ▼'; font-size: 0.7em; }
+  </style>
+</head>
+<body class="font-sans min-h-screen">
+  <!-- Header -->
+  <header class="border-b border-surface-border px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-semibold tracking-tight">ARGPT</h1>
+        <p class="text-xs text-muted">Argentine Portfolio Tracker</p>
+      </div>
+      <div class="text-xs text-muted font-mono" id="last-updated"></div>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="border-b border-surface-border px-6">
+    <div class="max-w-7xl mx-auto flex gap-0">
+      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-accent text-white" data-tab="portfolio">Portfolio</button>
+      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="technicals">Technicals</button>
+      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="fundamentals">Fundamentals</button>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-6 py-6">
+    <!-- Warning banner -->
+    <div id="fx-warning" class="hidden mb-4 p-3 rounded border border-caution/30 bg-caution/10 text-caution text-sm">
+      ⚠ Some holdings are missing entry exchange rates — USD returns are approximate. Edit holdings to add your MEP rate at purchase for accurate results.
+    </div>
+
+    <!-- Portfolio Tab -->
+    <section id="tab-portfolio">
+      <!-- Summary cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border">
+          <div class="text-xs text-muted mb-1">Total USD Value</div>
+          <div class="text-lg font-mono font-medium tabular-nums" id="total-usd">$0.00</div>
+        </div>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border">
+          <div class="text-xs text-muted mb-1">Total USD P&L</div>
+          <div class="text-lg font-mono font-medium tabular-nums" id="total-pnl-usd">$0.00</div>
+        </div>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border">
+          <div class="text-xs text-muted mb-1">Total ARS Value</div>
+          <div class="text-lg font-mono font-medium tabular-nums" id="total-ars">$0</div>
+        </div>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border">
+          <div class="text-xs text-muted mb-1">Daily Change</div>
+          <div class="text-lg font-mono font-medium tabular-nums" id="daily-change">0.00%</div>
+        </div>
+      </div>
+
+      <!-- Add holding form -->
+      <details class="mb-4 bg-surface-secondary rounded-lg border border-surface-border">
+        <summary class="px-4 py-3 text-sm font-medium cursor-pointer hover:text-accent">+ Add Holding</summary>
+        <form id="holding-form" class="p-4 pt-2 grid grid-cols-2 md:grid-cols-6 gap-3 items-end">
+          <div>
+            <label class="block text-xs text-muted mb-1">Ticker</label>
+            <input name="ticker" type="text" required placeholder="AAPL" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs text-muted mb-1">Type</label>
+            <select name="type" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm focus:border-accent focus:outline-none">
+              <option value="cedear">CEDEAR</option>
+              <option value="arg_stock">Arg Stock</option>
+              <option value="us_stock">US Stock</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-muted mb-1">Shares</label>
+            <input name="shares" type="number" step="any" min="0.01" required placeholder="100" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs text-muted mb-1">Avg Price</label>
+            <input name="avg_price" type="number" step="any" min="0.01" required placeholder="15000" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
+          </div>
+          <div id="fx-rate-group">
+            <label class="block text-xs text-muted mb-1">Entry MEP Rate</label>
+            <input name="entry_fx_rate" type="number" step="any" min="0" placeholder="1200" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
+            <p class="text-[10px] text-muted mt-0.5">MEP rate when you bought. Leave blank if unknown.</p>
+          </div>
+          <div>
+            <button type="submit" class="w-full bg-accent/20 text-accent border border-accent/30 rounded px-3 py-1.5 text-sm font-medium hover:bg-accent/30 transition-colors">Add</button>
+          </div>
+        </form>
+      </details>
+
+      <!-- Holdings table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm font-mono tabular-nums" id="portfolio-table">
+          <thead>
+            <tr class="text-xs text-muted border-b border-surface-border">
+              <th class="text-left py-2 px-2" data-sort="ticker">Ticker</th>
+              <th class="text-right py-2 px-2" data-sort="shares">Shares</th>
+              <th class="text-right py-2 px-2" data-sort="avg_price">Avg Price</th>
+              <th class="text-right py-2 px-2" data-sort="current_price_usd">Price USD</th>
+              <th class="text-right py-2 px-2" data-sort="daily_change_pct">Daily %</th>
+              <th class="text-right py-2 px-2" data-sort="capital_return_pct">Capital %</th>
+              <th class="text-right py-2 px-2" data-sort="currency_return_pct">Currency %</th>
+              <th class="text-right py-2 px-2" data-sort="total_return_usd_pct">USD Ret %</th>
+              <th class="text-right py-2 px-2" data-sort="pnl_usd">USD P&L</th>
+              <th class="text-right py-2 px-2" data-sort="weight_pct">Weight %</th>
+              <th class="text-center py-2 px-2 w-8"></th>
+            </tr>
+          </thead>
+          <tbody id="portfolio-body"></tbody>
+        </table>
+        <p id="empty-state" class="text-center text-muted py-8 text-sm">No holdings yet. Add one above to get started.</p>
+      </div>
+
+      <!-- Methodology disclosure -->
+      <details class="mt-6 text-xs text-muted">
+        <summary class="cursor-pointer hover:text-white">How USD returns are calculated</summary>
+        <div class="mt-2 p-3 bg-surface-secondary rounded border border-surface-border space-y-2">
+          <p><strong class="text-white">CEDEARs & Arg Stocks:</strong> USD value = ARS price / MEP rate. Entry cost = purchase ARS price / MEP rate at purchase. This reflects the actual dollars you'd get via the MEP bond operation.</p>
+          <p><strong class="text-white">US Stocks:</strong> Already priced in USD. No FX conversion needed.</p>
+          <p><strong class="text-white">Return Decomposition:</strong> Capital return = asset price change in native currency. Currency return = MEP rate change since purchase. Total USD return = (1 + capital) × (1 + currency) - 1.</p>
+          <p>MEP rate source: AL30 bond pair via Data912. CCL rate used for displaying US stocks in ARS.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- Technicals Tab -->
+    <section id="tab-technicals" class="hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm font-mono tabular-nums" id="technicals-table">
+          <thead>
+            <tr class="text-xs text-muted border-b border-surface-border">
+              <th class="text-left py-2 px-2" data-sort="ticker">Ticker</th>
+              <th class="text-right py-2 px-2" data-sort="price">Price</th>
+              <th class="text-right py-2 px-2" data-sort="pct_below_ath">% Below ATH</th>
+              <th class="text-right py-2 px-2" data-sort="rsi14">RSI(14)</th>
+              <th class="text-right py-2 px-2" data-sort="stochastic_k">Stoch K/D</th>
+              <th class="text-center py-2 px-2" data-sort="supertrend_trend">Supertrend</th>
+              <th class="text-right py-2 px-2" data-sort="sma20">SMA20</th>
+              <th class="text-right py-2 px-2" data-sort="sma50">SMA50</th>
+              <th class="text-center py-2 px-2">Signal</th>
+            </tr>
+          </thead>
+          <tbody id="technicals-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Fundamentals Tab -->
+    <section id="tab-fundamentals" class="hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm font-mono tabular-nums" id="fundamentals-table">
+          <thead>
+            <tr class="text-xs text-muted border-b border-surface-border">
+              <th class="text-left py-2 px-2" data-sort="ticker">Ticker</th>
+              <th class="text-right py-2 px-2" data-sort="pe">P/E</th>
+              <th class="text-right py-2 px-2" data-sort="forward_pe">Fwd P/E</th>
+              <th class="text-right py-2 px-2" data-sort="pb">P/B</th>
+              <th class="text-right py-2 px-2" data-sort="roe">ROE %</th>
+              <th class="text-right py-2 px-2" data-sort="eps_growth">EPS Gr %</th>
+              <th class="text-right py-2 px-2" data-sort="dividend_yield">Div Yld %</th>
+              <th class="text-right py-2 px-2" data-sort="debt_to_equity">D/E</th>
+              <th class="text-right py-2 px-2" data-sort="profit_margin">Margin %</th>
+              <th class="text-left py-2 px-2">Sector</th>
+            </tr>
+          </thead>
+          <tbody id="fundamentals-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/currency.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/portfolio.js"></script>
+  <script src="js/tabs.js"></script>
+  <script src="js/table.js"></script>
+  <script src="js/form.js"></script>
+  <script src="js/technicals.js"></script>
+  <script src="js/fundamentals.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
