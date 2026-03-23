@@ -1,8 +1,23 @@
 module Argpt
   module Fundamentals
     class Analyzer
+      ABSOLUTE_THRESHOLDS = {
+        pe:             { direction: :lower,  green: 15, yellow: 25 },
+        roe:            { direction: :higher, green: 15, yellow: 10 },
+        debt_to_equity: { direction: :lower,  green: 1,  yellow: 2 },
+        profit_margin:  { direction: :higher, green: 20, yellow: 10 }
+      }.freeze
+
+      RELATIVE_MULTIPLIERS = {
+        pe:             { direction: :lower,  yellow: 1.5 },
+        roe:            { direction: :higher, yellow: 0.5 },
+        debt_to_equity: { direction: :lower,  yellow: 2.0 },
+        profit_margin:  { direction: :higher, yellow: 0.5 }
+      }.freeze
+
       def initialize(quote:)
         @quote = quote
+        @benchmarks = SectorBenchmarks.for(@quote[:sector])
       end
 
       def call
@@ -30,10 +45,10 @@ module Argpt
           fifty_two_week_low: @quote[:fiftyTwoWeekLow],
           market_cap: @quote[:marketCap],
           thresholds: {
-            pe: threshold_pe(pe),
-            roe: threshold_roe(roe),
-            debt_to_equity: threshold_debt(@quote[:debtToEquity]),
-            profit_margin: threshold_margin(profit_margin)
+            pe: threshold(:pe, pe),
+            roe: threshold(:roe, roe),
+            debt_to_equity: threshold(:debt_to_equity, @quote[:debtToEquity]),
+            profit_margin: threshold(:profit_margin, profit_margin)
           }
         }
       end
@@ -52,39 +67,42 @@ module Argpt
         value * 100
       end
 
-      def threshold_pe(pe)
-        return nil if pe.nil?
+      def threshold(metric, value)
+        return nil if value.nil?
 
-        if pe < 15 then :green
-        elsif pe <= 25 then :yellow
-        else :red
+        benchmark = @benchmarks&.dig(metric)
+        benchmark ? relative_threshold(metric, value, benchmark) : absolute_threshold(metric, value)
+      end
+
+      def relative_threshold(metric, value, benchmark)
+        spec = RELATIVE_MULTIPLIERS.fetch(metric)
+
+        if spec[:direction] == :lower
+          if value <= benchmark then :green
+          elsif value <= benchmark * spec[:yellow] then :yellow
+          else :red
+          end
+        else
+          if value >= benchmark then :green
+          elsif value >= benchmark * spec[:yellow] then :yellow
+          else :red
+          end
         end
       end
 
-      def threshold_roe(roe)
-        return nil if roe.nil?
+      def absolute_threshold(metric, value)
+        spec = ABSOLUTE_THRESHOLDS.fetch(metric)
 
-        if roe > 15 then :green
-        elsif roe >= 10 then :yellow
-        else :red
-        end
-      end
-
-      def threshold_debt(debt)
-        return nil if debt.nil?
-
-        if debt < 1 then :green
-        elsif debt <= 2 then :yellow
-        else :red
-        end
-      end
-
-      def threshold_margin(margin)
-        return nil if margin.nil?
-
-        if margin > 20 then :green
-        elsif margin >= 10 then :yellow
-        else :red
+        if spec[:direction] == :lower
+          if value < spec[:green] then :green
+          elsif value <= spec[:yellow] then :yellow
+          else :red
+          end
+        else
+          if value > spec[:green] then :green
+          elsif value >= spec[:yellow] then :yellow
+          else :red
+          end
         end
       end
     end

@@ -121,81 +121,95 @@ RSpec.describe Argpt::Fundamentals::Analyzer do
     end
   end
 
-  describe "color thresholds" do
-    context "P/E" do
-      it "green when < 15" do
+  describe "sector-relative thresholds" do
+    context "P/E (Technology benchmark: 28)" do
+      it "green when below sector median" do
         result = Argpt::Fundamentals::Analyzer.new(quote: quote(regularMarketPrice: 100.0, trailingEps: 10.0)).call
 
         expect(result[:thresholds][:pe]).to eq(:green)
       end
 
-      it "yellow when 15-25" do
-        result = Argpt::Fundamentals::Analyzer.new(quote: quote(regularMarketPrice: 200.0, trailingEps: 10.0)).call
+      it "yellow when above median but below 1.5x" do
+        result = Argpt::Fundamentals::Analyzer.new(quote: quote(regularMarketPrice: 350.0, trailingEps: 10.0)).call
 
         expect(result[:thresholds][:pe]).to eq(:yellow)
       end
 
-      it "red when > 25" do
-        result = Argpt::Fundamentals::Analyzer.new(quote:).call
+      it "red when above 1.5x sector median" do
+        result = Argpt::Fundamentals::Analyzer.new(quote: quote(regularMarketPrice: 500.0, trailingEps: 10.0)).call
 
         expect(result[:thresholds][:pe]).to eq(:red)
       end
     end
 
-    context "ROE" do
-      it "green when > 15%" do
+    context "P/E for Financial Services (benchmark: 12)" do
+      it "green when below financial sector median" do
+        result = Argpt::Fundamentals::Analyzer.new(quote: quote(sector: "Financial Services", regularMarketPrice: 100.0, trailingEps: 10.0)).call
+
+        expect(result[:thresholds][:pe]).to eq(:green)
+      end
+
+      it "red when well above financial sector median" do
+        result = Argpt::Fundamentals::Analyzer.new(quote: quote(sector: "Financial Services", regularMarketPrice: 200.0, trailingEps: 10.0)).call
+
+        expect(result[:thresholds][:pe]).to eq(:red)
+      end
+    end
+
+    context "ROE (Technology benchmark: 20%)" do
+      it "green when above sector median" do
         result = Argpt::Fundamentals::Analyzer.new(quote:).call
 
         expect(result[:thresholds][:roe]).to eq(:green)
       end
 
-      it "yellow when 10-15%" do
+      it "yellow when between 50% and 100% of median" do
         result = Argpt::Fundamentals::Analyzer.new(quote: quote(returnOnEquity: 0.12)).call
 
         expect(result[:thresholds][:roe]).to eq(:yellow)
       end
 
-      it "red when < 10%" do
+      it "red when below 50% of sector median" do
         result = Argpt::Fundamentals::Analyzer.new(quote: quote(returnOnEquity: 0.05)).call
 
         expect(result[:thresholds][:roe]).to eq(:red)
       end
     end
 
-    context "Debt/Equity" do
-      it "green when < 1" do
+    context "Debt/Equity (Technology benchmark: 0.6)" do
+      it "green when below sector median" do
         result = Argpt::Fundamentals::Analyzer.new(quote: quote(debtToEquity: 0.5)).call
 
         expect(result[:thresholds][:debt_to_equity]).to eq(:green)
       end
 
-      it "yellow when 1-2" do
-        result = Argpt::Fundamentals::Analyzer.new(quote: quote(debtToEquity: 1.5)).call
+      it "yellow when between median and 2x" do
+        result = Argpt::Fundamentals::Analyzer.new(quote: quote(debtToEquity: 1.0)).call
 
         expect(result[:thresholds][:debt_to_equity]).to eq(:yellow)
       end
 
-      it "red when > 2" do
+      it "red when above 2x sector median" do
         result = Argpt::Fundamentals::Analyzer.new(quote:).call
 
         expect(result[:thresholds][:debt_to_equity]).to eq(:red)
       end
     end
 
-    context "Profit Margin" do
-      it "green when > 20%" do
+    context "Profit Margin (Technology benchmark: 22%)" do
+      it "green when above sector median" do
         result = Argpt::Fundamentals::Analyzer.new(quote:).call
 
         expect(result[:thresholds][:profit_margin]).to eq(:green)
       end
 
-      it "yellow when 10-20%" do
+      it "yellow when between 50% and 100% of median" do
         result = Argpt::Fundamentals::Analyzer.new(quote: quote(profitMargins: 0.15)).call
 
         expect(result[:thresholds][:profit_margin]).to eq(:yellow)
       end
 
-      it "red when < 10%" do
+      it "red when below 50% of sector median" do
         result = Argpt::Fundamentals::Analyzer.new(quote: quote(profitMargins: 0.05)).call
 
         expect(result[:thresholds][:profit_margin]).to eq(:red)
@@ -207,6 +221,20 @@ RSpec.describe Argpt::Fundamentals::Analyzer do
 
       expect(result[:thresholds][:pe]).to be_nil
       expect(result[:thresholds][:roe]).to be_nil
+    end
+
+    context "when sector has no benchmarks" do
+      it "falls back to absolute thresholds" do
+        result = Argpt::Fundamentals::Analyzer.new(quote: quote(sector: "Unknown Sector", regularMarketPrice: 100.0, trailingEps: 10.0)).call
+
+        expect(result[:thresholds][:pe]).to eq(:green)
+      end
+
+      it "uses absolute red threshold for high P/E" do
+        result = Argpt::Fundamentals::Analyzer.new(quote: quote(sector: "Unknown Sector", regularMarketPrice: 300.0, trailingEps: 10.0)).call
+
+        expect(result[:thresholds][:pe]).to eq(:red)
+      end
     end
   end
 end
