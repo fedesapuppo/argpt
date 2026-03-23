@@ -13,6 +13,10 @@ require_relative "argpt/portfolio/exchange_rate"
 require_relative "argpt/portfolio/calculator"
 require_relative "argpt/technicals/analyzer"
 require_relative "argpt/fundamentals/analyzer"
+require_relative "argpt/pipeline/config"
+require_relative "argpt/pipeline/price_fetcher"
+require_relative "argpt/pipeline/writer"
+require_relative "argpt/pipeline/fetch"
 
 module Argpt
 end

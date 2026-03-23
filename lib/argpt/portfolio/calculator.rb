@@ -40,7 +40,8 @@ module Argpt
       private
 
       def compute_holding(h)
-        price_data = @prices.fetch(h.ticker) { raise Argpt::Error, "Missing price for #{h.ticker}" }
+        price_key = "#{h.ticker}:#{h.type}"
+        price_data = @prices.fetch(price_key) { @prices.fetch(h.ticker) { raise Argpt::Error, "Missing price for #{h.ticker}" } }
         last = price_data[:last] || raise(Argpt::Error, "Missing :last in price for #{h.ticker}")
 
         price_usd, price_ars = convert_prices(h, last)

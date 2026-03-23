@@ -1,0 +1,11 @@
+tickers:
+  - ticker: GGAL
+    type: arg_stock
+  - ticker: YPF
+    type: arg_stock
+  - ticker: AAPL
+    type: cedear
+  - ticker: AAPL
+    type: us_stock
+  - ticker: MSFT
+    type: us_stock

@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative "../lib/argpt"
+
+config_path = ARGV[0] || File.join(__dir__, "..", "config", "holdings.yml")
+output_dir = ARGV[1] || File.join(__dir__, "..", "frontend", "data")
+
+unless File.exist?(config_path)
+  warn "Config not found: #{config_path}"
+  warn "Copy config/holdings.yml.sample to config/holdings.yml and edit it."
+  exit 1
+end
+
+client = Argpt::HttpClient.new
+data912 = Argpt::DataSources::Data912.new(client:)
+finance_query = Argpt::DataSources::FinanceQuery.new(client:)
+
+result = Argpt::Pipeline::Fetch.new(
+  config_path:,
+  output_dir:,
+  data912:,
+  finance_query:
+).call
+
+puts "Fetched #{result[:tickers_count]} tickers → #{result[:output_dir]}"
