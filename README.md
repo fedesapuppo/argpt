@@ -39,11 +39,38 @@ cd argpt
 bundle install
 ```
 
+## Fetching Market Data
+
+Configure which tickers to fetch, then run the pipeline:
+
+```bash
+cp config/holdings.yml.sample config/holdings.yml  # edit with your tickers
+ruby bin/fetch_data                                  # fetches live data → frontend/data/*.json
+```
+
+This hits Data912 and finance-query.com APIs and writes four JSON files (`exchange_rates.json`, `prices.json`, `technicals.json`, `fundamentals.json`) to `frontend/data/`.
+
+## Running the Frontend
+
+The frontend needs a local HTTP server (it fetches JSON via `fetch()`):
+
+```bash
+ruby -run -e httpd frontend -p 8000
+```
+
+Then open http://localhost:8000.
+
+**Without running `bin/fetch_data`**, the frontend falls back to `.sample.json` files which contain placeholder data for development purposes only — not real market data.
+
 ## Tests
 
 ```bash
 bundle exec rspec
 ```
+
+## Deployment
+
+Push to `main` and GitHub Actions deploys `frontend/` to GitHub Pages. An optional scheduled workflow (`fetch_data.yml`) runs `bin/fetch_data` weekdays at 18:00 ART and commits fresh data.
 
 ## License
 
