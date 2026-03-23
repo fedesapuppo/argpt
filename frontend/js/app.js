@@ -70,6 +70,21 @@ const App = {
     const pnlArsEl = el('total-pnl-ars');
     pnlArsEl.textContent = Currency.formatARS(result.total_pnl_ars);
     pnlArsEl.className = `text-lg font-mono font-medium tabular-nums ${Currency.pctClass(result.total_pnl_ars)}`;
+
+    const argPnl = result.holdings
+      .filter(h => h.type === 'arg_stock')
+      .reduce((s, h) => s + (h.pnl_usd || 0), 0);
+    const cedPnl = result.holdings
+      .filter(h => h.type === 'cedear' || h.type === 'us_stock')
+      .reduce((s, h) => s + (h.pnl_usd || 0), 0);
+
+    const argEl = el('arg-pnl-usd');
+    argEl.textContent = Currency.formatUSD(argPnl);
+    argEl.className = `text-base font-mono font-medium tabular-nums ${Currency.pctClass(argPnl)}`;
+
+    const cedEl = el('ced-pnl-usd');
+    cedEl.textContent = Currency.formatUSD(cedPnl);
+    cedEl.className = `text-base font-mono font-medium tabular-nums ${Currency.pctClass(cedPnl)}`;
   }
 };
 
