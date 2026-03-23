@@ -35,6 +35,21 @@ const Storage = {
     this.saveHoldings(holdings);
   },
 
+  isEmpty() {
+    return !localStorage.getItem(STORAGE_KEY);
+  },
+
+  async loadFromJson() {
+    if (!this.isEmpty()) return false;
+    try {
+      const resp = await fetch('data/holdings.json');
+      if (!resp.ok) return false;
+      const holdings = await resp.json();
+      this.saveHoldings(holdings);
+      return true;
+    } catch { return false; }
+  },
+
   _migrate(data) {
     if (!data.version || data.version < 2) {
       const holdings = (data.holdings || []).map(h => ({

@@ -5,6 +5,7 @@ const App = {
     Tabs.init();
     Form.init();
 
+    await Storage.loadFromJson();
     await this.loadData();
     this.refresh();
   },

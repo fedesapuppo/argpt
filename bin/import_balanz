@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative "../lib/argpt"
+
+path = ARGV[0]
+unless path && File.exist?(path)
+  warn "Usage: ruby bin/import_balanz <path-to-resultados.xlsx>"
+  exit 1
+end
+
+holdings = Argpt::Import::Balanz.new(path:).call
+
+# Write config/holdings.yml for the pipeline
+config_path = File.join(__dir__, "..", "config", "holdings.yml")
+config = { "tickers" => holdings.map { |h| { "ticker" => h.ticker, "type" => h.type.to_s } } }
+FileUtils.mkdir_p(File.dirname(config_path))
+File.write(config_path, YAML.dump(config))
+
+# Write frontend/data/holdings.json for pre-populating the UI
+holdings_json = holdings.map do |h|
+  {
+    ticker: h.ticker,
+    type: h.type.to_s,
+    shares: h.shares,
+    avg_price: h.avg_price.round(2),
+    purchase_date: h.purchase_date&.to_s,
+    entry_fx_rate: h.purchase_fx_rate&.round(2)
+  }
+end
+
+data_dir = File.join(__dir__, "..", "frontend", "data")
+FileUtils.mkdir_p(data_dir)
+File.write(File.join(data_dir, "holdings.json"), JSON.pretty_generate(holdings_json))
+
+# Print summary
+cedears = holdings.select { |h| h.type == :cedear }
+arg_stocks = holdings.select { |h| h.type == :arg_stock }
+
+puts "Imported #{holdings.length} holdings from Balanz export"
+puts "  Argentine stocks: #{arg_stocks.length}"
+puts "  CEDEARs: #{cedears.length}"
+puts
+puts format("%-8s %-12s %8s %12s %10s", "Ticker", "Type", "Shares", "Avg Price", "Entry MEP")
+puts "-" * 55
+holdings.sort_by { |h| [h.type.to_s, h.ticker] }.each do |h|
+  puts format("%-8s %-12s %8.0f %12.2f %10s",
+    h.ticker, h.type, h.shares, h.avg_price,
+    h.purchase_fx_rate ? format("%.2f", h.purchase_fx_rate) : "n/a")
+end
+puts
+puts "Written: #{config_path}"
+puts "Written: #{File.join(data_dir, 'holdings.json')}"
