@@ -1,6 +1,6 @@
 const Currency = {
   formatUSD(value) {
-    if (value == null) return '--';
+    if (value == null || typeof value !== 'number' || isNaN(value)) return '--';
     return new Intl.NumberFormat('en-US', {
       style: 'currency', currency: 'USD',
       minimumFractionDigits: 2, maximumFractionDigits: 2
@@ -8,7 +8,7 @@ const Currency = {
   },
 
   formatARS(value) {
-    if (value == null) return '--';
+    if (value == null || typeof value !== 'number' || isNaN(value)) return '--';
     return new Intl.NumberFormat('es-AR', {
       style: 'currency', currency: 'ARS',
       minimumFractionDigits: 0, maximumFractionDigits: 0
@@ -16,18 +16,18 @@ const Currency = {
   },
 
   formatPct(value) {
-    if (value == null) return '--';
+    if (value == null || typeof value !== 'number' || isNaN(value)) return '--';
     const sign = value >= 0 ? '+' : '';
     return `${sign}${value.toFixed(2)}%`;
   },
 
   formatNum(value, decimals = 2) {
-    if (value == null) return '--';
+    if (value == null || typeof value !== 'number' || isNaN(value)) return '--';
     return value.toFixed(decimals);
   },
 
   pctClass(value) {
-    if (value == null) return 'text-muted';
+    if (value == null || typeof value !== 'number') return 'text-muted';
     if (value > 0) return 'text-gain';
     if (value < 0) return 'text-loss';
     return 'text-white';
