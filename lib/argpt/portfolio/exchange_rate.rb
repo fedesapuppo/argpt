@@ -16,7 +16,12 @@ module Argpt
         raise Argpt::Error, "No rate data available" if rates_data.empty?
 
         entry = rates_data.find { |r| r[:ticker] == PREFERRED_TICKER } || rates_data.first
-        Rate.new(ticker: entry[:ticker], bid: entry[:buy], ask: entry[:sell], mark: entry[:rate])
+        Rate.new(
+          ticker: entry[:ticker],
+          bid: entry[:bid] || entry[:buy],
+          ask: entry[:ask] || entry[:sell],
+          mark: entry[:mark] || entry[:rate]
+        )
       end
       private_class_method :select_best
     end

@@ -30,13 +30,14 @@ module Argpt
           tickers = entries.map { |e| e[:ticker] }.to_set
 
           all_prices.each do |row|
-            next unless tickers.include?(row[:ticker])
+            sym = row[:symbol] || row[:ticker]
+            next unless tickers.include?(sym)
 
-            key = "#{row[:ticker]}:#{type}"
+            key = "#{sym}:#{type}"
             result[key] = {
-              last: row[:last],
-              change: row[:change],
-              volume: row[:volume],
+              last: row[:c] || row[:last],
+              change: row[:pct_change] || row[:change] || 0,
+              volume: row[:v] || row[:volume] || 0,
               currency: CURRENCY_MAP.fetch(type),
               type: type
             }
