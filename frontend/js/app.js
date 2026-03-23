@@ -4,6 +4,7 @@ const App = {
   async init() {
     Tabs.init();
     Form.init();
+    Import.init();
 
     await Storage.loadFromJson();
     await this.loadData();

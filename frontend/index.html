@@ -97,6 +97,15 @@
         </div>
       </div>
 
+      <!-- Import / Add -->
+      <div class="flex gap-3 mb-4">
+        <label class="cursor-pointer bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-accent hover:text-accent transition-colors">
+          Import Balanz XLSX
+          <input type="file" accept=".xlsx,.xls" id="import-file" class="hidden">
+        </label>
+        <div id="import-status" class="self-center text-xs text-muted"></div>
+      </div>
+
       <!-- Add holding form -->
       <details class="mb-4 bg-surface-secondary rounded-lg border border-surface-border">
         <summary class="px-4 py-3 text-sm font-medium cursor-pointer hover:text-accent">+ Add Holding</summary>
@@ -221,11 +230,13 @@
     </section>
   </main>
 
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="js/currency.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/portfolio.js"></script>
   <script src="js/tabs.js"></script>
   <script src="js/table.js"></script>
+  <script src="js/import.js"></script>
   <script src="js/form.js"></script>
   <script src="js/technicals.js"></script>
   <script src="js/fundamentals.js"></script>
