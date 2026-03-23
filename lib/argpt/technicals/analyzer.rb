@@ -39,11 +39,12 @@ module Argpt
       end
 
       def compute_ath
-        highs = @historical.filter_map { |h| h[:high] }
+        highs = @historical.filter_map { |row| row[:high] || row[:h] }
         return { ath: nil, pct_below_ath: nil } if highs.empty?
 
         ath = highs.max
-        current_close = @historical.first[:close]
+        latest = @historical.max_by { |row| row[:date].to_s }
+        current_close = latest[:close] || latest[:c]
         pct_below = ath&.positive? && current_close ? (ath - current_close) / ath * 100 : nil
 
         { ath:, pct_below_ath: pct_below }

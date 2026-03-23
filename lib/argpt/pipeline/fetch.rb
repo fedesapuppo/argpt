@@ -44,7 +44,7 @@ module Argpt
       private
 
       def fq_symbol(ticker, entry)
-        entry[:type] == :us_stock ? ticker : "#{ticker}.BA"
+        entry[:type] == :arg_stock ? "#{ticker}.BA" : ticker
       end
 
       def fetch_technicals(tickers, entry_by_ticker)
