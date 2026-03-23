@@ -30,12 +30,12 @@ RSpec.describe Argpt::Import::Balanz do
       expect(prices).to eq([12000.0, 12025.0])
     end
 
-    it "distributes zero-cost split shares across paid lots" do
+    it "adjusts avg_price when distributing split shares" do
       result = Argpt::Import::Balanz.new(path: fixture_path).call
       adbe = result.find { |h| h.ticker == "ADBE" }
 
       expect(adbe.shares).to eq(3)
-      expect(adbe.avg_price).to eq(7393.0)
+      expect(adbe.avg_price).to be_within(0.01).of(7393.0 * 1 / 3)
       expect(adbe.purchase_fx_rate).to be_within(0.01).of(148.58)
     end
 

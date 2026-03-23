@@ -86,11 +86,13 @@ const Import = {
       const extraPerLot = freeShares / paid.length;
 
       for (const lot of paid) {
+        const newShares = lot.qty + extraPerLot;
+        const adjustedPrice = lot.price * lot.qty / newShares;
         holdings.push({
           ticker,
           type: lot.type,
-          shares: lot.qty + extraPerLot,
-          avg_price: Math.round(lot.price * 100) / 100,
+          shares: newShares,
+          avg_price: Math.round(adjustedPrice * 100) / 100,
           purchase_date: lot.date,
           entry_fx_rate: lot.mep > 0 ? Math.round(lot.mep * 100) / 100 : null
         });

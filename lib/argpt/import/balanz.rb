@@ -63,10 +63,13 @@ module Argpt
             extra_per_lot = paid.length > 0 ? free_shares / paid.length : 0
 
             paid.map do |lot|
+              new_shares = lot[:qty] + extra_per_lot
+              adjusted_price = lot[:price] * lot[:qty] / new_shares
+
               build_holding(
                 ticker, lot[:type],
-                lot[:qty] + extra_per_lot,
-                lot[:price],
+                new_shares,
+                adjusted_price,
                 lot[:date],
                 lot[:mep].positive? ? lot[:mep] : nil
               )
