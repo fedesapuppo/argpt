@@ -24,6 +24,13 @@ module Argpt
       def original_currency
         ARS_TYPES.include?(type) ? :ars : :usd
       end
+
+      def cost_basis_usd
+        return avg_price if original_currency == :usd
+        return nil unless purchase_fx_rate
+
+        avg_price / purchase_fx_rate
+      end
     end
   end
 end

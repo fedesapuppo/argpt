@@ -112,4 +112,34 @@ RSpec.describe Argpt::Portfolio::Holding do
       expect(holding.original_currency).to eq(:usd)
     end
   end
+
+  describe "#cost_basis_usd" do
+    it "divides avg_price by purchase_fx_rate for ARS assets" do
+      holding = Argpt::Portfolio::Holding.new(
+        ticker: "GGAL", type: :arg_stock, shares: 100,
+        avg_price: 4800.0, purchase_date: Date.new(2025, 6, 15),
+        purchase_fx_rate: 1200.0
+      )
+
+      expect(holding.cost_basis_usd).to eq(4.0)
+    end
+
+    it "returns avg_price directly for US stocks" do
+      holding = Argpt::Portfolio::Holding.new(
+        ticker: "AAPL", type: :us_stock, shares: 10,
+        avg_price: 170.0, purchase_date: Date.new(2025, 1, 10)
+      )
+
+      expect(holding.cost_basis_usd).to eq(170.0)
+    end
+
+    it "returns nil when ARS asset has no purchase_fx_rate" do
+      holding = Argpt::Portfolio::Holding.new(
+        ticker: "GGAL", type: :arg_stock, shares: 100,
+        avg_price: 4800.0, purchase_date: Date.new(2025, 6, 15)
+      )
+
+      expect(holding.cost_basis_usd).to be_nil
+    end
+  end
 end
