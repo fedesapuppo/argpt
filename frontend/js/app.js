@@ -31,6 +31,10 @@ const App = {
     }
   },
 
+  currentMepRate() {
+    return this.data.exchangeRates?.mep?.mark || null;
+  },
+
   refresh() {
     const holdings = Storage.getHoldings();
     const { exchangeRates, prices, technicals, fundamentals } = this.data;
@@ -58,13 +62,13 @@ const App = {
     el('total-usd').textContent = Currency.formatUSD(result.total_value_usd);
     el('total-ars').textContent = Currency.formatARS(result.total_value_ars);
 
-    const pnlEl = el('total-pnl-usd');
-    pnlEl.textContent = Currency.formatUSD(result.total_pnl_usd);
-    pnlEl.className = `text-lg font-mono font-medium tabular-nums ${Currency.pctClass(result.total_pnl_usd)}`;
+    const pnlUsdEl = el('total-pnl-usd');
+    pnlUsdEl.textContent = Currency.formatUSD(result.total_pnl_usd);
+    pnlUsdEl.className = `text-lg font-mono font-medium tabular-nums ${Currency.pctClass(result.total_pnl_usd)}`;
 
-    const dailyEl = el('daily-change');
-    dailyEl.textContent = Currency.formatPct(result.daily_change_pct);
-    dailyEl.className = `text-lg font-mono font-medium tabular-nums ${Currency.pctClass(result.daily_change_pct)}`;
+    const pnlArsEl = el('total-pnl-ars');
+    pnlArsEl.textContent = Currency.formatARS(result.total_pnl_ars);
+    pnlArsEl.className = `text-lg font-mono font-medium tabular-nums ${Currency.pctClass(result.total_pnl_ars)}`;
   }
 };
 

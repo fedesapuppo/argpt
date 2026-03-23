@@ -81,42 +81,50 @@
           <div class="text-lg font-mono font-medium tabular-nums" id="total-ars">$0</div>
         </div>
         <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border">
-          <div class="text-xs text-muted mb-1">Daily Change</div>
-          <div class="text-lg font-mono font-medium tabular-nums" id="daily-change">0.00%</div>
+          <div class="text-xs text-muted mb-1">Total ARS P&L</div>
+          <div class="text-lg font-mono font-medium tabular-nums" id="total-pnl-ars">$0</div>
         </div>
       </div>
 
       <!-- Add holding form -->
       <details class="mb-4 bg-surface-secondary rounded-lg border border-surface-border">
         <summary class="px-4 py-3 text-sm font-medium cursor-pointer hover:text-accent">+ Add Holding</summary>
-        <form id="holding-form" class="p-4 pt-2 grid grid-cols-2 md:grid-cols-6 gap-3 items-end">
-          <div>
-            <label class="block text-xs text-muted mb-1">Ticker</label>
-            <input name="ticker" type="text" required placeholder="AAPL" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
+        <form id="holding-form" class="p-4 pt-2">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+            <div>
+              <label class="block text-xs text-muted mb-1">Ticker</label>
+              <input name="ticker" type="text" required placeholder="AAPL" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs text-muted mb-1">Type</label>
+              <select name="type" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm focus:border-accent focus:outline-none">
+                <option value="cedear">CEDEAR</option>
+                <option value="arg_stock">Arg Stock</option>
+                <option value="us_stock">US Stock</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-muted mb-1">Shares</label>
+              <input name="shares" type="number" step="any" min="0.01" required placeholder="100" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs text-muted mb-1">Avg Price</label>
+              <input name="avg_price" type="number" step="any" min="0.01" required placeholder="15000" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
+            </div>
+          </div>
+          <div id="fx-rate-group" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+            <div>
+              <label class="block text-xs text-muted mb-1">Purchase Date</label>
+              <input name="purchase_date" type="date" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs text-muted mb-1">Entry MEP Rate</label>
+              <input name="entry_fx_rate" type="number" step="any" min="0" placeholder="1200" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
+              <p class="text-[10px] text-muted mt-0.5" id="fx-rate-hint">Enter date or rate. Date auto-fills rate from data.</p>
+            </div>
           </div>
           <div>
-            <label class="block text-xs text-muted mb-1">Type</label>
-            <select name="type" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm focus:border-accent focus:outline-none">
-              <option value="cedear">CEDEAR</option>
-              <option value="arg_stock">Arg Stock</option>
-              <option value="us_stock">US Stock</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs text-muted mb-1">Shares</label>
-            <input name="shares" type="number" step="any" min="0.01" required placeholder="100" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
-          </div>
-          <div>
-            <label class="block text-xs text-muted mb-1">Avg Price</label>
-            <input name="avg_price" type="number" step="any" min="0.01" required placeholder="15000" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
-          </div>
-          <div id="fx-rate-group">
-            <label class="block text-xs text-muted mb-1">Entry MEP Rate</label>
-            <input name="entry_fx_rate" type="number" step="any" min="0" placeholder="1200" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
-            <p class="text-[10px] text-muted mt-0.5">MEP rate when you bought. Leave blank if unknown.</p>
-          </div>
-          <div>
-            <button type="submit" class="w-full bg-accent/20 text-accent border border-accent/30 rounded px-3 py-1.5 text-sm font-medium hover:bg-accent/30 transition-colors">Add</button>
+            <button type="submit" class="bg-accent/20 text-accent border border-accent/30 rounded px-4 py-1.5 text-sm font-medium hover:bg-accent/30 transition-colors">Add</button>
           </div>
         </form>
       </details>

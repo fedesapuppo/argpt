@@ -3,9 +3,25 @@ const Form = {
     const form = document.getElementById('holding-form');
     const typeSelect = form.querySelector('[name="type"]');
     const fxGroup = document.getElementById('fx-rate-group');
+    const dateInput = form.querySelector('[name="purchase_date"]');
+    const fxInput = form.querySelector('[name="entry_fx_rate"]');
+    const hint = document.getElementById('fx-rate-hint');
 
     typeSelect.addEventListener('change', () => {
       fxGroup.style.display = typeSelect.value === 'us_stock' ? 'none' : '';
+    });
+
+    dateInput.addEventListener('change', () => {
+      if (!dateInput.value) return;
+      const mep = App.currentMepRate();
+      if (mep && !fxInput.value) {
+        fxInput.value = mep;
+        hint.textContent = `Using current MEP (${mep}). Edit if your purchase rate was different.`;
+      }
+    });
+
+    fxInput.addEventListener('input', () => {
+      hint.textContent = 'Enter date or rate. Date auto-fills rate from data.';
     });
 
     form.addEventListener('submit', (e) => {
@@ -16,6 +32,7 @@ const Form = {
         type: data.get('type'),
         shares: parseFloat(data.get('shares')),
         avg_price: parseFloat(data.get('avg_price')),
+        purchase_date: data.get('purchase_date') || null,
         entry_fx_rate: data.get('entry_fx_rate') ? parseFloat(data.get('entry_fx_rate')) : null
       };
 
@@ -23,6 +40,7 @@ const Form = {
 
       Storage.addHolding(holding);
       form.reset();
+      hint.textContent = 'Enter date or rate. Date auto-fills rate from data.';
       App.refresh();
     });
   },
