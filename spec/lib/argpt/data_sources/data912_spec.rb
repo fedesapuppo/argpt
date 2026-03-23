@@ -100,5 +100,19 @@ RSpec.describe Argpt::DataSources::Data912 do
       expect(result.first[:date]).to eq("2026-03-18")
       expect(result.first[:close]).to eq(5200.00)
     end
+
+    it "raises on invalid type" do
+      source = Argpt::DataSources::Data912.new(client: Argpt::HttpClient.new(delay: 0))
+
+      expect { source.historical("../../admin", "GGAL") }
+        .to raise_error(ArgumentError, /invalid type/i)
+    end
+
+    it "raises on invalid ticker" do
+      source = Argpt::DataSources::Data912.new(client: Argpt::HttpClient.new(delay: 0))
+
+      expect { source.historical("stocks", "../../../etc/passwd") }
+        .to raise_error(ArgumentError, /invalid ticker/i)
+    end
   end
 end

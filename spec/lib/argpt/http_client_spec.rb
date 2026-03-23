@@ -143,6 +143,23 @@ RSpec.describe Argpt::HttpClient do
         expect(a_request(:post, "https://example.com/graphql")).to have_been_made.once
       end
     end
+
+    it "treats corrupted cache as a miss" do
+      stub_request(:get, "https://example.com/data")
+        .to_return(body: '{"fresh":true}', headers: { "Content-Type" => "application/json" })
+
+      with_cache_enabled do
+        client = Argpt::HttpClient.new(delay: 0)
+
+        client.get("https://example.com/data")
+        cache_files = Dir.glob("tmp/cache/*.json")
+        File.write(cache_files.first, "not valid json")
+
+        result = client.get("https://example.com/data")
+        expect(result).to eq({ fresh: true })
+        expect(a_request(:get, "https://example.com/data")).to have_been_made.twice
+      end
+    end
   end
 
   private

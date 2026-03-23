@@ -4,6 +4,8 @@
 
 Build a free, serverless portfolio tracker for Argentine investors. Inspired by Danelfin's portfolio view but without the 5-stock limit. Tracks CEDEARs, Argentine stocks, and US stocks with dual-currency display (ARS + USD). No paid services — everything free.
 
+**Core value proposition:** Show Argentine investors their **real USD return** on assets bought with pesos. Existing trackers (Sharesight, Portseido, Portfolio Performance, Ziggma) use official FX rates, which were 50-80% off market pre-2025. ARGPT uses MEP/CCL rates — the rates investors actually get — and decomposes returns into capital (asset movement) vs currency (peso devaluation) components. No other tool does this.
+
 ## Architecture
 
 ```
@@ -21,10 +23,27 @@ Ruby scripts (local) → JSON files → GitHub Pages (static frontend)
 - Assets outside Argentina (us_stock) → ARS via **CCL** (most liquid ADR pair)
 - Primary display: single USD total value
 - UI discloses methodology
+- See `docs/currency-rules.md` for authoritative formulas, edge cases, and test vectors
 
 ### CEDEAR USD Valuation
 - CEDEAR ARS price / MEP rate (not underlying US stock price)
 - Rationale: in practice, you sell CEDEAR for ARS, buy bond, sell bond for USD via MEP
+- Optional metric: CEDEAR premium/discount = `(cedear_ars / (us_stock_usd × ratio)) / ccl - 1`
+
+### Real USD Return (core differentiator)
+The main goal is showing Argentine investors their **real USD return** — not just ARS P&L.
+- **Entry cost basis in USD:** For ARS assets, `avg_price / mep_rate_at_purchase`. For US stocks, `avg_price` directly (already in USD).
+- **Current value in USD:** For ARS assets, `current_ars_price / current_mep`. For US stocks, `current_usd_price`.
+- **Return decomposition** (3 components per holding):
+  - Capital return: asset price change in native currency
+  - Currency return: MEP rate change since purchase (0 for US stocks)
+  - Total USD return: `(1 + capital) × (1 + currency) - 1`
+- **Why this matters:** No existing tracker (Sharesight, Portseido, Portfolio Performance, Ziggma) uses MEP/CCL rates — they all use official FX, which was 50-80% off market pre-2025. ARGPT shows what the investor actually gets in dollars.
+
+### Historical MEP Data
+- **V1:** User enters `entry_fx_rate` manually on each holding. Fallback: current MEP (with UI warning).
+- **V2:** Auto-suggest via ArgentinaDatos API: `GET /v1/cotizaciones/dolares/bolsa/{YYYY/MM/DD}` (free, data from ~Oct 2018).
+- **Limitation:** Pre-2018 purchases require manual entry — no public historical MEP API exists for earlier dates.
 
 ---
 
@@ -41,16 +60,18 @@ argpt/
 │       ├── frontend/SKILL.md            # Financial dashboard aesthetic
 │       ├── commit/SKILL.md              # Git conventions
 │       ├── code-review/SKILL.md         # Diff review
-│       └── finance-api/SKILL.md         # NEW: API query patterns
+│       ├── finance-api/SKILL.md         # API query patterns
+│       └── currency-rules/SKILL.md     # USD return formulas & conversion rules
 ├── lib/
 │   ├── argpt.rb                         # Require tree + Argpt module
 │   ├── http_client.rb                   # HTTParty wrapper with rate limiting + cache
 │   ├── data_sources/
 │   │   ├── data912.rb                   # Data912 API client
-│   │   └── finance_query.rb             # finance-query.com (REST + GraphQL)
+│   │   ├── finance_query.rb             # finance-query.com (REST + GraphQL)
+│   │   └── argentina_datos.rb           # ArgentinaDatos: historical MEP/CCL rates
 │   ├── portfolio/
-│   │   ├── holding.rb                   # Value object: ticker, type, shares, avg_price, buy_date
-│   │   ├── calculator.rb               # P&L, weights, daily change, currency conversion
+│   │   ├── holding.rb                   # Value object: ticker, type, shares, avg_price, purchase_date, purchase_fx_rate
+│   │   ├── calculator.rb               # Dual P&L (ARS + real USD), weights, daily change
 │   │   └── exchange_rate.rb             # MEP/CCL rate selection logic
 │   ├── technicals/
 │   │   └── analyzer.rb                  # Technical indicators processing
@@ -65,11 +86,11 @@ argpt/
 │   ├── css/style.css                    # Dark financial dashboard theme
 │   ├── js/
 │   │   ├── app.js                       # Main orchestration
-│   │   ├── storage.js                   # localStorage for holdings
-│   │   ├── portfolio.js                 # Portfolio calculations (mirrors Ruby)
-│   │   ├── currency.js                  # MEP/CCL conversion + formatters
+│   │   ├── storage.js                   # localStorage for holdings (schema v2: includes entry_fx_rate)
+│   │   ├── portfolio.js                 # Portfolio calculations (mirrors Ruby Calculator)
+│   │   ├── currency.js                  # MEP/CCL conversion, return decomposition, formatters
 │   │   ├── tabs.js                      # Tab switching
-│   │   ├── form.js                      # Add/edit/delete holdings
+│   │   ├── form.js                      # Add/edit/delete holdings (entry_fx_rate field for ARS assets)
 │   │   └── table.js                     # Table rendering + sorting
 │   └── data/                            # Output from Ruby scripts (gitignored except samples)
 │       ├── prices.json
@@ -79,6 +100,8 @@ argpt/
 ├── bin/
 │   ├── fetch_data                       # Main pipeline: fetch all → write JSON
 │   └── setup                            # bundle install
+├── docs/
+│   └── currency-rules.md               # Authoritative USD return formulas & test vectors
 ├── Gemfile
 ├── .rspec
 ├── .gitignore
@@ -107,6 +130,13 @@ argpt/
    - Rate limits (120/min Data912)
    - Fixture capture patterns for webmock tests
 
+6. **currency-rules** (NEW) — `docs/currency-rules.md`: Authoritative reference for USD return calculations.
+   - The three asset flows (cedear, arg_stock, us_stock) with exact formulas
+   - Entry cost basis in USD, return decomposition (capital/currency/total)
+   - Edge cases (missing FX rate, zero prices, pre-2018 purchases)
+   - Hand-calculated test vectors that Calculator specs must match
+   - Competitive context (why Sharesight/Portseido don't solve this)
+
 ### Agents (in `.claude/agents/`)
 
 1. **finance-data-fetcher** — Knows both API schemas. Can be dispatched to fetch data, capture fixtures, or validate API responses. Useful for exploration and debugging data issues.
@@ -115,76 +145,107 @@ argpt/
 
 ## Implementation Epics
 
-### Epic 0: Project Setup & Tooling
+### Epic 0: Project Setup & Tooling ✓
 **Goal:** Green `bundle exec rspec` with zero tests + all skills/agents in place.
 
-- [ ] Gemfile: httparty, rspec, webmock, rake
-- [ ] `.rspec`, `spec/spec_helper.rb` (webmock config, fixture helpers)
-- [ ] `.tool-versions`: ruby 3.4.2
-- [ ] `.gitignore`: tmp/, frontend/data/*.json, .env
-- [ ] `.claude/CLAUDE.md` with project conventions (Argpt:: namespace, no Rails, bundle exec rspec, JSON fixtures, domain language)
-- [ ] Create all 5 skills + 1 agent listed above
-- [ ] `lib/argpt.rb` skeleton
+- [x] Gemfile: httparty, rspec, webmock, rake
+- [x] `.rspec`, `spec/spec_helper.rb` (webmock config, fixture helpers)
+- [x] `.tool-versions`: ruby 3.4.2
+- [x] `.gitignore`: tmp/, frontend/data/*.json, .env
+- [x] `.claude/CLAUDE.md` with project conventions (Argpt:: namespace, no Rails, bundle exec rspec, JSON fixtures, domain language)
+- [x] Create skills: tdd-skill, frontend, commit, code-review, finance-api, currency-rules
+- [x] Create agent: finance-data-fetcher
+- [x] `lib/argpt.rb` skeleton
 
-**Acceptance:** `bundle exec rspec` → 0 examples, 0 failures
-
----
-
-### Epic 1: Data Sources (Ruby API Clients)
-**Goal:** Two API clients that fetch and parse data. TDD throughout.
-
-**`Argpt::HttpClient`** (lib/http_client.rb)
-- HTTParty wrapper for JSON APIs
-- Rate limiting (configurable delay between requests)
-- Local file cache via `CACHE_JSON=1` env var
-- Retry on transient failures
-
-**`Argpt::DataSources::Data912`** (lib/data_sources/data912.rb)
-- `#mep_rates` → GET /live/mep
-- `#ccl_rates` → GET /live/ccl
-- `#arg_stocks` → GET /live/arg_stocks
-- `#arg_cedears` → GET /live/arg_cedears
-- `#usa_stocks` → GET /live/usa_stocks
-- `#historical(type, ticker)` → GET /historical/{type}/{ticker}
-- Returns normalized hashes with symbol keys
-
-**`Argpt::DataSources::FinanceQuery`** (lib/data_sources/finance_query.rb)
-- `#quotes(symbols)` → GET /v2/quotes?symbols=X,Y,Z
-- `#indicators(symbol, interval:, range:)` → GraphQL
-- `#financials(symbol, statement:, frequency:)` → GraphQL
-- `#risk(symbol, interval:, range:)` → GraphQL
-- `#chart(symbol, interval:, range:)` → GraphQL
-- Auto-appends `.BA` for arg_stock type tickers
-
-**Specs:** webmock stubs with captured JSON fixtures. Test happy path + error handling.
-
-**Acceptance:** All specs pass. Can fetch real data when run without webmock.
+**Status:** Complete
 
 ---
 
-### Epic 2: Portfolio Logic (Ruby)
-**Goal:** Given holdings + market data → correct portfolio metrics in USD + ARS.
+### Epic 1: Data Sources (Ruby API Clients) ✓
+**Goal:** Three API clients that fetch and parse data. TDD throughout.
 
-**`Argpt::Portfolio::Holding`** (lib/portfolio/holding.rb)
-- Value object: ticker, type (:cedear, :arg_stock, :us_stock), shares, avg_price, buy_date
-- `#original_currency` → :ars for cedear/arg_stock, :usd for us_stock
+**`Argpt::HttpClient`** (lib/argpt/http_client.rb)
+- [x] HTTParty wrapper for JSON APIs
+- [x] Configurable retry on transient failures (5xx, timeouts, connection resets)
+- [x] Local file cache via `CACHE_JSON=1` env var (GET and POST)
+- [x] Extracted `with_cache` method, HTTP method in cache key to prevent collisions
 
-**`Argpt::Portfolio::ExchangeRate`** (lib/portfolio/exchange_rate.rb)
-- `#best_mep(rates_data)` → Filter bonds, prefer AL30, use `mark` value
-- `#best_ccl(rates_data)` → Use volume_rank 1 pair
-- Returns rate objects with bid/ask/mark + source info for disclosure
+**`Argpt::DataSources::Data912`** (lib/argpt/data_sources/data912.rb)
+- [x] `#mep_rates` → GET /live/mep
+- [x] `#ccl_rates` → GET /live/ccl
+- [x] `#arg_stocks` → GET /live/arg_stocks
+- [x] `#arg_cedears` → GET /live/arg_cedears
+- [x] `#usa_stocks` → GET /live/usa_stocks
+- [x] `#historical(type, ticker)` → GET /historical/{type}/{ticker}
 
-**`Argpt::Portfolio::Calculator`** (lib/portfolio/calculator.rb)
-- Input: holdings array + prices hash + exchange rates
-- Per-holding output: current_price_usd, current_price_ars, daily_change_pct, total_gain_loss_pct, total_gain_loss_usd, weight_pct
-- Portfolio-level: total_value_usd, total_value_ars, total_pnl_usd, total_pnl_ars, daily_change_pct
-- Currency conversion:
-  - cedear/arg_stock: USD = ARS price / MEP
-  - us_stock: ARS = USD price × CCL
+**`Argpt::DataSources::FinanceQuery`** (lib/argpt/data_sources/finance_query.rb)
+- [x] `#quotes(symbols)` → GET /v2/quotes?symbols=X,Y,Z
+- [x] `#indicators(symbol, interval:, range:)` → GraphQL
+- [x] `#financials(symbol, statement:, frequency:)` → GraphQL
+- [x] `#risk(symbol, interval:, range:)` → GraphQL
+- [x] `#chart(symbol, interval:, range:)` → GraphQL
+- [x] Extracted `ticker_query` helper for DRY GraphQL methods
+- [x] Input validation via `SAFE_INPUT` regex
 
-**Specs:** Thorough. Test each asset type, mixed portfolio, edge cases (zero prices, missing data).
+**`Argpt::DataSources::ArgentinaDatos`** (lib/argpt/data_sources/argentina_datos.rb)
+- [x] `#mep_history` → GET /v1/cotizaciones/dolares/bolsa (full history, cached)
+- [x] `#ccl_history` → GET /v1/cotizaciones/dolares/contadoconliqui (full history, cached)
+- [x] `#mep_on(date)` → FxRate for date, falls back to previous trading day
+- [x] `#ccl_on(date)` → FxRate for date, falls back to previous trading day
+- [x] `FxRate = Data.define(:date, :buy, :sell, :mark)` where mark = avg(compra, venta)
 
-**Acceptance:** Hand-calculated test cases match Calculator output exactly.
+**Specs:** 36 examples — webmock stubs with JSON fixtures. Happy path + error handling + retries.
+
+**Status:** Complete
+
+---
+
+### Epic 2: Portfolio Logic (Ruby) ✓
+**Goal:** Given holdings + market data → correct real USD returns using MEP/CCL rates.
+
+**`Argpt::Portfolio::Holding`** (lib/argpt/portfolio/holding.rb)
+- [x] Frozen value object with keyword args
+- [x] Attributes: `ticker`, `type` (:cedear/:arg_stock/:us_stock), `shares`, `avg_price` (native currency), `purchase_date`, `purchase_fx_rate` (MEP for arg_stock, CCL for cedear, nil for us_stock)
+- [x] `#original_currency` → `:ars` for cedear/arg_stock, `:usd` for us_stock
+- [x] Validates type (must be in VALID_TYPES) and shares (must be positive)
+- [x] User can enter purchase date (auto-lookup via ArgentinaDatos) OR rate directly
+
+**`Argpt::Portfolio::ExchangeRate`** (lib/argpt/portfolio/exchange_rate.rb)
+- [x] Module with class methods `.best_mep(rates_data)` and `.best_ccl(rates_data)`
+- [x] Prefers AL30, falls back to first entry
+- [x] Maps Data912 keys: `buy` → `bid`, `sell` → `ask`, `rate` → `mark`
+- [x] `Rate = Data.define(:ticker, :bid, :ask, :mark)`
+- [x] Raises `Argpt::Error` on empty data
+
+**`Argpt::Portfolio::Calculator`** (lib/argpt/portfolio/calculator.rb)
+- [x] `Calculator.new(holdings:, prices:, mep_rate:, ccl_rate:).call → Result`
+- [x] Currency conversion: cedear/arg_stock `price_usd = last / mep`, us_stock `price_ars = last × ccl`
+- [x] Dual P&L per holding:
+  - `pnl_ars` — nominal P&L in original currency
+  - `pnl_usd` — real USD P&L using `purchase_fx_rate` (nil when rate unavailable)
+  - `pnl_pct` — % gain/loss in original currency
+- [x] Portfolio-level: `total_value_usd`, `total_value_ars`, `total_pnl_usd`, `total_pnl_ars`, `daily_change_pct`
+- [x] Value-weighted portfolio daily change
+- [x] Weights sum to 100%
+- [x] Empty holdings → zero totals
+- [x] Missing ticker in prices → raises `Argpt::Error`
+- [x] `Result` and `HoldingResult` as `Data.define`
+
+**Specs:** 38 examples — per-asset-type calculations, mixed portfolio, edge cases, integration test with fixture data.
+
+- [x] Return decomposition per holding:
+  - `capital_return_pct` — asset price change in native currency
+  - `currency_return_pct` — FX rate change since purchase (0 for us_stock, nil when no purchase_fx_rate)
+  - `total_return_usd_pct` — real USD return = `(1+capital)×(1+currency)-1`
+  - Identity asserted in specs
+- [x] Nil decomposition when `purchase_fx_rate` missing (capital still computed, currency/total are nil)
+
+**Specs:** 19 calculator examples + 1 integration test. Tested with hand-calculated vectors:
+- CEDEAR: 40% ARS gain + 28.57% currency loss → 0% USD return
+- Arg stock: 180% ARS gain + 50% currency loss → 40% USD return
+- US stock: 20% capital, 0% currency, 20% total
+
+**Status:** Complete (78 total specs)
 
 ---
 
@@ -237,18 +298,22 @@ argpt/
 ---
 
 ### Epic 5: Frontend — Portfolio Tab
-**Goal:** Working portfolio view with holdings form + localStorage.
+**Goal:** Working portfolio view with holdings form + localStorage. Shows real USD returns with capital vs currency decomposition.
 
 - Dark financial dashboard theme (CSS variables, distinctive typography)
-- Holdings form: ticker, type (cedear/arg_stock/us_stock), shares, avg_price, buy_date
-- Portfolio table: Ticker, Name, Shares, Avg Price, Current Price, Daily Change %, Gain/Loss %, Gain/Loss $, Weight %
-- Portfolio summary: Total USD value, Total P&L (USD + ARS), Daily change
-- MEP/CCL methodology disclosure (expandable section)
-- localStorage persistence (versioned schema)
+- Holdings form: ticker, type (cedear/arg_stock/us_stock), shares, avg_price, buy_date, **entry_fx_rate** (MEP at purchase — shown only for cedear/arg_stock types, with helper text: "MEP rate when you bought, e.g. 1200. Leave blank if unknown.")
+- Portfolio table columns: Ticker, Name, Shares, Avg Price, Current Price (USD), Daily Chg %, **Capital Return %**, **Currency Return %**, **USD Return %**, USD P&L $, Weight %
+  - Capital Return: green/red, shows asset performance in native currency
+  - Currency Return: green/red, shows MEP impact (always 0% for US stocks)
+  - USD Return: green/red, the combined real dollar return
+- Portfolio summary: Total USD value, Total USD P&L, Total ARS value, Daily change %
+- **⚠ Warning banner** when `has_estimated_fx: true`: "Some holdings are missing entry exchange rates — USD returns are approximate. Edit holdings to add your MEP rate at purchase for accurate results."
+- MEP/CCL methodology disclosure (expandable section explaining the three asset flows and how USD return is computed)
+- localStorage persistence (versioned schema — **must include entry_fx_rate in schema v2**)
 - Sortable columns
-- Green/red color coding for values
+- Green/red color coding for all return values
 
-**Acceptance:** Add holdings → see correct portfolio. Refresh browser → data persists.
+**Acceptance:** Add holdings with entry_fx_rate → see decomposed returns. Add holding without entry_fx_rate → see warning banner. Refresh browser → data persists. Decomposition identity visually verifiable (capital × currency ≈ total).
 
 ---
 
@@ -274,9 +339,9 @@ argpt/
 ## Dependency Graph
 
 ```
-Epic 0 (Setup + Skills/Agents)
-  ├── Epic 1 (API Clients)
-  │     ├── Epic 2 (Portfolio Logic)
+Epic 0 (Setup + Skills/Agents) ✓
+  ├── Epic 1 (API Clients: Data912, FinanceQuery, ArgentinaDatos) ✓
+  │     ├── Epic 2 (Portfolio Logic) ✓
   │     └── Epic 3 (Technicals/Fundamentals)
   │           └── Epic 4 (JSON Export) ← depends on 1+2+3
   │                 └── Epic 5 (Frontend Portfolio)
@@ -285,6 +350,7 @@ Epic 0 (Setup + Skills/Agents)
   └── Epic 8 (Deploy) ← after Epic 5
 
 Epics 2 and 3 can run in parallel after Epic 1.
+74 specs passing as of Epic 2 completion.
 ```
 
 ## Verification

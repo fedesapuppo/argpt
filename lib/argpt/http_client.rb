@@ -9,14 +9,14 @@ module Argpt
 
     def get(url, params: {})
       with_cache("GET", url, params) do
-        response = HTTParty.get(url, query: params)
+        response = HTTParty.get(url, query: params, timeout: 10)
         handle_response(response)
       end
     end
 
     def post(url, body:, headers: {})
       with_cache("POST", url, body) do
-        response = HTTParty.post(url, body: body.to_json, headers: headers)
+        response = HTTParty.post(url, body: body.to_json, headers: headers, timeout: 10)
         handle_response(response)
       end
     end
@@ -66,7 +66,7 @@ module Argpt
       return nil unless caching_enabled?
 
       JSON.parse(File.read(cache_path(key)), symbolize_names: true)
-    rescue Errno::ENOENT
+    rescue Errno::ENOENT, JSON::ParserError
       nil
     end
 

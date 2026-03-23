@@ -27,7 +27,13 @@ module Argpt
         @client.get("#{BASE_URL}/live/usa_stocks")
       end
 
+      HISTORICAL_TYPES = %w[stocks cedears bonds].freeze
+      SAFE_TICKER = /\A[\w.-]+\z/
+
       def historical(type, ticker)
+        raise ArgumentError, "Invalid type: #{type}" unless HISTORICAL_TYPES.include?(type)
+        raise ArgumentError, "Invalid ticker: #{ticker}" unless ticker.match?(SAFE_TICKER)
+
         @client.get("#{BASE_URL}/historical/#{type}/#{ticker}")
       end
     end

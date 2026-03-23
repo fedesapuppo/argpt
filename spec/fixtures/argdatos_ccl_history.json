@@ -1,0 +1,7 @@
+[
+  {"casa": "contadoconliqui", "compra": 40.0, "venta": 40.5, "fecha": "2019-01-02"},
+  {"casa": "contadoconliqui", "compra": 41.0, "venta": 41.5, "fecha": "2019-01-03"},
+  {"casa": "contadoconliqui", "compra": 1205.0, "venta": 1210.0, "fecha": "2026-03-19"},
+  {"casa": "contadoconliqui", "compra": 1208.0, "venta": 1213.0, "fecha": "2026-03-20"},
+  {"casa": "contadoconliqui", "compra": 1210.0, "venta": 1215.0, "fecha": "2026-03-21"}
+]
