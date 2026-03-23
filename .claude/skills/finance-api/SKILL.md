@@ -1,9 +1,9 @@
 ---
 name: finance-api
-description: Documents Data912 and finance-query.com API schemas, endpoints, ticker conventions, rate limits, and fixture capture patterns. Use when working with API clients, writing webmock stubs, or debugging API responses.
+description: Documents Data912, finance-query.com, and ArgentinaDatos API schemas, endpoints, ticker conventions, rate limits, and fixture capture patterns. Use when working with API clients, writing webmock stubs, or debugging API responses.
 ---
 
-Reference for the two data sources used in ARGPT. For full details, see
+Reference for the three data sources used in ARGPT. For full details, see
 `data912_analysis.md` and `finance_query_analysis.md` in the project root.
 
 ## Data912 (`https://data912.com`)
@@ -79,6 +79,55 @@ Reference for the two data sources used in ARGPT. For full details, see
 - US tickers as-is: `AAPL`, `MSFT`, `GGAL` (ADR)
 - Argentine tickers: `.BA` suffix — `GGAL.BA`, `YPFD.BA`, `ALUA.BA`
 
+## ArgentinaDatos (`https://api.argentinadatos.com`)
+
+**Auth**: None. **Rate limit**: None stated. **Redirects**: follows 301.
+
+### Dollar exchange rates
+
+All under `/v1/cotizaciones/dolares/`.
+
+| Endpoint                              | Returns                                  |
+|---------------------------------------|------------------------------------------|
+| `GET /dolares/bolsa`                  | Full MEP history (from 2018-10-29)       |
+| `GET /dolares/contadoconliqui`        | Full CCL history (from 2013-01-02)       |
+| `GET /dolares/blue`                   | Blue dollar history (from 2011)          |
+| `GET /dolares/oficial`                | Official rate history                    |
+| `GET /dolares/cripto`                 | Crypto dollar history (from 2023-02)     |
+| `GET /dolares/mayorista`              | Wholesale BCRA rate                      |
+| `GET /dolares/{casa}/{YYYY}/{MM}/{DD}`| Single date lookup (returns one object)  |
+
+Response shape: `[{ casa, compra, venta, fecha }]`
+Single-date endpoint returns one object (not array).
+
+### Macro indicators
+
+| Endpoint                                   | Returns                              |
+|--------------------------------------------|--------------------------------------|
+| `GET /finanzas/indices/inflacion`          | Monthly CPI % (from 1943)           |
+| `GET /finanzas/indices/inflacionInteranual`| YoY CPI % (from 1943)               |
+| `GET /finanzas/indices/riesgo-pais`        | Country risk (EMBI+) history         |
+| `GET /finanzas/indices/riesgo-pais/ultimo` | Latest country risk value            |
+| `GET /finanzas/indices/uva`               | UVA index daily (from 2016-03)       |
+| `GET /finanzas/tasas/plazoFijo`           | Current fixed-term rates by bank     |
+
+Inflation/UVA/riesgo-pais shape: `[{ fecha, valor }]`
+Plazo fijo shape: `[{ entidad, tnaClientes, tnaNoClientes }]`
+
+### Other endpoints
+
+| Endpoint                                    | Returns                             |
+|---------------------------------------------|-------------------------------------|
+| `GET /finanzas/fci/{type}/{YYYY}/{MM}/{DD}` | FCI fund NAVs by date               |
+| `GET /feriados/{YYYY}`                      | Argentine holidays                  |
+
+FCI types: `mercadoDinero`, `rentaVariable`, `rentaFija`, `rentaMixta`
+
+### What's NOT available
+
+No bond prices, no equity prices, no monetary policy rate. Use Data912
+for instrument prices.
+
 ## Fixture Capture Patterns
 
 When adding webmock stubs for API tests:
@@ -86,6 +135,7 @@ When adding webmock stubs for API tests:
 1. **Capture real response** (once, manually):
    ```bash
    curl -s https://data912.com/live/mep | python3 -m json.tool > spec/fixtures/data912_mep.json
+   curl -sL "https://api.argentinadatos.com/v1/cotizaciones/dolares/bolsa" | python3 -m json.tool > spec/fixtures/argdatos_mep_history.json
    curl -s "https://finance-query.com/v2/quotes?symbols=AAPL" | python3 -m json.tool > spec/fixtures/fq_quote_aapl.json
    ```
 
@@ -101,3 +151,4 @@ When adding webmock stubs for API tests:
 4. **Name convention**: `{source}_{endpoint}_{qualifier}.json`
    - `data912_mep.json`, `data912_cedears.json`
    - `fq_quote_aapl.json`, `fq_financials_ggal_ba.json`
+   - `argdatos_mep_history.json`, `argdatos_ccl_history.json`
