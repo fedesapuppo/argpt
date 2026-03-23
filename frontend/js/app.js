@@ -64,27 +64,35 @@ const App = {
     el('total-usd').textContent = Currency.formatUSD(result.total_value_usd);
     el('total-ars').textContent = Currency.formatARS(result.total_value_ars);
 
+    const totalCostUsd = result.total_value_usd - result.total_pnl_usd;
+    const totalPnlPct = totalCostUsd > 0 ? (result.total_pnl_usd / totalCostUsd) * 100 : 0;
     const pnlUsdEl = el('total-pnl-usd');
-    pnlUsdEl.textContent = Currency.formatUSD(result.total_pnl_usd);
+    pnlUsdEl.textContent = `${Currency.formatUSD(result.total_pnl_usd)} (${Currency.formatPct(totalPnlPct)})`;
     pnlUsdEl.className = `text-lg font-mono font-medium tabular-nums ${Currency.pctClass(result.total_pnl_usd)}`;
 
+    const totalCostArs = result.total_value_ars - result.total_pnl_ars;
+    const totalPnlArsPct = totalCostArs > 0 ? (result.total_pnl_ars / totalCostArs) * 100 : 0;
     const pnlArsEl = el('total-pnl-ars');
-    pnlArsEl.textContent = Currency.formatARS(result.total_pnl_ars);
+    pnlArsEl.textContent = `${Currency.formatARS(result.total_pnl_ars)} (${Currency.formatPct(totalPnlArsPct)})`;
     pnlArsEl.className = `text-lg font-mono font-medium tabular-nums ${Currency.pctClass(result.total_pnl_ars)}`;
 
-    const argPnl = result.holdings
-      .filter(h => h.type === 'arg_stock')
-      .reduce((s, h) => s + (h.pnl_usd || 0), 0);
-    const cedPnl = result.holdings
-      .filter(h => h.type === 'cedear' || h.type === 'us_stock')
-      .reduce((s, h) => s + (h.pnl_usd || 0), 0);
+    const argHoldings = result.holdings.filter(h => h.type === 'arg_stock');
+    const cedHoldings = result.holdings.filter(h => h.type === 'cedear' || h.type === 'us_stock');
+
+    const argPnl = argHoldings.reduce((s, h) => s + (h.pnl_usd || 0), 0);
+    const argCost = argHoldings.reduce((s, h) => s + h.value_usd, 0) - argPnl;
+    const argPct = argCost > 0 ? (argPnl / argCost) * 100 : 0;
+
+    const cedPnl = cedHoldings.reduce((s, h) => s + (h.pnl_usd || 0), 0);
+    const cedCost = cedHoldings.reduce((s, h) => s + h.value_usd, 0) - cedPnl;
+    const cedPct = cedCost > 0 ? (cedPnl / cedCost) * 100 : 0;
 
     const argEl = el('arg-pnl-usd');
-    argEl.textContent = Currency.formatUSD(argPnl);
+    argEl.textContent = `${Currency.formatUSD(argPnl)} (${Currency.formatPct(argPct)})`;
     argEl.className = `text-base font-mono font-medium tabular-nums ${Currency.pctClass(argPnl)}`;
 
     const cedEl = el('ced-pnl-usd');
-    cedEl.textContent = Currency.formatUSD(cedPnl);
+    cedEl.textContent = `${Currency.formatUSD(cedPnl)} (${Currency.formatPct(cedPct)})`;
     cedEl.className = `text-base font-mono font-medium tabular-nums ${Currency.pctClass(cedPnl)}`;
   }
 };
