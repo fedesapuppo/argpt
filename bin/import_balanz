@@ -13,7 +13,8 @@ holdings = Argpt::Import::Balanz.new(path:).call
 
 # Write config/holdings.yml for the pipeline
 config_path = File.join(__dir__, "..", "config", "holdings.yml")
-config = { "tickers" => holdings.map { |h| { "ticker" => h.ticker, "type" => h.type.to_s } } }
+unique_tickers = holdings.uniq { |h| [h.ticker, h.type] }
+config = { "tickers" => unique_tickers.map { |h| { "ticker" => h.ticker, "type" => h.type.to_s } } }
 FileUtils.mkdir_p(File.dirname(config_path))
 File.write(config_path, YAML.dump(config))
 

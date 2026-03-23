@@ -15,7 +15,7 @@ module Argpt
 
       def call
         lots = parse_lots
-        aggregate(lots)
+        per_lot_holdings(lots)
       end
 
       private
@@ -47,32 +47,43 @@ module Argpt
         end
       end
 
-      def aggregate(lots)
-        lots.group_by { |l| l[:ticker] }.map do |ticker, ticker_lots|
+      def per_lot_holdings(lots)
+        by_ticker = lots.group_by { |l| l[:ticker] }
+
+        by_ticker.flat_map do |ticker, ticker_lots|
           paid = ticker_lots.select { |l| l[:price].positive? }
-          total_shares = ticker_lots.sum { |l| l[:qty] }
-          next if total_shares.zero?
+          free = ticker_lots.select { |l| !l[:price].positive? }
+          free_shares = free.sum { |l| l[:qty] }
 
-          if paid.any?
-            paid_shares = paid.sum { |l| l[:qty] }
-            avg_price = paid.sum { |l| l[:qty] * l[:price] } / paid_shares
-            avg_mep = paid.sum { |l| l[:qty] * l[:mep] } / paid_shares
-            earliest_date = paid.map { |l| l[:date] }.compact.min
+          if paid.empty?
+            next [] if free_shares.zero?
+
+            [build_holding(ticker, ticker_lots.first[:type], free_shares, 0.01, nil, nil)]
           else
-            avg_price = 0
-            avg_mep = nil
-            earliest_date = nil
-          end
+            extra_per_lot = paid.length > 0 ? free_shares / paid.length : 0
 
-          Portfolio::Holding.new(
-            ticker:,
-            type: ticker_lots.first[:type],
-            shares: total_shares,
-            avg_price: [avg_price, 0.01].max,
-            purchase_date: earliest_date,
-            purchase_fx_rate: avg_mep&.positive? ? avg_mep : nil
-          )
+            paid.map do |lot|
+              build_holding(
+                ticker, lot[:type],
+                lot[:qty] + extra_per_lot,
+                lot[:price],
+                lot[:date],
+                lot[:mep].positive? ? lot[:mep] : nil
+              )
+            end
+          end
         end.compact
+      end
+
+      def build_holding(ticker, type, shares, price, date, mep)
+        Portfolio::Holding.new(
+          ticker:,
+          type:,
+          shares:,
+          avg_price: [price, 0.01].max,
+          purchase_date: date,
+          purchase_fx_rate: mep
+        )
       end
     end
   end

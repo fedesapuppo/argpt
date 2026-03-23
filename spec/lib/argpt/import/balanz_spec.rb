@@ -6,37 +6,31 @@ RSpec.describe Argpt::Import::Balanz do
   end
 
   describe "#call" do
-    it "returns aggregated holdings" do
+    it "returns per-lot holdings" do
       result = Argpt::Import::Balanz.new(path: fixture_path).call
 
-      expect(result.length).to eq(3)
+      tickers = result.map(&:ticker)
+      expect(tickers.count("AAPL")).to eq(2)
+      expect(tickers.count("GGAL")).to eq(2)
     end
 
-    it "aggregates AAPL cedear lots" do
+    it "preserves per-lot MEP rate" do
       result = Argpt::Import::Balanz.new(path: fixture_path).call
-      aapl = result.find { |h| h.ticker == "AAPL" }
+      aapl_lots = result.select { |h| h.ticker == "AAPL" }
 
-      expect(aapl.type).to eq(:cedear)
-      expect(aapl.shares).to eq(30)
+      mep_rates = aapl_lots.map(&:purchase_fx_rate).sort
+      expect(mep_rates).to eq([1181.59, 1208.3])
     end
 
-    it "computes weighted average price excluding zero-cost lots" do
+    it "preserves per-lot price" do
       result = Argpt::Import::Balanz.new(path: fixture_path).call
-      aapl = result.find { |h| h.ticker == "AAPL" }
+      aapl_lots = result.select { |h| h.ticker == "AAPL" }
 
-      expected_avg = (20 * 12025.0 + 10 * 12000.0) / 30
-      expect(aapl.avg_price).to be_within(0.01).of(expected_avg)
+      prices = aapl_lots.map(&:avg_price).sort
+      expect(prices).to eq([12000.0, 12025.0])
     end
 
-    it "computes weighted average MEP from paid lots" do
-      result = Argpt::Import::Balanz.new(path: fixture_path).call
-      aapl = result.find { |h| h.ticker == "AAPL" }
-
-      expected_mep = (20 * 1181.59 + 10 * 1208.3) / 30
-      expect(aapl.purchase_fx_rate).to be_within(0.01).of(expected_mep)
-    end
-
-    it "includes zero-cost split shares in total but not in avg price" do
+    it "distributes zero-cost split shares across paid lots" do
       result = Argpt::Import::Balanz.new(path: fixture_path).call
       adbe = result.find { |h| h.ticker == "ADBE" }
 
@@ -45,15 +39,11 @@ RSpec.describe Argpt::Import::Balanz do
       expect(adbe.purchase_fx_rate).to be_within(0.01).of(148.58)
     end
 
-    it "aggregates GGAL as arg_stock" do
+    it "maps Acciones to arg_stock" do
       result = Argpt::Import::Balanz.new(path: fixture_path).call
       ggal = result.find { |h| h.ticker == "GGAL" }
 
       expect(ggal.type).to eq(:arg_stock)
-      expect(ggal.shares).to eq(150)
-
-      expected_avg = (100 * 194.0 + 50 * 1836.0) / 150
-      expect(ggal.avg_price).to be_within(0.01).of(expected_avg)
     end
 
     it "skips bonds" do
@@ -68,11 +58,12 @@ RSpec.describe Argpt::Import::Balanz do
       expect(result.none? { |h| h.ticker == "BCACCA" }).to be true
     end
 
-    it "sets purchase_date from earliest paid lot" do
+    it "sets purchase_date per lot" do
       result = Argpt::Import::Balanz.new(path: fixture_path).call
-      aapl = result.find { |h| h.ticker == "AAPL" }
+      ggal_lots = result.select { |h| h.ticker == "GGAL" }.sort_by(&:purchase_date)
 
-      expect(aapl.purchase_date).to eq(Date.new(2025, 6, 24))
+      expect(ggal_lots.first.purchase_date).to eq(Date.new(2021, 9, 15))
+      expect(ggal_lots.last.purchase_date).to eq(Date.new(2024, 1, 10))
     end
   end
 end

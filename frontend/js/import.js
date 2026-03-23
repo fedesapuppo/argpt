@@ -32,12 +32,12 @@ const Import = {
         }
 
         const rows = XLSX.utils.sheet_to_json(sheet);
-        const holdings = this._aggregate(rows);
+        const holdings = this._perLotHoldings(rows);
 
         Storage.saveHoldings(holdings);
         App.refresh();
 
-        status.textContent = `Imported ${holdings.length} holdings`;
+        status.textContent = `Imported ${holdings.length} holdings (per-lot)`;
         status.className = 'self-center text-xs text-gain';
       } catch (err) {
         status.textContent = `Error: ${err.message}`;
@@ -47,7 +47,7 @@ const Import = {
     reader.readAsArrayBuffer(file);
   },
 
-  _aggregate(rows) {
+  _perLotHoldings(rows) {
     const lots = rows
       .filter(r => this.TYPE_MAP[r['Tipo']])
       .map(r => ({
@@ -65,32 +65,38 @@ const Import = {
       byTicker[lot.ticker].push(lot);
     }
 
-    return Object.entries(byTicker).map(([ticker, tickerLots]) => {
+    const holdings = [];
+
+    for (const [ticker, tickerLots] of Object.entries(byTicker)) {
       const paid = tickerLots.filter(l => l.price > 0);
-      const totalShares = tickerLots.reduce((s, l) => s + l.qty, 0);
-      if (totalShares <= 0) return null;
+      const free = tickerLots.filter(l => l.price <= 0);
+      const freeShares = free.reduce((s, l) => s + l.qty, 0);
 
-      let avgPrice = 0.01;
-      let avgMep = null;
-      let purchaseDate = null;
-
-      if (paid.length > 0) {
-        const paidShares = paid.reduce((s, l) => s + l.qty, 0);
-        avgPrice = paid.reduce((s, l) => s + l.qty * l.price, 0) / paidShares;
-        const weightedMep = paid.reduce((s, l) => s + l.qty * l.mep, 0) / paidShares;
-        avgMep = weightedMep > 0 ? Math.round(weightedMep * 100) / 100 : null;
-        const dates = paid.map(l => l.date).filter(Boolean).sort();
-        purchaseDate = dates[0] || null;
+      if (paid.length === 0) {
+        if (freeShares > 0) {
+          holdings.push({
+            ticker, type: tickerLots[0].type,
+            shares: freeShares, avg_price: 0.01,
+            purchase_date: null, entry_fx_rate: null
+          });
+        }
+        continue;
       }
 
-      return {
-        ticker,
-        type: tickerLots[0].type,
-        shares: totalShares,
-        avg_price: Math.round(avgPrice * 100) / 100,
-        purchase_date: purchaseDate,
-        entry_fx_rate: avgMep
-      };
-    }).filter(Boolean);
+      const extraPerLot = freeShares / paid.length;
+
+      for (const lot of paid) {
+        holdings.push({
+          ticker,
+          type: lot.type,
+          shares: lot.qty + extraPerLot,
+          avg_price: Math.round(lot.price * 100) / 100,
+          purchase_date: lot.date,
+          entry_fx_rate: lot.mep > 0 ? Math.round(lot.mep * 100) / 100 : null
+        });
+      }
+    }
+
+    return holdings;
   }
 };
