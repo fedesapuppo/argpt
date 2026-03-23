@@ -1,0 +1,39 @@
+name: Fetch Market Data
+
+on:
+  schedule:
+    - cron: '0 21 * * 1-5'  # Weekdays at 21:00 UTC (18:00 ART)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Copy sample config if needed
+        run: |
+          if [ ! -f config/holdings.yml ]; then
+            cp config/holdings.yml.sample config/holdings.yml
+          fi
+
+      - name: Fetch data
+        run: bundle exec ruby bin/fetch_data
+        env:
+          CACHE_JSON: '0'
+
+      - name: Commit and push data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f frontend/data/*.json
+          git diff --staged --quiet || git commit -m "Update market data $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push
