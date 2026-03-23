@@ -1,0 +1,7 @@
+{
+  "GGAL:arg_stock": { "last": 5200.0, "change": 2.5, "volume": 1500000, "currency": "ars", "type": "arg_stock" },
+  "YPF:arg_stock": { "last": 38000.0, "change": -1.2, "volume": 800000, "currency": "ars", "type": "arg_stock" },
+  "AAPL:cedear": { "last": 15200.0, "change": 0.8, "volume": 500000, "currency": "ars", "type": "cedear" },
+  "AAPL:us_stock": { "last": 185.5, "change": 1.2, "volume": 45000000, "currency": "usd", "type": "us_stock" },
+  "MSFT:us_stock": { "last": 420.3, "change": 0.5, "volume": 30000000, "currency": "usd", "type": "us_stock" }
+}
