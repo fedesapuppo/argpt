@@ -4,8 +4,7 @@ module Argpt
   module Pipeline
     class Fetch
       HISTORICAL_TYPE_MAP = {
-        arg_stock: "stocks",
-        cedear: "cedears"
+        arg_stock: "stocks"
       }.freeze
 
       def initialize(config_path:, output_dir:, data912:, finance_query:)

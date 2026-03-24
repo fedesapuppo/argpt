@@ -1,11 +1,14 @@
 const Technicals = {
-  render(technicalsData, pricesData) {
+  render(technicalsData, pricesData, fundamentalsData) {
     const tbody = document.getElementById('technicals-body');
     if (!technicalsData) { tbody.innerHTML = ''; return; }
 
     const rows = Object.entries(technicalsData).map(([ticker, t]) => {
       const price = this._findPrice(ticker, pricesData);
-      return { ticker, price, ...t };
+      const row = { ticker, price, ...t };
+
+
+      return row;
     });
 
     tbody.innerHTML = this._rowsHtml(rows);
