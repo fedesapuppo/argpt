@@ -51,12 +51,13 @@ const Portfolio = {
       : (last - h.avg_price) * h.shares * ccl.mark;
     const pnlPct = ((last - h.avg_price) / h.avg_price) * 100;
 
+    const costBasisUsd = isArs && h.entry_fx_rate
+      ? h.avg_price / h.entry_fx_rate
+      : (!isArs ? h.avg_price : null);
+
     let pnlUsd = null;
-    if (isArs && h.entry_fx_rate) {
-      const entryUsd = h.avg_price / h.entry_fx_rate;
-      pnlUsd = (priceUsd - entryUsd) * h.shares;
-    } else if (!isArs) {
-      pnlUsd = (last - h.avg_price) * h.shares;
+    if (costBasisUsd != null) {
+      pnlUsd = (priceUsd - costBasisUsd) * h.shares;
     }
 
     const capitalReturn = pnlPct;
@@ -73,7 +74,7 @@ const Portfolio = {
 
     return {
       index, ticker: h.ticker, type: h.type, shares: h.shares,
-      avg_price: h.avg_price, current_price: last,
+      avg_price: h.avg_price, cost_basis_usd: costBasisUsd, current_price: last,
       current_price_usd: priceUsd, current_price_ars: priceArs,
       daily_change_pct: priceData.change || 0,
       pnl_ars: pnlArs, pnl_usd: pnlUsd, pnl_pct: pnlPct,
@@ -88,7 +89,7 @@ const Portfolio = {
   _emptyHolding(h, index) {
     return {
       index, ticker: h.ticker, type: h.type, shares: h.shares,
-      avg_price: h.avg_price, current_price: null,
+      avg_price: h.avg_price, cost_basis_usd: null, current_price: null,
       current_price_usd: null, current_price_ars: null,
       daily_change_pct: 0, pnl_ars: 0, pnl_usd: null, pnl_pct: null,
       capital_return_pct: null, currency_return_pct: null,

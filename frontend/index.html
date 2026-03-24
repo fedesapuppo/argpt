@@ -35,6 +35,22 @@
     table th:hover { color: #58a6ff; }
     .sort-asc::after { content: ' ▲'; font-size: 0.7em; }
     .sort-desc::after { content: ' ▼'; font-size: 0.7em; }
+    .tip {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      top: calc(100% + 4px); white-space: nowrap;
+      background: #21262d; color: #e6edf3; border: 1px solid #30363d;
+      font-size: 0.65rem; font-weight: 400; font-family: 'IBM Plex Sans', sans-serif;
+      padding: 4px 8px; border-radius: 4px;
+      opacity: 0; pointer-events: none; transition: opacity 0.15s;
+      z-index: 50;
+    }
+    .tip::before {
+      content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+      border: 4px solid transparent; border-bottom-color: #30363d;
+    }
+    .text-left .tip { left: 0; transform: none; }
+    .text-left .tip::before { left: 12px; transform: none; }
+    th:hover .tip, td:hover .tip { opacity: 1; }
   </style>
 </head>
 <body class="font-sans min-h-screen">
@@ -143,16 +159,17 @@
         <table class="w-full text-sm font-mono tabular-nums" id="portfolio-table">
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
-              <th class="text-left py-2 px-2" data-sort="ticker">Ticker</th>
-              <th class="text-right py-2 px-2" data-sort="shares">Shares</th>
-              <th class="text-right py-2 px-2" data-sort="avg_price">Avg Price</th>
-              <th class="text-right py-2 px-2" data-sort="current_price_usd">Price USD</th>
-              <th class="text-right py-2 px-2" data-sort="daily_change_pct">Daily %</th>
-              <th class="text-right py-2 px-2" data-sort="capital_return_pct">Capital %</th>
-              <th class="text-right py-2 px-2" data-sort="currency_return_pct">Currency %</th>
-              <th class="text-right py-2 px-2" data-sort="total_return_usd_pct">USD Ret %</th>
-              <th class="text-right py-2 px-2" data-sort="pnl_usd">USD P&L</th>
-              <th class="text-right py-2 px-2" data-sort="weight_pct">Weight %</th>
+              <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol &amp; market type</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="shares">Shares<span class="tip">Number of shares held</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="avg_price">Avg ARS<span class="tip">Average purchase price in ARS</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="cost_basis_usd">Avg USD<span class="tip">Average purchase price in USD</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="current_price_usd">Price USD<span class="tip">Current market price in USD</span></th>
+
+              <th class="text-right py-2 px-2 relative" data-sort="capital_return_pct">Capital %<span class="tip">Return from asset price change</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="currency_return_pct">Currency %<span class="tip">Return from MEP rate change</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="total_return_usd_pct">USD Ret %<span class="tip">Total USD return (capital × currency)</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pnl_usd">USD P&L<span class="tip">Profit or loss in US dollars</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="weight_pct">Weight %<span class="tip">Position size as % of portfolio</span></th>
               <th class="text-center py-2 px-2 w-8"></th>
             </tr>
           </thead>
@@ -179,15 +196,15 @@
         <table class="w-full text-sm font-mono tabular-nums" id="technicals-table">
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
-              <th class="text-left py-2 px-2" data-sort="ticker">Ticker</th>
-              <th class="text-right py-2 px-2" data-sort="price">Price</th>
-              <th class="text-right py-2 px-2" data-sort="pct_below_ath">% Below ATH</th>
-              <th class="text-right py-2 px-2" data-sort="rsi14">RSI(14)</th>
-              <th class="text-right py-2 px-2" data-sort="stochastic_k">Stoch K/D</th>
-              <th class="text-center py-2 px-2" data-sort="supertrend_trend">Supertrend</th>
-              <th class="text-right py-2 px-2" data-sort="sma20">SMA20</th>
-              <th class="text-right py-2 px-2" data-sort="sma50">SMA50</th>
-              <th class="text-center py-2 px-2">Signal</th>
+              <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="price">Price<span class="tip">Current market price</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pct_below_ath">% Below ATH<span class="tip">Distance from all-time high</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="rsi14">RSI(14)<span class="tip">Relative Strength Index, 14-day. &lt;30 oversold, &gt;70 overbought</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="stochastic_k">Stoch K/D<span class="tip">Stochastic oscillator. &lt;20 oversold, &gt;80 overbought</span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="supertrend_trend">Supertrend<span class="tip">Trend direction indicator</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="sma20">SMA20<span class="tip">20-day simple moving average</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="sma50">SMA50<span class="tip">50-day simple moving average</span></th>
+              <th class="text-center py-2 px-2 relative">Signal<span class="tip">Composite technical signal</span></th>
             </tr>
           </thead>
           <tbody id="technicals-body"></tbody>
@@ -201,16 +218,16 @@
         <table class="w-full text-sm font-mono tabular-nums" id="fundamentals-table">
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
-              <th class="text-left py-2 px-2" data-sort="ticker">Ticker</th>
-              <th class="text-right py-2 px-2" data-sort="pe">P/E</th>
-              <th class="text-right py-2 px-2" data-sort="forward_pe">Fwd P/E</th>
-              <th class="text-right py-2 px-2" data-sort="pb">P/B</th>
-              <th class="text-right py-2 px-2" data-sort="roe">ROE %</th>
-              <th class="text-right py-2 px-2" data-sort="eps_growth">EPS Gr %</th>
-              <th class="text-right py-2 px-2" data-sort="dividend_yield">Div Yld %</th>
-              <th class="text-right py-2 px-2" data-sort="debt_to_equity">D/E</th>
-              <th class="text-right py-2 px-2" data-sort="profit_margin">Margin %</th>
-              <th class="text-left py-2 px-2">Sector</th>
+              <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pe">P/E<span class="tip">Price to earnings ratio (trailing)</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="forward_pe">Fwd P/E<span class="tip">Forward price to earnings (estimated)</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pb">P/B<span class="tip">Price to book value ratio</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="roe">ROE %<span class="tip">Return on equity</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="eps_growth">EPS Gr %<span class="tip">Earnings per share growth</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="dividend_yield">Div Yld %<span class="tip">Annual dividend yield</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="debt_to_equity">D/E<span class="tip">Debt to equity ratio</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="profit_margin">Margin %<span class="tip">Net profit margin</span></th>
+              <th class="text-left py-2 px-2 relative">Sector<span class="tip">Industry sector</span></th>
             </tr>
           </thead>
           <tbody id="fundamentals-body"></tbody>
