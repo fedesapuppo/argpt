@@ -36,7 +36,7 @@ const Table = {
         </td>
         <td class="py-2 px-2 text-center text-xs text-muted relative">${this._brokerLabel(h.broker)}<span class="tip">${this._brokerTip(h.broker)}</span></td>
         <td class="py-2 px-2 text-right relative">${Currency.formatNum(h.shares, h.shares % 1 ? 2 : 0)}<span class="tip">Shares held</span></td>
-        <td class="py-2 px-2 text-right relative">${Currency.formatNum(h.avg_price, 2)}<span class="tip">Avg buy price in ${isArs(h.type) ? 'ARS' : 'USD'} per share</span></td>
+        <td class="py-2 px-2 text-right relative">${h.avg_price > 0.01 ? Currency.formatNum(h.avg_price, 2) : '--'}<span class="tip">${h.avg_price > 0.01 ? 'Avg buy price in ' + (isArs(h.type) ? 'ARS' : 'USD') + ' per share' : 'Free shares from corporate action'}</span></td>
         <td class="py-2 px-2 text-right relative">${h.cost_basis_usd != null ? Currency.formatUSD(h.cost_basis_usd) : '--'}<span class="tip">${isArs(h.type) ? 'ARS price ÷ MEP at purchase date' : 'Purchase price in USD'}</span></td>
         <td class="py-2 px-2 text-right relative">${Currency.formatUSD(h.current_price_usd)}<span class="tip">${isArs(h.type) ? 'ARS price ÷ current MEP rate' : 'Current USD price'}</span></td>
 
