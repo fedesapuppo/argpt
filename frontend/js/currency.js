@@ -18,6 +18,9 @@ const Currency = {
   formatPct(value) {
     if (value == null || typeof value !== 'number' || isNaN(value)) return '--';
     const sign = value >= 0 ? '+' : '';
+    const abs = Math.abs(value);
+    if (abs >= 10000) return `${sign}${(value / 1000).toFixed(0)}K%`;
+    if (abs >= 1000) return `${sign}${(value / 1000).toFixed(1)}K%`;
     return `${sign}${value.toFixed(2)}%`;
   },
 

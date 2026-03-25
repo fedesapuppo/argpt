@@ -49,12 +49,14 @@ const Portfolio = {
     const valueUsd = h.shares * priceUsd;
     const valueArs = h.shares * priceArs;
 
-    const pnlArs = isArs
+    const freeLot = h.avg_price <= 0.01;
+
+    const pnlArs = freeLot ? 0 : isArs
       ? (last - h.avg_price) * h.shares
       : (ccl ? (last - h.avg_price) * h.shares * ccl.mark : 0);
-    const pnlPct = ((last - h.avg_price) / h.avg_price) * 100;
+    const pnlPct = freeLot ? null : ((last - h.avg_price) / h.avg_price) * 100;
 
-    const costBasisUsd = isArs && h.entry_fx_rate
+    const costBasisUsd = freeLot ? null : isArs && h.entry_fx_rate
       ? h.avg_price / h.entry_fx_rate
       : (!isArs ? h.avg_price : null);
 
@@ -67,7 +69,9 @@ const Portfolio = {
     let currencyReturn = null;
     let totalReturnUsd = null;
 
-    if (!isArs) {
+    if (freeLot) {
+      // no return calc for free shares
+    } else if (!isArs) {
       currencyReturn = 0;
       totalReturnUsd = capitalReturn;
     } else if (h.entry_fx_rate) {
