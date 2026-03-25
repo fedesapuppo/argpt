@@ -142,8 +142,10 @@ const Import = {
     const holdings = [];
 
     for (const [ticker, tickerLots] of Object.entries(byTicker)) {
-      const paid = tickerLots.filter(l => l.price > 0);
-      const free = tickerLots.filter(l => l.price <= 0);
+      const maxPrice = Math.max(...tickerLots.map(l => l.price));
+      const threshold = maxPrice * 0.01;
+      const paid = tickerLots.filter(l => l.price > threshold);
+      const free = tickerLots.filter(l => l.price <= threshold);
       const freeShares = free.reduce((s, l) => s + l.qty, 0);
 
       if (paid.length === 0) {

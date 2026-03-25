@@ -51,8 +51,10 @@ module Argpt
         by_ticker = lots.group_by { |l| l[:ticker] }
 
         by_ticker.flat_map do |ticker, ticker_lots|
-          paid = ticker_lots.select { |l| l[:price].positive? }
-          free = ticker_lots.select { |l| !l[:price].positive? }
+          max_price = ticker_lots.map { |l| l[:price] }.max
+          threshold = max_price * 0.01
+          paid = ticker_lots.select { |l| l[:price] > threshold }
+          free = ticker_lots.select { |l| l[:price] <= threshold }
           free_shares = free.sum { |l| l[:qty] }
 
           if paid.empty?
