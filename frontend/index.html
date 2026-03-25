@@ -33,6 +33,7 @@
     .tabular-nums { font-variant-numeric: tabular-nums; }
     table th { cursor: pointer; user-select: none; }
     table th:hover { color: #58a6ff; }
+    #portfolio-table thead th { position: sticky; top: 0; background: #0d1117; z-index: 10; }
     .sort-asc::after { content: ' ▲'; font-size: 0.7em; }
     .sort-desc::after { content: ' ▼'; font-size: 0.7em; }
     .tip {
@@ -174,6 +175,7 @@
               <th class="text-right py-2 px-2 relative" data-sort="capital_return_pct">Capital %<span class="tip">Price change in native currency (ARS or USD)</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="currency_return_pct">Currency %<span class="tip">MEP rate change since purchase (peso depreciation/appreciation)</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="total_return_usd_pct">USD Ret %<span class="tip">Real USD return: (1 + capital) &times; (1 + currency) &minus; 1</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="value_usd">Value USD<span class="tip">Total position value in USD (shares &times; price)</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="pnl_usd">USD P&amp;L<span class="tip">Profit or loss in US dollars</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="weight_pct">Weight %<span class="tip">Position weight as % of total portfolio value</span></th>
               <th class="text-center py-2 px-2 w-8"></th>
