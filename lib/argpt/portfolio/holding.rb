@@ -4,9 +4,9 @@ module Argpt
       VALID_TYPES = %i[cedear arg_stock us_stock].freeze
       ARS_TYPES = %i[cedear arg_stock].freeze
 
-      attr_reader :ticker, :type, :shares, :avg_price, :purchase_date, :purchase_fx_rate
+      attr_reader :ticker, :type, :shares, :avg_price, :purchase_date, :purchase_fx_rate, :broker
 
-      def initialize(ticker:, type:, shares:, avg_price:, purchase_date:, purchase_fx_rate: nil)
+      def initialize(ticker:, type:, shares:, avg_price:, purchase_date:, purchase_fx_rate: nil, broker: nil)
         raise ArgumentError, "Invalid type: #{type}" unless VALID_TYPES.include?(type)
         raise ArgumentError, "Shares must be positive" unless shares.positive?
         raise ArgumentError, "avg_price must be positive" unless avg_price.positive?
@@ -18,6 +18,7 @@ module Argpt
         @avg_price = avg_price
         @purchase_date = purchase_date
         @purchase_fx_rate = purchase_fx_rate
+        @broker = broker
         freeze
       end
 

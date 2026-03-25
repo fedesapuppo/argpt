@@ -15,9 +15,10 @@ module Argpt
         us_stock: :usd
       }.freeze
 
-      def initialize(data912:, entries:)
+      def initialize(data912:, entries:, finance_query: nil)
         @data912 = data912
         @entries = entries
+        @finance_query = finance_query
       end
 
       def call
@@ -42,9 +43,37 @@ module Argpt
               type: type
             }
           end
+
+          backfill_from_finance_query(result, type, tickers) if type == :us_stock && @finance_query
         end
 
         result
+      end
+
+      private
+
+      def backfill_from_finance_query(result, type, tickers)
+        missing = tickers.reject { |t| result.key?("#{t}:#{type}") }
+        return if missing.empty?
+
+        missing.each do |ticker|
+          quote = @finance_query.quote(ticker)
+          next unless quote
+
+          price = quote[:regularMarketPrice] || quote[:price]
+          change = quote[:regularMarketChangePercent] || 0
+          next unless price
+
+          result["#{ticker}:#{type}"] = {
+            last: price.to_f,
+            change: change.to_f,
+            volume: (quote[:regularMarketVolume] || 0).to_i,
+            currency: :usd,
+            type: type
+          }
+        rescue Argpt::GraphqlError, Argpt::HttpError => e
+          warn "  [skip price] #{ticker}: #{e.message}"
+        end
       end
     end
   end

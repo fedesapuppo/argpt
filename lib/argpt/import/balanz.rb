@@ -85,7 +85,8 @@ module Argpt
           shares:,
           avg_price: [price, 0.01].max,
           purchase_date: date,
-          purchase_fx_rate: mep
+          purchase_fx_rate: mep,
+          broker: :balanz
         )
       end
     end

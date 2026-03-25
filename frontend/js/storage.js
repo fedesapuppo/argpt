@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'argpt_holdings';
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 const Storage = {
   getHoldings() {
@@ -15,6 +15,11 @@ const Storage = {
       version: SCHEMA_VERSION,
       holdings
     }));
+  },
+
+  mergeHoldings(newHoldings, broker) {
+    const existing = this.getHoldings().filter(h => h.broker && h.broker !== broker);
+    this.saveHoldings(existing.concat(newHoldings));
   },
 
   addHolding(h) {
@@ -51,14 +56,12 @@ const Storage = {
   },
 
   _migrate(data) {
-    if (!data.version || data.version < 2) {
-      const holdings = (data.holdings || []).map(h => ({
-        ...h,
-        entry_fx_rate: h.entry_fx_rate || null
-      }));
-      this.saveHoldings(holdings);
-      return holdings;
-    }
-    return data.holdings || [];
+    const holdings = (data.holdings || []).map(h => ({
+      ...h,
+      entry_fx_rate: h.entry_fx_rate || null,
+      broker: h.broker || (h.type === 'us_stock' ? 'ib' : 'balanz')
+    }));
+    this.saveHoldings(holdings);
+    return holdings;
   }
 };

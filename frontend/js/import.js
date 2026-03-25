@@ -3,18 +3,32 @@ const Import = {
   SHEET: 'resultados_por_lotes_finales',
 
   init() {
-    const input = document.getElementById('import-file');
-    if (!input) return;
+    this._bindInput('import-balanz', (file) => this._processBalanz(file));
+    this._bindInput('import-ib', (file) => this._processIB(file));
 
+    const clearBtn = document.getElementById('clear-holdings');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        if (!confirm('Clear all holdings?')) return;
+        localStorage.removeItem('argpt_holdings');
+        App.refresh();
+        document.getElementById('import-status').textContent = 'Holdings cleared';
+      });
+    }
+  },
+
+  _bindInput(id, handler) {
+    const input = document.getElementById(id);
+    if (!input) return;
     input.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      this._processFile(file);
+      handler(file);
       input.value = '';
     });
   },
 
-  _processFile(file) {
+  _processBalanz(file) {
     const status = document.getElementById('import-status');
     status.textContent = 'Reading...';
 
@@ -34,10 +48,10 @@ const Import = {
         const rows = XLSX.utils.sheet_to_json(sheet);
         const holdings = this._perLotHoldings(rows);
 
-        Storage.saveHoldings(holdings);
+        Storage.mergeHoldings(holdings, 'balanz');
         App.refresh();
 
-        status.textContent = `Imported ${holdings.length} holdings (per-lot)`;
+        status.textContent = `Imported ${holdings.length} Balanz holdings (per-lot)`;
         status.className = 'self-center text-xs text-gain';
       } catch (err) {
         status.textContent = `Error: ${err.message}`;
@@ -45,6 +59,66 @@ const Import = {
       }
     };
     reader.readAsArrayBuffer(file);
+  },
+
+  _processIB(file) {
+    const status = document.getElementById('import-status');
+    status.textContent = 'Reading...';
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const holdings = this._parseIB(e.target.result);
+        Storage.mergeHoldings(holdings, 'ib');
+        App.refresh();
+        status.textContent = `Imported ${holdings.length} IB holdings`;
+        status.className = 'self-center text-xs text-gain';
+      } catch (err) {
+        status.textContent = `Error: ${err.message}`;
+        status.className = 'self-center text-xs text-loss';
+      }
+    };
+    reader.readAsText(file);
+  },
+
+  _parseIB(text) {
+    const lines = text.split('\n');
+    const holdings = [];
+
+    for (const line of lines) {
+      const cols = [];
+      let current = '';
+      let inQuotes = false;
+
+      for (const ch of line) {
+        if (ch === '"') { inQuotes = !inQuotes; continue; }
+        if (ch === ',' && !inQuotes) { cols.push(current.trim()); current = ''; continue; }
+        current += ch;
+      }
+      cols.push(current.trim());
+
+      if (cols[0] !== 'Open Positions') continue;
+      if (cols[1] !== 'Data' || cols[2] !== 'Summary') continue;
+      if (cols[3] !== 'Stocks') continue;
+
+      const ticker = cols[5];
+      const shares = parseFloat(cols[6]);
+      const avgPrice = parseFloat(cols[8]);
+
+      if (!ticker || !shares || !avgPrice) continue;
+
+      holdings.push({
+        ticker,
+        type: 'us_stock',
+        shares,
+        avg_price: Math.round(avgPrice * 100) / 100,
+        purchase_date: null,
+        entry_fx_rate: null,
+        broker: 'ib'
+      });
+    }
+
+    return holdings;
   },
 
   _perLotHoldings(rows) {
@@ -77,7 +151,8 @@ const Import = {
           holdings.push({
             ticker, type: tickerLots[0].type,
             shares: freeShares, avg_price: 0.01,
-            purchase_date: null, entry_fx_rate: null
+            purchase_date: null, entry_fx_rate: null,
+            broker: 'balanz'
           });
         }
         continue;
@@ -94,7 +169,8 @@ const Import = {
           shares: newShares,
           avg_price: Math.round(adjustedPrice * 100) / 100,
           purchase_date: lot.date,
-          entry_fx_rate: lot.mep > 0 ? Math.round(lot.mep * 100) / 100 : null
+          entry_fx_rate: lot.mep > 0 ? Math.round(lot.mep * 100) / 100 : null,
+          broker: 'balanz'
         });
       }
     }

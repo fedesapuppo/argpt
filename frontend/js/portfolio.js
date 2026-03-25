@@ -1,6 +1,6 @@
 const Portfolio = {
   calculate(holdings, prices, mep, ccl) {
-    if (!holdings.length || !mep || !ccl) {
+    if (!holdings.length) {
       return { holdings: [], total_value_usd: 0, total_value_ars: 0, total_pnl_usd: 0, total_pnl_ars: 0, daily_change_pct: 0, has_estimated_fx: false };
     }
 
@@ -41,14 +41,17 @@ const Portfolio = {
 
     const last = priceData.last;
     const isArs = h.type === 'cedear' || h.type === 'arg_stock';
+
+    if (isArs && (!mep || !ccl)) return this._emptyHolding(h, index);
+
     const priceUsd = isArs ? last / mep.mark : last;
-    const priceArs = isArs ? last : last * ccl.mark;
+    const priceArs = isArs ? last : (ccl ? last * ccl.mark : 0);
     const valueUsd = h.shares * priceUsd;
     const valueArs = h.shares * priceArs;
 
     const pnlArs = isArs
       ? (last - h.avg_price) * h.shares
-      : (last - h.avg_price) * h.shares * ccl.mark;
+      : (ccl ? (last - h.avg_price) * h.shares * ccl.mark : 0);
     const pnlPct = ((last - h.avg_price) / h.avg_price) * 100;
 
     const costBasisUsd = isArs && h.entry_fx_rate
@@ -73,9 +76,10 @@ const Portfolio = {
     }
 
     return {
-      index, ticker: h.ticker, type: h.type, shares: h.shares,
+      index, ticker: h.ticker, type: h.type, broker: h.broker, shares: h.shares,
       avg_price: h.avg_price, cost_basis_usd: costBasisUsd, current_price: last,
       current_price_usd: priceUsd, current_price_ars: priceArs,
+      entry_fx_rate: h.entry_fx_rate,
       daily_change_pct: priceData.change || 0,
       pnl_ars: pnlArs, pnl_usd: pnlUsd, pnl_pct: pnlPct,
       capital_return_pct: capitalReturn,
@@ -88,7 +92,7 @@ const Portfolio = {
 
   _emptyHolding(h, index) {
     return {
-      index, ticker: h.ticker, type: h.type, shares: h.shares,
+      index, ticker: h.ticker, type: h.type, broker: h.broker, shares: h.shares,
       avg_price: h.avg_price, cost_basis_usd: null, current_price: null,
       current_price_usd: null, current_price_ars: null,
       daily_change_pct: 0, pnl_ars: 0, pnl_usd: null, pnl_pct: null,

@@ -1,0 +1,15 @@
+Statement,Header,Field Name,Field Value
+Statement,Data,BrokerName,Interactive Brokers LLC
+Statement,Data,Title,Activity Statement
+Statement,Data,Period,"August 7, 2024 - August 6, 2025"
+Account Information,Header,Field Name,Field Value
+Account Information,Data,Name,Test User
+Account Information,Data,Account,U12345678
+Account Information,Data,Base Currency,USD
+Open Positions,Header,DataDiscriminator,Asset Category,Currency,Symbol,Quantity,Mult,Cost Price,Cost Basis,Close Price,Value,Unrealized P/L,Code
+Open Positions,Data,Summary,Stocks,USD,AAPL,10,1,170.50,1705.00,185.25,1852.50,147.50,
+Open Positions,Data,Summary,Stocks,USD,QQQ,40.4754,1,450.190752704,18221.650792,567.32,22962.5,4740.849207,
+Open Positions,Data,Summary,Stocks,USD,TSLA,2.28,1,261.64793114,596.557283,319.91,729.39,132.832717,
+Open Positions,Total,,Stocks,USD,,,,,20523.208075,,25544.39,5021.181924,
+Trades,Header,DataDiscriminator,Asset Category,Currency,Symbol,Date/Time,Quantity,T. Price,C. Price,Proceeds,Comm/Fee,Basis,Realized P/L,MTM P/L,Code
+Trades,Data,Order,Stocks,USD,AAPL,"2024-09-15, 10:30:00",10,170.50,170.50,-1705.00,-1.00,1705.00,0,0,

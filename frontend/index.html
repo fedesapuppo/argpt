@@ -106,8 +106,13 @@
       <div class="flex gap-3 mb-4">
         <label class="cursor-pointer bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-accent hover:text-accent transition-colors">
           Import Balanz XLSX
-          <input type="file" accept=".xlsx,.xls" id="import-file" class="hidden">
+          <input type="file" accept=".xlsx,.xls" id="import-balanz" class="hidden">
         </label>
+        <label class="cursor-pointer bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-accent hover:text-accent transition-colors">
+          Import IB CSV
+          <input type="file" accept=".csv" id="import-ib" class="hidden">
+        </label>
+        <button id="clear-holdings" class="bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-loss hover:text-loss transition-colors">Clear All</button>
         <div id="import-status" class="self-center text-xs text-muted"></div>
       </div>
 
@@ -159,17 +164,18 @@
         <table class="w-full text-sm font-mono tabular-nums" id="portfolio-table">
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
-              <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol &amp; market type</span></th>
+              <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol &amp; asset type (CEDEAR, Argentine stock, US stock)</span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="broker">Broker<span class="tip">Broker where the position is held</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="shares">Shares<span class="tip">Number of shares held</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="avg_price">Avg ARS<span class="tip">Average purchase price in ARS</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="cost_basis_usd">Avg USD<span class="tip">Average purchase price in USD</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="current_price_usd">Price USD<span class="tip">Current market price in USD</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="avg_price">Avg ARS<span class="tip">Average purchase price in ARS per share</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="cost_basis_usd">Avg USD<span class="tip">Cost basis per share in USD (ARS price &divide; MEP rate at purchase for peso assets)</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="current_price_usd">Price USD<span class="tip">Current price in USD (via MEP for peso assets)</span></th>
 
-              <th class="text-right py-2 px-2 relative" data-sort="capital_return_pct">Capital %<span class="tip">Return from asset price change</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="currency_return_pct">Currency %<span class="tip">Return from MEP rate change</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="total_return_usd_pct">USD Ret %<span class="tip">Total USD return (capital × currency)</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pnl_usd">USD P&L<span class="tip">Profit or loss in US dollars</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="weight_pct">Weight %<span class="tip">Position size as % of portfolio</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="capital_return_pct">Capital %<span class="tip">Price change in native currency (ARS or USD)</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="currency_return_pct">Currency %<span class="tip">MEP rate change since purchase (peso depreciation/appreciation)</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="total_return_usd_pct">USD Ret %<span class="tip">Real USD return: (1 + capital) &times; (1 + currency) &minus; 1</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pnl_usd">USD P&amp;L<span class="tip">Profit or loss in US dollars</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="weight_pct">Weight %<span class="tip">Position weight as % of total portfolio value</span></th>
               <th class="text-center py-2 px-2 w-8"></th>
             </tr>
           </thead>
@@ -198,13 +204,13 @@
             <tr class="text-xs text-muted border-b border-surface-border">
               <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="price">Price<span class="tip">Current market price</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pct_below_ath">% Below ATH<span class="tip">Distance from all-time high</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="rsi14">RSI(14)<span class="tip">Relative Strength Index, 14-day. &lt;30 oversold, &gt;70 overbought</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="stochastic_k">Stoch K/D<span class="tip">Stochastic oscillator. &lt;20 oversold, &gt;80 overbought</span></th>
-              <th class="text-center py-2 px-2 relative" data-sort="supertrend_trend">Supertrend<span class="tip">Trend direction indicator</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="sma20">SMA20<span class="tip">20-day simple moving average</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="sma50">SMA50<span class="tip">50-day simple moving average</span></th>
-              <th class="text-center py-2 px-2 relative">Signal<span class="tip">Composite technical signal</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pct_below_ath">% Below ATH<span class="tip">How far below the all-time high</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="rsi14">RSI(14)<span class="tip">Relative Strength Index, 14 periods. &lt;30 oversold, &gt;70 overbought</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="stochastic_k">Stoch K/D<span class="tip">Stochastic oscillator %K/%D. &lt;20 oversold, &gt;80 overbought</span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="supertrend_trend">Supertrend<span class="tip">Trend-following indicator based on ATR</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="sma20">SMA20<span class="tip">20-day simple moving average — short-term trend</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="sma50">SMA50<span class="tip">50-day simple moving average — medium-term trend</span></th>
+              <th class="text-center py-2 px-2 relative">Signal<span class="tip">Combined RSI + Stochastic signal</span></th>
             </tr>
           </thead>
           <tbody id="technicals-body"></tbody>
@@ -219,15 +225,15 @@
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
               <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pe">P/E<span class="tip">Price to earnings ratio (trailing)</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="forward_pe">Fwd P/E<span class="tip">Forward price to earnings (estimated)</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pb">P/B<span class="tip">Price to book value ratio</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="roe">ROE %<span class="tip">Return on equity</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="eps_growth">EPS Gr %<span class="tip">Earnings per share growth</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pe">P/E<span class="tip">Price to trailing earnings. Color-coded vs sector median</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="forward_pe">Fwd P/E<span class="tip">Price to estimated forward earnings</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pb">P/B<span class="tip">Price to book value</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="roe">ROE %<span class="tip">Return on equity. Color-coded vs sector median</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="eps_growth">EPS Gr %<span class="tip">Earnings per share growth YoY</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="dividend_yield">Div Yld %<span class="tip">Annual dividend yield</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="debt_to_equity">D/E<span class="tip">Debt to equity ratio</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="profit_margin">Margin %<span class="tip">Net profit margin</span></th>
-              <th class="text-left py-2 px-2 relative">Sector<span class="tip">Industry sector</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="debt_to_equity">D/E<span class="tip">Debt to equity ratio. Color-coded vs sector median</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="profit_margin">Margin %<span class="tip">Net profit margin. Color-coded vs sector median</span></th>
+              <th class="text-left py-2 px-2 relative">Sector<span class="tip">GICS sector classification</span></th>
             </tr>
           </thead>
           <tbody id="fundamentals-body"></tbody>

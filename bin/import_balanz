@@ -11,14 +11,17 @@ end
 
 holdings = Argpt::Import::Balanz.new(path:).call
 
-# Write config/holdings.yml for the pipeline
-config_path = File.join(__dir__, "..", "config", "holdings.yml")
-unique_tickers = holdings.uniq { |h| [h.ticker, h.type] }
-config = { "tickers" => unique_tickers.map { |h| { "ticker" => h.ticker, "type" => h.type.to_s } } }
-FileUtils.mkdir_p(File.dirname(config_path))
-File.write(config_path, YAML.dump(config))
+# Merge with existing holdings (keep non-Balanz holdings)
+data_dir = File.join(__dir__, "..", "frontend", "data")
+holdings_path = File.join(data_dir, "holdings.json")
 
-# Write frontend/data/holdings.json for pre-populating the UI
+existing = if File.exist?(holdings_path)
+  JSON.parse(File.read(holdings_path), symbolize_names: true)
+    .reject { |h| h[:broker] == "balanz" }
+else
+  []
+end
+
 holdings_json = holdings.map do |h|
   {
     ticker: h.ticker,
@@ -26,13 +29,28 @@ holdings_json = holdings.map do |h|
     shares: h.shares,
     avg_price: h.avg_price.round(2),
     purchase_date: h.purchase_date&.to_s,
-    entry_fx_rate: h.purchase_fx_rate&.round(2)
+    entry_fx_rate: h.purchase_fx_rate&.round(2),
+    broker: h.broker.to_s
   }
 end
 
-data_dir = File.join(__dir__, "..", "frontend", "data")
+merged = existing + holdings_json
 FileUtils.mkdir_p(data_dir)
-File.write(File.join(data_dir, "holdings.json"), JSON.pretty_generate(holdings_json))
+File.write(holdings_path, JSON.pretty_generate(merged))
+
+# Merge config/holdings.yml
+config_path = File.join(__dir__, "..", "config", "holdings.yml")
+existing_config = if File.exist?(config_path)
+  YAML.safe_load(File.read(config_path)) || {}
+else
+  {}
+end
+
+existing_tickers = (existing_config["tickers"] || []).reject { |t| t["broker"] == "balanz" }
+new_tickers = holdings.uniq { |h| [h.ticker, h.type] }.map { |h| { "ticker" => h.ticker, "type" => h.type.to_s, "broker" => "balanz" } }
+config = { "tickers" => existing_tickers + new_tickers }
+FileUtils.mkdir_p(File.dirname(config_path))
+File.write(config_path, YAML.dump(config))
 
 # Print summary
 cedears = holdings.select { |h| h.type == :cedear }

@@ -20,18 +20,20 @@ module Argpt
           h[e[:ticker]] = e if !h.key?(e[:ticker]) || e[:type] == :us_stock
         end
 
-        mep = Portfolio::ExchangeRate.best_mep(@data912.mep_rates)
-        ccl = Portfolio::ExchangeRate.best_ccl(@data912.ccl_rates)
-        prices = PriceFetcher.new(data912: @data912, entries:).call
+        mep_data = @data912.mep_rates
+        ccl_data = @data912.ccl_rates
+        mep = mep_data.empty? ? nil : Portfolio::ExchangeRate.best_mep(mep_data)
+        ccl = ccl_data.empty? ? nil : Portfolio::ExchangeRate.best_ccl(ccl_data)
+
+        prices = PriceFetcher.new(data912: @data912, entries:, finance_query: @finance_query).call
 
         unique_tickers = entry_by_ticker.keys
         technicals = fetch_technicals(unique_tickers, entry_by_ticker)
         fundamentals = fetch_fundamentals(unique_tickers, entry_by_ticker)
 
-        exchange_rates = {
-          mep: { ticker: mep.ticker, bid: mep.bid, ask: mep.ask, mark: mep.mark },
-          ccl: { ticker: ccl.ticker, bid: ccl.bid, ask: ccl.ask, mark: ccl.mark }
-        }
+        exchange_rates = {}
+        exchange_rates[:mep] = { ticker: mep.ticker, bid: mep.bid, ask: mep.ask, mark: mep.mark } if mep
+        exchange_rates[:ccl] = { ticker: ccl.ticker, bid: ccl.bid, ask: ccl.ask, mark: ccl.mark } if ccl
 
         Writer.new(output_dir: @output_dir).call(
           exchange_rates:, prices:, technicals:, fundamentals:
