@@ -1,14 +1,20 @@
 module Argpt
   module Technicals
     class Analyzer
-      def initialize(indicators:, historical: nil)
+      def initialize(indicators:, historical: nil, fifty_two_week_high: nil, current_price: nil)
         @indicators = indicators
         @historical = historical
+        @fifty_two_week_high = fifty_two_week_high
+        @current_price = current_price
       end
 
       def call
         result = extract_indicators
-        result.merge!(compute_ath) if @historical.is_a?(Array) && @historical.any?
+        if @historical.is_a?(Array) && @historical.any?
+          result.merge!(compute_ath)
+        elsif @fifty_two_week_high&.positive? && @current_price
+          result.merge!(compute_ath_from_52wk)
+        end
         result
       end
 
@@ -48,6 +54,11 @@ module Argpt
         pct_below = ath&.positive? && current_close ? (ath - current_close) / ath * 100 : nil
 
         { ath:, pct_below_ath: pct_below }
+      end
+
+      def compute_ath_from_52wk
+        pct_below = (@fifty_two_week_high - @current_price) / @fifty_two_week_high * 100
+        { ath: @fifty_two_week_high, pct_below_ath: pct_below }
       end
     end
   end

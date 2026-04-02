@@ -72,6 +72,7 @@
       <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-accent text-white" data-tab="portfolio">Portfolio</button>
       <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="technicals">Technicals</button>
       <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="fundamentals">Fundamentals</button>
+      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="glossary">Glossary</button>
     </div>
   </nav>
 
@@ -168,14 +169,14 @@
               <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol &amp; asset type (CEDEAR, Argentine stock, US stock)</span></th>
               <th class="text-center py-2 px-2 relative" data-sort="broker">Broker<span class="tip">Broker where the position is held</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="shares">Shares<span class="tip">Number of shares held</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="avg_price">Avg ARS<span class="tip">Average purchase price in ARS per share</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="cost_basis_usd">Avg USD<span class="tip">Cost basis per share in USD (ARS price &divide; MEP rate at purchase for peso assets)</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="current_price_usd">Price USD<span class="tip">Current price in USD (via MEP for peso assets)</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="avg_price">Avg ARS<span class="tip">Avg purchase price in ARS per share</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="cost_basis_usd">Avg USD<span class="tip">Avg purchase price in USD per share (ARS price &divide; MEP rate at purchase for Argentine assets)</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="current_price_usd">Price USD<span class="tip">Current price in USD (via MEP for Argentine assets)</span></th>
 
-              <th class="text-right py-2 px-2 relative" data-sort="capital_return_pct">Capital %<span class="tip">Price change in native currency (ARS or USD)</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="capital_return_pct">Price %<span class="tip">Price change in native currency since purchase</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="currency_return_pct">Currency %<span class="tip">MEP rate change since purchase (peso depreciation/appreciation)</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="total_return_usd_pct">USD Ret %<span class="tip">Real USD return: (1 + capital) &times; (1 + currency) &minus; 1</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="value_usd">Value USD<span class="tip">Total position value in USD (shares &times; price)</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="total_return_usd_pct">USD Ret %<span class="tip">Combined price and currency return in USD</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="value_usd">Value USD<span class="tip">Total position value in USD</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="pnl_usd">USD P&amp;L<span class="tip">Profit or loss in US dollars</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="weight_pct">Weight %<span class="tip">Position weight as % of total portfolio value</span></th>
               <th class="text-center py-2 px-2 w-8"></th>
@@ -185,17 +186,6 @@
         </table>
         <p id="empty-state" class="text-center text-muted py-8 text-sm">No holdings yet. Add one above to get started.</p>
       </div>
-
-      <!-- Methodology disclosure -->
-      <details class="mt-6 text-xs text-muted">
-        <summary class="cursor-pointer hover:text-white">How USD returns are calculated</summary>
-        <div class="mt-2 p-3 bg-surface-secondary rounded border border-surface-border space-y-2">
-          <p><strong class="text-white">CEDEARs & Arg Stocks:</strong> USD value = ARS price / MEP rate. Entry cost = purchase ARS price / MEP rate at purchase. This reflects the actual dollars you'd get via the MEP bond operation.</p>
-          <p><strong class="text-white">US Stocks:</strong> Already priced in USD. No FX conversion needed.</p>
-          <p><strong class="text-white">Return Decomposition:</strong> Capital return = asset price change in native currency. Currency return = MEP rate change since purchase. Total USD return = (1 + capital) × (1 + currency) - 1.</p>
-          <p>MEP rate source: AL30 bond pair via Data912. CCL rate used for displaying US stocks in ARS.</p>
-        </div>
-      </details>
     </section>
 
     <!-- Technicals Tab -->
@@ -204,15 +194,15 @@
         <table class="w-full text-sm font-mono tabular-nums" id="technicals-table">
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
-              <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="price">Price<span class="tip">Current market price</span></th>
+              <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol &amp; asset type (CEDEAR, Argentine stock, US stock)</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="price">Price USD<span class="tip">Current price in USD</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="pct_below_ath">% Below ATH<span class="tip">How far below the all-time high</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="rsi14">RSI(14)<span class="tip">Relative Strength Index, 14 periods. &lt;30 oversold, &gt;70 overbought</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="stochastic_k">Stoch K/D<span class="tip">Stochastic oscillator %K/%D. &lt;20 oversold, &gt;80 overbought</span></th>
-              <th class="text-center py-2 px-2 relative" data-sort="supertrend_trend">Supertrend<span class="tip">Trend-following indicator based on ATR</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="sma20">SMA20<span class="tip">20-day simple moving average — short-term trend</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="sma50">SMA50<span class="tip">50-day simple moving average — medium-term trend</span></th>
-              <th class="text-center py-2 px-2 relative">Signal<span class="tip">Combined RSI + Stochastic signal</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="rsi14">RSI(14)<span class="tip">Relative Strength Index, 14 periods</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="stochastic_k">Stoch K/D<span class="tip">Stochastic oscillator</span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="supertrend_trend">Supertrend<span class="tip">Trend-following indicator</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="sma20">SMA20<span class="tip">20-day simple moving average</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="sma50">SMA50<span class="tip">50-day simple moving average</span></th>
+              <th class="text-center py-2 px-2 relative">Signal<span class="tip">Combined momentum signal</span></th>
             </tr>
           </thead>
           <tbody id="technicals-body"></tbody>
@@ -226,21 +216,105 @@
         <table class="w-full text-sm font-mono tabular-nums" id="fundamentals-table">
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
-              <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pe">P/E<span class="tip">Price to trailing earnings. Color-coded vs sector median</span></th>
+              <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol &amp; asset type (CEDEAR, Argentine stock, US stock)</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pe">P/E<span class="tip">Price to trailing earnings</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="forward_pe">Fwd P/E<span class="tip">Price to estimated forward earnings</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="pb">P/B<span class="tip">Price to book value</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="roe">ROE %<span class="tip">Return on equity. Color-coded vs sector median</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="roe">ROE %<span class="tip">Return on equity</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="eps_growth">EPS Gr %<span class="tip">Earnings per share growth YoY</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="dividend_yield">Div Yld %<span class="tip">Annual dividend yield</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="debt_to_equity">D/E<span class="tip">Debt to equity ratio. Color-coded vs sector median</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="profit_margin">Margin %<span class="tip">Net profit margin. Color-coded vs sector median</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="debt_to_equity">D/E<span class="tip">Debt to equity ratio</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="profit_margin">Margin %<span class="tip">Net profit margin</span></th>
               <th class="text-left py-2 px-2 relative">Sector<span class="tip">GICS sector classification</span></th>
             </tr>
           </thead>
           <tbody id="fundamentals-body"></tbody>
         </table>
       </div>
+    </section>
+
+    <!-- Glossary Tab -->
+    <section id="tab-glossary" class="hidden text-sm text-muted space-y-6">
+
+      <!-- Asset Types & FX -->
+      <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
+        <h3 class="text-white font-medium text-base">Asset Types & Currency Conversion</h3>
+        <div class="space-y-2">
+          <p><strong class="text-white">CEDEAR</strong> — Argentine Depositary Receipt. Local wrapper for US stocks, priced in ARS on BYMA. USD value derived via MEP rate.</p>
+          <p><strong class="text-white">Argentine Stock</strong> — Equity listed on BYMA, priced in ARS. USD value derived via MEP rate.</p>
+          <p><strong class="text-white">US Stock</strong> — Equity listed on NYSE/NASDAQ, priced in USD. No currency conversion needed.</p>
+          <p><strong class="text-white">MEP (Dolar MEP)</strong> — Implicit USD exchange rate obtained via local bond pair trades (AL30/AL30D). Used to convert ARS-priced assets to USD. Source: Data912.</p>
+          <p><strong class="text-white">CCL (Dolar CCL)</strong> — Implicit USD rate via ADR arbitrage (settles abroad). Used to display US stocks in ARS.</p>
+        </div>
+      </div>
+
+      <!-- Portfolio Columns -->
+      <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
+        <h3 class="text-white font-medium text-base">Portfolio</h3>
+        <div class="space-y-2">
+          <p><strong class="text-white">Avg ARS</strong> — Average purchase price in ARS per share. Only shown for Argentine assets (CEDEARs, Arg stocks).</p>
+          <p><strong class="text-white">Avg USD</strong> — Average purchase price in USD per share.<br>
+            Argentine assets: <code class="text-accent">avg_price_ars &divide; entry_mep_rate</code><br>
+            US stocks: the purchase price itself (already in USD).</p>
+          <p><strong class="text-white">Price USD</strong> — Current market price in USD.<br>
+            Argentine assets: <code class="text-accent">current_price_ars &divide; current_mep_rate</code><br>
+            US stocks: the market price itself.</p>
+          <p><strong class="text-white">Price %</strong> — Price change since purchase in the asset's native currency.<br>
+            <code class="text-accent">(current_price &minus; avg_price) &divide; avg_price &times; 100</code></p>
+          <p><strong class="text-white">Currency %</strong> — Change in the MEP rate since purchase, reflecting peso depreciation or appreciation. Only applies to Argentine assets.<br>
+            <code class="text-accent">(entry_mep_rate &divide; current_mep_rate &minus; 1) &times; 100</code></p>
+          <p><strong class="text-white">USD Ret %</strong> — Total return in USD, combining price and currency effects. Compounding avoids overstating or understating the real USD result.<br>
+            <code class="text-accent">(1 + price%) &times; (1 + currency%) &minus; 1</code></p>
+          <p><strong class="text-white">Value USD</strong> — Total position value in USD.<br>
+            <code class="text-accent">shares &times; price_usd</code></p>
+          <p><strong class="text-white">USD P&L</strong> — Profit or loss in US dollars.<br>
+            <code class="text-accent">(price_usd &minus; avg_usd) &times; shares</code></p>
+          <p><strong class="text-white">Weight %</strong> — Position size as a percentage of total portfolio value.<br>
+            <code class="text-accent">value_usd &divide; total_portfolio_usd &times; 100</code></p>
+        </div>
+      </div>
+
+      <!-- Technicals Columns -->
+      <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
+        <h3 class="text-white font-medium text-base">Technicals</h3>
+        <div class="space-y-2">
+          <p><strong class="text-white">% Below ATH</strong> — How far the current price is below its all-time high.<br>
+            <code class="text-accent">(price &divide; all_time_high &minus; 1) &times; 100</code></p>
+          <p><strong class="text-white">RSI(14)</strong> — Relative Strength Index over 14 periods. Measures momentum by comparing average gains vs average losses. Below 30 is oversold, above 70 is overbought.<br>
+            <code class="text-accent">100 &minus; 100 &divide; (1 + avg_gain &divide; avg_loss)</code></p>
+          <p><strong class="text-white">Stoch K/D</strong> — Stochastic oscillator. %K measures where the price closed relative to the high-low range over 14 periods. %D is a 3-period SMA of %K. Below 20 is oversold, above 80 is overbought.<br>
+            <code class="text-accent">%K = (close &minus; low₁₄) &divide; (high₁₄ &minus; low₁₄) &times; 100</code></p>
+          <p><strong class="text-white">Supertrend</strong> — Trend-following indicator based on Average True Range (ATR). Price above the band = uptrend, below = downtrend.<br>
+            <code class="text-accent">upper = (high + low) &divide; 2 + multiplier &times; ATR</code></p>
+          <p><strong class="text-white">SMA20 / SMA50</strong> — Simple moving averages. Sum of closing prices over N days divided by N.<br>
+            <code class="text-accent">SMA(N) = (close₁ + close₂ + &hellip; + closeₙ) &divide; N</code></p>
+          <p><strong class="text-white">Signal</strong> — Combined signal derived from RSI and Stochastic indicators. Flags oversold/overbought when both indicators agree.</p>
+        </div>
+      </div>
+
+      <!-- Fundamentals Columns -->
+      <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
+        <h3 class="text-white font-medium text-base">Fundamentals</h3>
+        <div class="space-y-2">
+          <p><strong class="text-white">P/E</strong> — Price to trailing twelve-month earnings. Color-coded relative to sector median.<br>
+            <code class="text-accent">share_price &divide; earnings_per_share</code></p>
+          <p><strong class="text-white">Fwd P/E</strong> — Price to estimated forward earnings.<br>
+            <code class="text-accent">share_price &divide; estimated_future_eps</code></p>
+          <p><strong class="text-white">P/B</strong> — Price to book value per share.<br>
+            <code class="text-accent">share_price &divide; book_value_per_share</code></p>
+          <p><strong class="text-white">ROE %</strong> — Return on equity. Measures how efficiently the company generates profit from shareholder equity. Color-coded vs sector median.<br>
+            <code class="text-accent">net_income &divide; shareholder_equity &times; 100</code></p>
+          <p><strong class="text-white">EPS Gr %</strong> — Year-over-year earnings per share growth.<br>
+            <code class="text-accent">(eps_current &minus; eps_prior) &divide; |eps_prior| &times; 100</code></p>
+          <p><strong class="text-white">Div Yld %</strong> — Annual dividend yield as a percentage of share price.<br>
+            <code class="text-accent">annual_dividends &divide; share_price &times; 100</code></p>
+          <p><strong class="text-white">D/E</strong> — Debt to equity ratio. Measures financial leverage. Color-coded vs sector median.<br>
+            <code class="text-accent">total_debt &divide; shareholder_equity</code></p>
+          <p><strong class="text-white">Margin %</strong> — Net profit margin. Color-coded vs sector median.<br>
+            <code class="text-accent">net_income &divide; revenue &times; 100</code></p>
+        </div>
+      </div>
+
     </section>
   </main>
 

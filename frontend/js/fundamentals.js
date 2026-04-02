@@ -1,10 +1,13 @@
 const Fundamentals = {
-  render(fundamentalsData) {
+  render(fundamentalsData, holdings) {
     const tbody = document.getElementById('fundamentals-body');
     if (!fundamentalsData) { tbody.innerHTML = ''; return; }
 
+    const typeMap = {};
+    (holdings || []).forEach(h => { typeMap[h.ticker] = h.type; });
+
     const rows = Object.entries(fundamentalsData).map(([ticker, f]) => ({
-      ticker, ...f
+      ticker, type: typeMap[ticker], ...f
     }));
 
     tbody.innerHTML = rows.map(r => this._renderRow(r)).join('');
@@ -25,7 +28,11 @@ const Fundamentals = {
     const sec = r.sector || 'its sector';
     return `
       <tr class="border-b border-surface-border/50 hover:bg-surface-secondary/50">
-        <td class="py-2 px-2 text-left font-medium text-white">${Table._esc(r.ticker)}</td>
+        <td class="py-2 px-2 text-left relative">
+          <span class="text-white font-medium">${Table._esc(r.ticker)}</span>
+          ${r.type ? '<span class="text-[10px] text-muted ml-1">' + Table._typeLabel(r.type) + '</span>' : ''}
+          <span class="tip">${Table._esc(r.ticker)}${r.type ? ' · ' + Table._typeTip(r.type) : ''}</span>
+        </td>
         <td class="py-2 px-2 text-right relative ${Currency.thresholdClass(th.pe)}">${Currency.formatNum(r.pe, 1)}<span class="tip">${this._thresholdTip(th.pe, 'P/E', sec)}</span></td>
         <td class="py-2 px-2 text-right relative">${Currency.formatNum(r.forward_pe, 1)}<span class="tip">Expected P/E based on analyst estimates</span></td>
         <td class="py-2 px-2 text-right relative">${Currency.formatNum(r.pb, 1)}<span class="tip">Price relative to book value</span></td>

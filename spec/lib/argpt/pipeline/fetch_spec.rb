@@ -107,6 +107,27 @@ RSpec.describe Argpt::Pipeline::Fetch do
       config_file.close!
     end
 
+    it "populates pct_below_ath for US stocks from fifty_two_week_high" do
+      output_dir = Dir.mktmpdir
+      config_file = write_config("tickers:\n  - ticker: AAPL\n    type: us_stock\n")
+      data912 = stub_data912
+      finance_query = stub_finance_query
+
+      Argpt::Pipeline::Fetch.new(
+        config_path: config_file.path,
+        output_dir:,
+        data912:,
+        finance_query:
+      ).call
+
+      data = parse_json(output_dir, "technicals.json")
+      expected = (288.62 - 251.12) / 288.62 * 100
+      expect(data[:AAPL][:pct_below_ath]).to be_within(0.01).of(expected)
+    ensure
+      FileUtils.rm_rf(output_dir)
+      config_file.close!
+    end
+
     it "returns a summary hash" do
       output_dir = Dir.mktmpdir
       config_file = write_config("tickers:\n  - ticker: AAPL\n    type: us_stock\n")

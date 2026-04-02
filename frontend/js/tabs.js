@@ -5,7 +5,7 @@ const Tabs = {
     });
 
     const hash = window.location.hash.replace('#', '');
-    if (['portfolio', 'technicals', 'fundamentals'].includes(hash)) {
+    if (['portfolio', 'technicals', 'fundamentals', 'glossary'].includes(hash)) {
       this.switchTo(hash);
     }
   },

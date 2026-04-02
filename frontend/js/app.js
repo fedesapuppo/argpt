@@ -54,8 +54,8 @@ const App = {
     const warning = document.getElementById('fx-warning');
     warning.classList.toggle('hidden', !result.has_estimated_fx);
 
-    Technicals.render(technicals, prices);
-    Fundamentals.render(fundamentals);
+    Technicals.render(technicals, prices, holdings, exchangeRates?.mep);
+    Fundamentals.render(fundamentals, holdings);
   },
 
   _updateSummary(result) {

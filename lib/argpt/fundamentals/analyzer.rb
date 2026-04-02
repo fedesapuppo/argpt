@@ -41,6 +41,7 @@ module Argpt
           operating_margin:,
           sector: @quote[:sector],
           industry: @quote[:industry],
+          current_price: @quote[:regularMarketPrice],
           fifty_two_week_high: @quote[:fiftyTwoWeekHigh],
           fifty_two_week_low: @quote[:fiftyTwoWeekLow],
           market_cap: @quote[:marketCap],

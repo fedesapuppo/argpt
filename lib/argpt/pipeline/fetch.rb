@@ -28,8 +28,8 @@ module Argpt
         prices = PriceFetcher.new(data912: @data912, entries:, finance_query: @finance_query).call
 
         unique_tickers = entry_by_ticker.keys
-        technicals = fetch_technicals(unique_tickers, entry_by_ticker)
         fundamentals = fetch_fundamentals(unique_tickers, entry_by_ticker)
+        technicals = fetch_technicals(unique_tickers, entry_by_ticker, fundamentals)
 
         exchange_rates = {}
         exchange_rates[:mep] = { ticker: mep.ticker, bid: mep.bid, ask: mep.ask, mark: mep.mark } if mep
@@ -48,7 +48,7 @@ module Argpt
         entry[:type] == :arg_stock ? "#{ticker}.BA" : ticker
       end
 
-      def fetch_technicals(tickers, entry_by_ticker)
+      def fetch_technicals(tickers, entry_by_ticker, fundamentals)
         tickers.each_with_object({}) do |ticker, result|
           entry = entry_by_ticker[ticker]
           fq_sym = fq_symbol(ticker, entry)
@@ -56,8 +56,14 @@ module Argpt
           indicators = raw[:indicators] || raw
 
           historical = fetch_historical(ticker, entry[:type])
+          fund = fundamentals[ticker]
 
-          result[ticker] = Technicals::Analyzer.new(indicators:, historical:).call
+          result[ticker] = Technicals::Analyzer.new(
+            indicators:,
+            historical:,
+            fifty_two_week_high: fund&.dig(:fifty_two_week_high),
+            current_price: fund&.dig(:current_price)
+          ).call
         rescue Argpt::GraphqlError, Argpt::HttpError => e
           warn "  [skip technicals] #{ticker}: #{e.message}"
         end

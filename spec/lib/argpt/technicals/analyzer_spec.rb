@@ -108,4 +108,40 @@ RSpec.describe Argpt::Technicals::Analyzer do
       expect(result[:pct_below_ath]).to be_nil
     end
   end
+
+  describe "52-week high fallback" do
+    it "computes pct_below_ath from fifty_two_week_high when no historical data" do
+      result = Argpt::Technicals::Analyzer.new(
+        indicators:,
+        fifty_two_week_high: 288.62,
+        current_price: 251.12
+      ).call
+
+      expected = (288.62 - 251.12) / 288.62 * 100
+      expect(result[:ath]).to eq(288.62)
+      expect(result[:pct_below_ath]).to be_within(0.01).of(expected)
+    end
+
+    it "prefers historical data over fifty_two_week_high" do
+      result = Argpt::Technicals::Analyzer.new(
+        indicators:,
+        historical:,
+        fifty_two_week_high: 288.62,
+        current_price: 251.12
+      ).call
+
+      expect(result[:ath]).to eq(5300.0)
+    end
+
+    it "returns nil when fifty_two_week_high is nil and no historical" do
+      result = Argpt::Technicals::Analyzer.new(
+        indicators:,
+        fifty_two_week_high: nil,
+        current_price: 251.12
+      ).call
+
+      expect(result[:ath]).to be_nil
+      expect(result[:pct_below_ath]).to be_nil
+    end
+  end
 end
