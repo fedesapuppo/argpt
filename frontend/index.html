@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARGPT — Argentine Portfolio Tracker</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -58,9 +60,12 @@
   <!-- Header -->
   <header class="border-b border-surface-border px-6 py-4">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div>
-        <h1 class="text-xl font-semibold tracking-tight">ARGPT</h1>
-        <p class="text-xs text-muted">Argentine Portfolio Tracker</p>
+      <div class="flex items-center gap-3">
+        <img src="argpt-logo.png" alt="ARGPT" class="w-10 h-10 rounded-lg">
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight">ARGPT</h1>
+          <p class="text-xs text-muted">Argentine Portfolio Tracker</p>
+        </div>
       </div>
       <div class="text-xs text-muted font-mono" id="last-updated"></div>
     </div>
