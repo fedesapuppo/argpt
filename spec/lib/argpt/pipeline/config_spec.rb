@@ -36,6 +36,30 @@ RSpec.describe Argpt::Pipeline::Config do
         expect { config.call }.to raise_error(Errno::ENOENT)
       end
     end
+
+    context "when YAML is missing tickers key" do
+      it "raises an error" do
+        config = config_from("other_key: value\n")
+
+        expect { config.call }.to raise_error(Argpt::Error, /missing.*tickers/i)
+      end
+    end
+
+    context "when tickers is not an array" do
+      it "raises an error" do
+        config = config_from("tickers: not_an_array\n")
+
+        expect { config.call }.to raise_error(Argpt::Error, /tickers.*array/i)
+      end
+    end
+
+    context "when YAML is empty" do
+      it "raises an error" do
+        config = config_from("")
+
+        expect { config.call }.to raise_error(Argpt::Error, /missing.*tickers/i)
+      end
+    end
   end
 
   describe "#by_type" do

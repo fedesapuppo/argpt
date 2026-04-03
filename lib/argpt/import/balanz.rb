@@ -9,6 +9,8 @@ module Argpt
         "Acciones" => :arg_stock
       }.freeze
 
+      REQUIRED_COLUMNS = %w[Cantidad Fecha Precio\ Compra Ticker Tipo DolarMEP].freeze
+
       def initialize(path:)
         @path = path
       end
@@ -24,19 +26,31 @@ module Argpt
         xlsx = Roo::Spreadsheet.open(@path)
         sheet = xlsx.sheet(SHEET)
 
+        col = build_column_index(sheet.row(1))
+
         sheet.drop(1).filter_map do |row|
-          tipo = row[9]
+          tipo = row[col["Tipo"]]
           next unless TYPE_MAP.key?(tipo)
 
           {
-            ticker: row[8],
+            ticker: row[col["Ticker"]],
             type: TYPE_MAP.fetch(tipo),
-            qty: row[0].to_f,
-            price: row[7].to_f,
-            date: parse_date(row[2]),
-            mep: row[11].to_f
+            qty: row[col["Cantidad"]].to_f,
+            price: row[col["Precio Compra"]].to_f,
+            date: parse_date(row[col["Fecha"]]),
+            mep: row[col["DolarMEP"]].to_f
           }
         end
+      end
+
+      def build_column_index(header_row)
+        index = {}
+        header_row.each_with_index { |name, i| index[name] = i }
+
+        missing = REQUIRED_COLUMNS - index.keys
+        raise Argpt::Error, "Missing columns in spreadsheet: #{missing.join(', ')}" if missing.any?
+
+        index
       end
 
       def parse_date(val)

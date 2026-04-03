@@ -4,8 +4,8 @@ RSpec.describe "Portfolio integration" do
   it "calculates a mixed portfolio with composite price keys" do
     mep_data = JSON.parse(load_fixture("data912_mep.json"), symbolize_names: true)
     ccl_data = JSON.parse(load_fixture("data912_ccl.json"), symbolize_names: true)
-    mep = Argpt::Portfolio::ExchangeRate.best_mep(mep_data)
-    ccl = Argpt::Portfolio::ExchangeRate.best_ccl(ccl_data)
+    mep = Argpt::Portfolio::ExchangeRate.best(mep_data)
+    ccl = Argpt::Portfolio::ExchangeRate.best(ccl_data)
 
     expect(mep.mark).to eq(1177.50)
     expect(ccl.mark).to eq(1207.50)

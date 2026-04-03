@@ -75,5 +75,19 @@ RSpec.describe Argpt::Import::Balanz do
       expect(ggal_lots.first.purchase_date).to eq(Date.new(2021, 9, 15))
       expect(ggal_lots.last.purchase_date).to eq(Date.new(2024, 1, 10))
     end
+
+    context "when spreadsheet is missing required columns" do
+      it "raises an error listing missing columns" do
+        xlsx = double("xlsx")
+        sheet = double("sheet")
+        allow(Roo::Spreadsheet).to receive(:open).and_return(xlsx)
+        allow(xlsx).to receive(:sheet).with("resultados_por_lotes_finales").and_return(sheet)
+        allow(sheet).to receive(:row).with(1).and_return(["Cantidad", "Descripcion"])
+        allow(sheet).to receive(:drop).with(1).and_return([])
+
+        expect { Argpt::Import::Balanz.new(path: "fake.xlsx").call }
+          .to raise_error(Argpt::Error, /missing columns.*Ticker/i)
+      end
+    end
   end
 end
