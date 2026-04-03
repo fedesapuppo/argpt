@@ -10,19 +10,20 @@ const Import = {
     if (sampleBtn) {
       sampleBtn.addEventListener('click', () => {
         Storage.saveHoldings(this._sampleHoldings());
+        App._sampleMode = true;
         App.refresh();
-        document.getElementById('import-status').textContent = 'Sample portfolio loaded';
-        document.getElementById('import-status').className = 'self-center text-xs text-gain';
+        Toast.success(I18n.t('import.sample_loaded'));
       });
     }
 
     const clearBtn = document.getElementById('clear-holdings');
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
-        if (!confirm('Clear all holdings?')) return;
+        if (!confirm(I18n.t('import.clear_confirm'))) return;
         localStorage.removeItem('argpt_holdings');
+        App._sampleMode = false;
         App.refresh();
-        document.getElementById('import-status').textContent = 'Holdings cleared';
+        Toast.info(I18n.t('import.cleared'));
       });
     }
   },
@@ -39,8 +40,7 @@ const Import = {
   },
 
   _processBalanz(file) {
-    const status = document.getElementById('import-status');
-    status.textContent = 'Reading...';
+    Toast.info(I18n.t('import.reading'));
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -50,8 +50,7 @@ const Import = {
         const sheet = wb.Sheets[this.SHEET];
 
         if (!sheet) {
-          status.textContent = `Sheet "${this.SHEET}" not found. Sheets: ${wb.SheetNames.join(', ')}`;
-          status.className = 'self-center text-xs text-loss';
+          Toast.error(I18n.t('import.sheet_not_found', { sheet: this.SHEET, sheets: wb.SheetNames.join(', ') }));
           return;
         }
 
@@ -59,33 +58,30 @@ const Import = {
         const holdings = this._perLotHoldings(rows);
 
         Storage.mergeHoldings(holdings, 'balanz');
+        App._sampleMode = false;
         App.refresh();
 
-        status.textContent = `Imported ${holdings.length} Balanz holdings (per-lot)`;
-        status.className = 'self-center text-xs text-gain';
+        Toast.success(I18n.t('import.balanz_success', { count: holdings.length }));
       } catch (err) {
-        status.textContent = `Error: ${err.message}`;
-        status.className = 'self-center text-xs text-loss';
+        Toast.error(`Error: ${err.message}`);
       }
     };
     reader.readAsArrayBuffer(file);
   },
 
   _processIB(file) {
-    const status = document.getElementById('import-status');
-    status.textContent = 'Reading...';
+    Toast.info(I18n.t('import.reading'));
 
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const holdings = this._parseIB(e.target.result);
         Storage.mergeHoldings(holdings, 'ib');
+        App._sampleMode = false;
         App.refresh();
-        status.textContent = `Imported ${holdings.length} IB holdings`;
-        status.className = 'self-center text-xs text-gain';
+        Toast.success(I18n.t('import.ib_success', { count: holdings.length }));
       } catch (err) {
-        status.textContent = `Error: ${err.message}`;
-        status.className = 'self-center text-xs text-loss';
+        Toast.error(`Error: ${err.message}`);
       }
     };
     reader.readAsText(file);

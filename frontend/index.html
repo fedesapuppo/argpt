@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ARGPT — Argentine Portfolio Tracker</title>
+  <title>ARGPT — Monitor de Portafolio Argentino</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,6 +66,7 @@
     nav .brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text); }
     nav .brand img { width: 36px; height: 36px; border-radius: 8px; }
     nav .brand span { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 1.1rem; letter-spacing: 0.05em; }
+    nav .nav-right { display: flex; align-items: center; gap: 0.75rem; }
     nav .cta {
       display: inline-flex; align-items: center; gap: 0.5rem;
       padding: 0.5rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500;
@@ -73,6 +74,13 @@
       transition: background 0.2s, transform 0.15s;
     }
     nav .cta:hover { background: #79bbff; transform: translateY(-1px); }
+    .lang-toggle {
+      padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600;
+      font-family: 'JetBrains Mono', monospace; letter-spacing: 0.08em;
+      background: transparent; color: var(--muted); border: 1px solid var(--border);
+      cursor: pointer; transition: color 0.2s, border-color 0.2s;
+    }
+    .lang-toggle:hover { color: var(--text); border-color: var(--muted); }
 
     /* --- Hero --- */
     .hero {
@@ -268,22 +276,24 @@
         <img src="argpt-logo.png" alt="ARGPT">
         <span>ARGPT</span>
       </a>
-      <a href="dashboard.html" class="cta">Open Dashboard &rarr;</a>
+      <div class="nav-right">
+        <button class="lang-toggle" onclick="I18n.setLang(I18n.lang() === 'es' ? 'en' : 'es'); location.reload();">ENGLISH</button>
+        <a href="dashboard.html" class="cta" data-i18n="nav.open_dashboard">Abrir Dashboard &rarr;</a>
+      </div>
     </div>
   </nav>
 
   <!-- Hero -->
   <section class="hero container">
     <img src="argpt-logo.png" alt="ARGPT Bull" class="hero-logo">
-    <h1>Track your Argentine<br>portfolio in <em>real USD</em></h1>
-    <p class="subtitle">
-      Import your holdings from Balanz or Interactive Brokers.
-      See your real returns after MEP conversion, currency drag, and all the
-      complexity the Argentine market throws at you.
+    <h1><span data-i18n="hero.title_1">Seguimiento de tu portafolio</span><br><span data-i18n="hero.title_2">argentino en </span><em data-i18n="hero.title_em">USD real</em></h1>
+    <p class="subtitle" data-i18n="hero.subtitle">
+      Importa tus tenencias desde Balanz o Interactive Brokers.
+      Ve tus retornos reales despues de la conversion MEP, el arrastre cambiario y toda la complejidad del mercado argentino.
     </p>
     <div class="actions">
-      <a href="dashboard.html" class="btn-primary">Open Dashboard &rarr;</a>
-      <a href="#how-it-works" class="btn-secondary">How it works</a>
+      <a href="dashboard.html" class="btn-primary" data-i18n="hero.btn_dashboard">Abrir Dashboard &rarr;</a>
+      <a href="#how-it-works" class="btn-secondary" data-i18n="hero.btn_how">Como funciona</a>
     </div>
   </section>
 
@@ -320,23 +330,23 @@
 
   <!-- Features -->
   <section class="features container">
-    <h2>Built for Argentine investors</h2>
-    <p class="lead">Not another generic tracker. ARGPT understands CEDEARs, MEP rates, and the real cost of holding Argentine assets.</p>
+    <h2 data-i18n="features.title">Hecho para inversores argentinos</h2>
+    <p class="lead" data-i18n="features.lead">No es otro tracker generico. ARGPT entiende CEDEARs, tipos de cambio MEP y el verdadero costo de tener activos argentinos.</p>
     <div class="feature-grid">
       <div class="feature-card reveal">
         <span class="icon">&#9776;</span>
-        <h3>Portfolio overview</h3>
-        <p>See all your holdings in one view. ARS cost basis, USD market value, weight distribution, and P&L that accounts for currency drag.</p>
+        <h3 data-i18n="features.portfolio.title">Vista del portafolio</h3>
+        <p data-i18n="features.portfolio.desc">Ve todas tus tenencias en una sola vista. Costo en ARS, valor de mercado en USD, distribucion de peso y P&L que tiene en cuenta el arrastre cambiario.</p>
       </div>
       <div class="feature-card reveal reveal-delay-1">
         <span class="icon">&#9670;</span>
-        <h3>Technical signals</h3>
-        <p>RSI, Stochastic, Supertrend, and SMA readings for every holding. Color-coded health scores tell you which positions are strong at a glance.</p>
+        <h3 data-i18n="features.technicals.title">Senales tecnicas</h3>
+        <p data-i18n="features.technicals.desc">RSI, Estocastico, Supertrend y medias moviles para cada tenencia. Puntajes de salud con colores que muestran de un vistazo que posiciones son fuertes.</p>
       </div>
       <div class="feature-card reveal reveal-delay-2">
         <span class="icon">&#9733;</span>
-        <h3>Fundamental analysis</h3>
-        <p>P/E, ROE, margins, and debt ratios benchmarked against sector medians. Know if your stock is cheap or expensive relative to its peers.</p>
+        <h3 data-i18n="features.fundamentals.title">Analisis fundamental</h3>
+        <p data-i18n="features.fundamentals.desc">P/E, ROE, margenes y ratios de deuda comparados contra medianas del sector. Sabe si tu accion esta barata o cara respecto a sus pares.</p>
       </div>
     </div>
   </section>
@@ -345,36 +355,34 @@
   <section class="currency-section container">
     <div class="currency-layout">
       <div>
-        <h2>The MEP problem,<br><em style="font-style:italic; color:var(--celeste)">solved</em></h2>
-        <p class="desc">
-          Every Argentine investor knows the pain: your CEDEAR is up 20% in pesos,
-          but the MEP rate moved too. Did you actually make money in dollars?
+        <h2><span data-i18n="currency.title_1">El problema del MEP,</span><br><em style="font-style:italic; color:var(--celeste)" data-i18n="currency.title_2">resuelto</em></h2>
+        <p class="desc" data-i18n="currency.desc1">
+          Todo inversor argentino conoce el dolor: tu CEDEAR subio 20% en pesos,
+          pero el tipo de cambio MEP tambien se movio. Realmente ganaste plata en dolares?
         </p>
         <p class="desc">
-          ARGPT decomposes your return into <strong style="color:var(--text)">price change</strong>
-          and <strong style="color:var(--text)">currency effect</strong>, showing the real USD
-          result. Import your entry MEP rate or purchase date and we'll look it up.
+          <span data-i18n="currency.desc2_1">ARGPT descompone tu retorno en </span><strong style="color:var(--text)" data-i18n="currency.desc2_price">cambio de precio</strong><span data-i18n="currency.desc2_and"> y </span><strong style="color:var(--text)" data-i18n="currency.desc2_fx">efecto cambiario</strong><span data-i18n="currency.desc2_2">, mostrando el resultado real en USD. Importa tu MEP de entrada o fecha de compra y lo buscamos por vos.</span>
         </p>
       </div>
       <div class="rate-card reveal">
-        <div class="header">Return decomposition</div>
+        <div class="header" data-i18n="currency.header">Descomposicion del retorno</div>
         <div class="rate-row">
           <div>
-            <div class="rate-label">Price return (ARS)</div>
-            <div class="rate-sub">Asset performance in pesos</div>
+            <div class="rate-label" data-i18n="currency.price_label">Retorno de precio (ARS)</div>
+            <div class="rate-sub" data-i18n="currency.price_sub">Rendimiento del activo en pesos</div>
           </div>
           <div class="rate-value" style="color:var(--gain)">+24.3%</div>
         </div>
         <div class="rate-row">
           <div>
-            <div class="rate-label">Currency effect</div>
-            <div class="rate-sub">MEP rate change since purchase</div>
+            <div class="rate-label" data-i18n="currency.fx_label">Efecto cambiario</div>
+            <div class="rate-sub" data-i18n="currency.fx_sub">Cambio del MEP desde la compra</div>
           </div>
           <div class="rate-value" style="color:var(--loss)">-11.8%</div>
         </div>
         <div class="rate-row" style="border-top: 1px solid var(--border); padding-top: 1rem;">
           <div>
-            <div class="rate-label">USD return</div>
+            <div class="rate-label" data-i18n="currency.usd_label">Retorno USD</div>
             <div class="rate-sub">(1 + price%) &times; (1 + fx%) &minus; 1</div>
           </div>
           <div class="rate-value" style="color:var(--gain); font-size: 1.3rem;">+9.6%</div>
@@ -385,45 +393,45 @@
 
   <!-- Workflow -->
   <section class="workflow container" id="how-it-works">
-    <h2>Three steps to clarity</h2>
-    <p class="lead">No sign-up. No server. Your data stays in your browser.</p>
+    <h2 data-i18n="workflow.title">Tres pasos hacia la claridad</h2>
+    <p class="lead" data-i18n="workflow.lead">Sin registro. Sin servidor. Tus datos se quedan en tu navegador.</p>
     <div class="steps">
       <div class="step reveal">
         <div class="step-num">1</div>
-        <h3>Import holdings</h3>
-        <p>Upload a Balanz XLSX export or Interactive Brokers CSV. Or add positions manually with ticker, shares, and cost basis.</p>
+        <h3 data-i18n="workflow.step1.title">Importa tenencias</h3>
+        <p data-i18n="workflow.step1.desc">Subi un export XLSX de Balanz o CSV de Interactive Brokers. O agrega posiciones manualmente con ticker, cantidad y precio de costo.</p>
       </div>
       <div class="step reveal reveal-delay-1">
         <div class="step-num">2</div>
-        <h3>Get live prices</h3>
-        <p>ARGPT fetches real-time prices, MEP/CCL rates, technicals, and fundamentals from Data912 and finance-query.com.</p>
+        <h3 data-i18n="workflow.step2.title">Precios en vivo</h3>
+        <p data-i18n="workflow.step2.desc">ARGPT obtiene precios en tiempo real, tipos MEP/CCL, indicadores tecnicos y fundamentales de Data912 y finance-query.com.</p>
       </div>
       <div class="step reveal reveal-delay-2">
         <div class="step-num">3</div>
-        <h3>See real returns</h3>
-        <p>View your portfolio in USD. Understand the price vs. currency breakdown. Spot weak and strong positions instantly.</p>
+        <h3 data-i18n="workflow.step3.title">Ve retornos reales</h3>
+        <p data-i18n="workflow.step3.desc">Mira tu portafolio en USD. Entende la descomposicion precio vs. moneda. Detecta posiciones debiles y fuertes al instante.</p>
       </div>
     </div>
   </section>
 
   <!-- Asset types -->
   <section class="assets container">
-    <h2>Asset types covered</h2>
+    <h2 data-i18n="assets.title">Tipos de activos cubiertos</h2>
     <div class="asset-grid">
       <div class="asset-card reveal">
         <span class="asset-tag cedear">CEDEAR</span>
-        <h3>Argentine Depositary Receipts</h3>
-        <p>Local wrappers for US stocks, priced in ARS on BYMA. ARGPT converts through MEP and handles the ratio math so you see the real USD value.</p>
+        <h3 data-i18n="assets.cedear.title">Certificados de Deposito Argentinos</h3>
+        <p data-i18n="assets.cedear.desc">Wrappers locales de acciones americanas, cotizados en ARS en BYMA. ARGPT convierte via MEP y maneja la matematica del ratio para que veas el valor real en USD.</p>
       </div>
       <div class="asset-card reveal reveal-delay-1">
         <span class="asset-tag arg">Arg Stock</span>
-        <h3>Argentine equities</h3>
-        <p>Stocks listed on BYMA like GGAL, YPF, TXAR. Priced in ARS, converted to USD via MEP rate for true dollar-denominated tracking.</p>
+        <h3 data-i18n="assets.arg.title">Acciones argentinas</h3>
+        <p data-i18n="assets.arg.desc">Acciones listadas en BYMA como GGAL, YPF, TXAR. Cotizadas en ARS, convertidas a USD via tipo MEP para un seguimiento real en dolares.</p>
       </div>
       <div class="asset-card reveal reveal-delay-2">
         <span class="asset-tag us">US Stock</span>
-        <h3>US equities</h3>
-        <p>NYSE and NASDAQ stocks held through international brokers. Already in USD &mdash; shown alongside your Argentine positions for the full picture.</p>
+        <h3 data-i18n="assets.us.title">Acciones estadounidenses</h3>
+        <p data-i18n="assets.us.desc">Acciones de NYSE y NASDAQ en brokers internacionales. Ya en USD — mostradas junto a tus posiciones argentinas para la foto completa.</p>
       </div>
     </div>
   </section>
@@ -431,12 +439,15 @@
   <!-- Footer -->
   <footer>
     <div class="container">
-      <p>ARGPT &mdash; your data never leaves your browser. Built with vanilla JS, no frameworks, no tracking.</p>
+      <p data-i18n="footer.text">ARGPT — tus datos nunca salen de tu navegador. Hecho con vanilla JS, sin frameworks, sin tracking.</p>
     </div>
   </footer>
 
-  <!-- Scroll reveal -->
+  <!-- i18n + Scroll reveal -->
+  <script src="js/i18n.js"></script>
   <script>
+    I18n.init();
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
     }, { threshold: 0.15 });
