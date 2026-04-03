@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="es" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ARGPT — Argentine Portfolio Tracker</title>
+  <title>ARGPT — Monitor de Portafolio Argentino</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -20,7 +20,7 @@
             loss: '#f85149',
             caution: '#d29922',
             accent: '#58a6ff',
-            muted: '#8b949e',
+            muted: '#9da5ae',
           },
           fontFamily: {
             mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
@@ -35,7 +35,11 @@
     .tabular-nums { font-variant-numeric: tabular-nums; }
     table th { cursor: pointer; user-select: none; }
     table th:hover { color: #58a6ff; }
-    #portfolio-table thead th { position: sticky; top: 0; background: #0d1117; z-index: 10; }
+    #portfolio-table thead th, #technicals-table thead th, #fundamentals-table thead th { position: sticky; top: 0; background: #0d1117; z-index: 10; }
+    #portfolio-table td:first-child, #technicals-table td:first-child, #fundamentals-table td:first-child,
+    #portfolio-table thead th:first-child, #technicals-table thead th:first-child, #fundamentals-table thead th:first-child { position: sticky; left: 0; z-index: 5; background: #0d1117; }
+    #portfolio-table thead th:first-child, #technicals-table thead th:first-child, #fundamentals-table thead th:first-child { z-index: 15; }
+    tr:hover > td:first-child { background: rgba(22,27,34,0.5) !important; }
     .sort-asc::after { content: ' ▲'; font-size: 0.7em; }
     .sort-desc::after { content: ' ▼'; font-size: 0.7em; }
     .tip {
@@ -53,7 +57,18 @@
     }
     .text-left .tip { left: 0; transform: none; }
     .text-left .tip::before { left: 12px; transform: none; }
-    th:hover .tip, td:hover .tip { opacity: 1; }
+    th:hover .tip, td:hover .tip, th.tip-visible .tip, th:focus-within .tip { opacity: 1; pointer-events: auto; }
+    .col-help { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; font-size: 9px; font-weight: 600; font-family: 'IBM Plex Sans', sans-serif; color: #8b949e; background: transparent; border: 1px solid #30363d; cursor: pointer; margin-left: 4px; vertical-align: middle; line-height: 1; }
+    .col-help:hover { color: #58a6ff; border-color: #58a6ff; }
+    .lang-toggle {
+      padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.65rem; font-weight: 600;
+      font-family: 'JetBrains Mono', monospace; letter-spacing: 0.08em;
+      background: transparent; color: #8b949e; border: 1px solid #30363d;
+      cursor: pointer; transition: color 0.2s, border-color 0.2s;
+    }
+    .lang-toggle:hover { color: #e6edf3; border-color: #8b949e; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { width: 32px; height: 32px; border: 3px solid #30363d; border-top-color: #58a6ff; border-radius: 50%; animation: spin 0.8s linear infinite; }
   </style>
 </head>
 <body class="font-sans min-h-screen">
@@ -64,385 +79,294 @@
         <img src="argpt-logo.png" alt="ARGPT" class="w-10 h-10 rounded-lg">
         <div>
           <h1 class="text-xl font-semibold tracking-tight">ARGPT</h1>
-          <p class="text-xs text-muted">Argentine Portfolio Tracker</p>
+          <p class="text-xs text-muted" data-i18n="nav.subtitle">Monitor de Portafolio Argentino</p>
         </div>
       </div>
-      <div class="text-xs text-muted font-mono" id="last-updated"></div>
+      <div class="flex items-center gap-3">
+        <button class="lang-toggle" onclick="I18n.setLang(I18n.lang() === 'es' ? 'en' : 'es'); location.reload();">ENGLISH</button>
+        <div class="text-xs text-muted font-mono" id="last-updated"></div>
+      </div>
     </div>
   </header>
 
   <!-- Tabs -->
   <nav class="border-b border-surface-border px-6">
     <div class="max-w-7xl mx-auto flex gap-0">
-      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-accent text-white" data-tab="portfolio">Portfolio</button>
-      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="technicals">Technicals</button>
-      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="fundamentals">Fundamentals</button>
-      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="glossary">Glossary</button>
+      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-accent text-white" data-tab="portfolio" data-i18n="tab.portfolio">Portafolio</button>
+      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="technicals" data-i18n="tab.technicals">Tecnicos</button>
+      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="fundamentals" data-i18n="tab.fundamentals">Fundamentales</button>
+      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="glossary" data-i18n="tab.glossary">Glosario</button>
     </div>
   </nav>
 
-  <main class="max-w-7xl mx-auto px-6 py-6">
+  <main class="max-w-7xl mx-auto px-6 py-6 relative">
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="absolute inset-0 bg-surface/80 flex items-center justify-center z-50 rounded-lg">
+      <div class="flex flex-col items-center gap-3">
+        <div class="spinner"></div>
+        <span class="text-sm text-muted">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Sample data banner -->
+    <div id="sample-banner" class="hidden mb-4 p-3 rounded border border-accent/30 bg-accent/10 text-accent text-sm flex items-center justify-between">
+      <span data-i18n="banner.sample">Viewing sample portfolio — import your own holdings to get started.</span>
+      <button onclick="App._sampleMode = false; document.getElementById('sample-banner').classList.add('hidden')" class="text-xs underline hover:text-white" data-i18n="banner.sample_dismiss">Dismiss</button>
+    </div>
+
     <!-- Warning banner -->
-    <div id="fx-warning" class="hidden mb-4 p-3 rounded border border-caution/30 bg-caution/10 text-caution text-sm">
-      ⚠ Some holdings are missing entry exchange rates — USD returns are approximate. Edit holdings to add your MEP rate at purchase for accurate results.
+    <div id="fx-warning" class="hidden mb-4 p-3 rounded border border-caution/30 bg-caution/10 text-caution text-sm" data-i18n="warning.fx">
+      ⚠ Algunas tenencias no tienen tipo de cambio de entrada — los retornos en USD son aproximados. Edita las tenencias para agregar tu tipo MEP de compra para resultados precisos.
+    </div>
+
+    <!-- Filter bar -->
+    <div id="filter-bar" class="flex gap-2 mb-4">
+      <button class="filter-btn bg-accent/20 text-accent border border-accent/30 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors" data-filter="all">All</button>
+      <button class="filter-btn text-muted border border-surface-border rounded-lg px-3 py-1.5 text-xs font-medium transition-colors" data-filter="cedear">CEDEAR</button>
+      <button class="filter-btn text-muted border border-surface-border rounded-lg px-3 py-1.5 text-xs font-medium transition-colors" data-filter="arg_stock">Arg Stock</button>
+      <button class="filter-btn text-muted border border-surface-border rounded-lg px-3 py-1.5 text-xs font-medium transition-colors" data-filter="us_stock">US Stock</button>
     </div>
 
     <!-- Portfolio Tab -->
     <section id="tab-portfolio">
       <!-- Summary cards -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border">
-          <div class="text-xs text-muted mb-1">Total USD Value</div>
-          <div class="text-lg font-mono font-medium tabular-nums" id="total-usd">$0.00</div>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border border-t-2 border-t-accent">
+          <div class="text-xs text-muted mb-1" data-i18n="summary.total_value">Valor Total USD</div>
+          <div class="text-2xl font-mono font-semibold tabular-nums" id="total-usd">$0.00</div>
+        </div>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border border-t-2 border-t-accent">
+          <div class="text-xs text-muted mb-1" data-i18n="summary.total_pnl">P&L Total USD</div>
+          <div class="text-2xl font-mono font-semibold tabular-nums" id="total-pnl-usd">$0.00</div>
         </div>
         <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border">
-          <div class="text-xs text-muted mb-1">Total USD P&L</div>
-          <div class="text-lg font-mono font-medium tabular-nums" id="total-pnl-usd">$0.00</div>
-        </div>
-        <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border">
-          <div class="text-xs text-muted mb-1">Arg Stocks USD P&L</div>
+          <div class="text-xs text-muted mb-1" data-i18n="summary.arg_pnl">P&L Acc. Arg. USD</div>
           <div class="text-lg font-mono font-medium tabular-nums" id="arg-pnl-usd">$0.00</div>
         </div>
         <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border">
-          <div class="text-xs text-muted mb-1">CEDEARs USD P&L</div>
+          <div class="text-xs text-muted mb-1" data-i18n="summary.ced_pnl">P&L CEDEARs USD</div>
           <div class="text-lg font-mono font-medium tabular-nums" id="ced-pnl-usd">$0.00</div>
         </div>
       </div>
 
+      <!-- Allocation chart -->
+      <div id="chart-container" class="mb-4"></div>
+
       <!-- Import / Add -->
       <div class="flex gap-3 mb-4">
         <label class="cursor-pointer bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-accent hover:text-accent transition-colors">
-          Import Balanz XLSX
+          <span data-i18n="import.balanz">Importar Balanz XLSX</span>
           <input type="file" accept=".xlsx,.xls" id="import-balanz" class="hidden">
         </label>
         <label class="cursor-pointer bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-accent hover:text-accent transition-colors">
-          Import IB CSV
+          <span data-i18n="import.ib">Importar IB CSV</span>
           <input type="file" accept=".csv" id="import-ib" class="hidden">
         </label>
-        <button id="load-sample" class="bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-accent hover:text-accent transition-colors">Load Sample Data</button>
-        <button id="clear-holdings" class="bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-loss hover:text-loss transition-colors">Clear All</button>
-        <div id="import-status" class="self-center text-xs text-muted"></div>
+        <button id="load-sample" class="bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-accent hover:text-accent transition-colors" data-i18n="import.sample">Cargar Datos de Ejemplo</button>
+        <button id="clear-holdings" class="bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-loss hover:text-loss transition-colors" data-i18n="import.clear">Limpiar Todo</button>
+        <button id="export-csv" class="bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-accent hover:text-accent transition-colors">Export CSV</button>
       </div>
 
       <!-- Add holding form -->
       <details class="mb-4 bg-surface-secondary rounded-lg border border-surface-border">
-        <summary class="px-4 py-3 text-sm font-medium cursor-pointer hover:text-accent">+ Add Holding</summary>
+        <summary class="px-4 py-3 text-sm font-medium cursor-pointer hover:text-accent" data-i18n="form.add_holding">+ Agregar Tenencia</summary>
         <form id="holding-form" class="p-4 pt-2">
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
             <div>
-              <label class="block text-xs text-muted mb-1">Ticker</label>
+              <label class="block text-xs text-muted mb-1" data-i18n="form.ticker">Ticker</label>
               <input name="ticker" type="text" required placeholder="AAPL" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
             </div>
             <div>
-              <label class="block text-xs text-muted mb-1">Type</label>
+              <label class="block text-xs text-muted mb-1" data-i18n="form.type">Tipo</label>
               <select name="type" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm focus:border-accent focus:outline-none">
-                <option value="cedear">CEDEAR</option>
-                <option value="arg_stock">Arg Stock</option>
-                <option value="us_stock">US Stock</option>
+                <option value="cedear" data-i18n="option.cedear">CEDEAR</option>
+                <option value="arg_stock" data-i18n="option.arg_stock">Accion Arg</option>
+                <option value="us_stock" data-i18n="option.us_stock">Accion US</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs text-muted mb-1">Shares</label>
+              <label class="block text-xs text-muted mb-1" data-i18n="form.shares">Cantidad</label>
               <input name="shares" type="number" step="any" min="0.01" required placeholder="100" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
             </div>
             <div>
-              <label class="block text-xs text-muted mb-1">Avg Price</label>
+              <label class="block text-xs text-muted mb-1" data-i18n="form.avg_price">Precio Promedio</label>
               <input name="avg_price" type="number" step="any" min="0.01" required placeholder="15000" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
             </div>
           </div>
           <div id="fx-rate-group" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
             <div>
-              <label class="block text-xs text-muted mb-1">Purchase Date</label>
+              <label class="block text-xs text-muted mb-1" data-i18n="form.purchase_date">Fecha de Compra</label>
               <input name="purchase_date" type="date" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
             </div>
             <div>
-              <label class="block text-xs text-muted mb-1">Entry MEP Rate</label>
+              <label class="block text-xs text-muted mb-1" data-i18n="form.entry_mep">MEP de Entrada</label>
               <input name="entry_fx_rate" type="number" step="any" min="0" placeholder="1200" class="w-full bg-surface rounded border border-surface-border px-2 py-1.5 text-sm font-mono focus:border-accent focus:outline-none">
-              <p class="text-[10px] text-muted mt-0.5" id="fx-rate-hint">Enter date or rate. Date auto-fills rate from data.</p>
+              <p class="text-[10px] text-muted mt-0.5" id="fx-rate-hint" data-i18n="form.hint_default">Ingresa fecha o tipo. La fecha autocompleta el tipo desde los datos.</p>
             </div>
           </div>
-          <div>
-            <button type="submit" class="bg-accent/20 text-accent border border-accent/30 rounded px-4 py-1.5 text-sm font-medium hover:bg-accent/30 transition-colors">Add</button>
+          <div class="flex gap-2">
+            <button type="submit" id="form-submit-btn" class="bg-accent/20 text-accent border border-accent/30 rounded px-4 py-1.5 text-sm font-medium hover:bg-accent/30 transition-colors" data-i18n="form.add_btn">Agregar</button>
+            <button type="button" id="cancel-edit" class="hidden text-muted border border-surface-border rounded px-4 py-1.5 text-sm font-medium hover:text-white hover:border-surface-border transition-colors">Cancel</button>
           </div>
         </form>
       </details>
 
       <!-- Holdings table -->
-      <div>
+      <div class="overflow-x-auto">
         <table class="w-full text-sm font-mono tabular-nums" id="portfolio-table">
+          <caption class="sr-only">Portfolio holdings</caption>
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
-              <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol &amp; asset type (CEDEAR, Argentine stock, US stock)</span></th>
-              <th class="text-center py-2 px-2 relative" data-sort="broker">Broker<span class="tip">Broker where the position is held</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="shares">Shares<span class="tip">Number of shares held</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="avg_price">Avg ARS<span class="tip">Avg purchase price in ARS per share</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="cost_basis_usd">Avg USD<span class="tip">Avg purchase price in USD per share (ARS price &divide; MEP rate at purchase for Argentine assets)</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="current_price_usd">Price USD<span class="tip">Current price in USD (via MEP for Argentine assets)</span></th>
+              <th class="text-left py-2 px-2 relative" data-sort="ticker"><span data-i18n="th.ticker">Ticker</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.ticker_tip"></span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="broker"><span data-i18n="th.broker">Broker</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.broker_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="shares"><span data-i18n="th.shares">Cantidad</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.shares_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="avg_price"><span data-i18n="th.avg_ars">Prom ARS</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.avg_ars_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="cost_basis_usd"><span data-i18n="th.avg_usd">Prom USD</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.avg_usd_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="current_price_usd"><span data-i18n="th.price_usd">Precio USD</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.price_usd_tip"></span></th>
 
-              <th class="text-right py-2 px-2 relative" data-sort="capital_return_pct">Price %<span class="tip">Price change in native currency since purchase</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="currency_return_pct">Currency %<span class="tip">MEP rate change since purchase (peso depreciation/appreciation)</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="total_return_usd_pct">USD Ret %<span class="tip">Combined price and currency return in USD</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="value_usd">Value USD<span class="tip">Total position value in USD</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pnl_usd">USD P&amp;L<span class="tip">Profit or loss in US dollars</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="weight_pct">Weight %<span class="tip">Position weight as % of total portfolio value</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="capital_return_pct"><span data-i18n="th.price_pct">Precio %</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.price_pct_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="currency_return_pct"><span data-i18n="th.currency_pct">Moneda %</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.currency_pct_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="total_return_usd_pct"><span data-i18n="th.usd_ret">Ret USD %</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.usd_ret_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="value_usd"><span data-i18n="th.value_usd">Valor USD</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.value_usd_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pnl_usd"><span data-i18n="th.pnl_usd">P&amp;L USD</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.pnl_usd_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="weight_pct"><span data-i18n="th.weight">Peso %</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.weight_tip"></span></th>
               <th class="text-center py-2 px-2 w-8"></th>
             </tr>
           </thead>
           <tbody id="portfolio-body"></tbody>
         </table>
-        <p id="empty-state" class="text-center text-muted py-8 text-sm">No holdings yet. Add one above to get started.</p>
+        <p id="empty-state" class="text-center text-muted py-8 text-sm" data-i18n="empty.text">Sin tenencias aun. Agrega una arriba para comenzar.</p>
       </div>
     </section>
 
     <!-- Technicals Tab -->
     <section id="tab-technicals" class="hidden">
+      <div class="overflow-x-auto">
         <table class="w-full text-sm font-mono tabular-nums" id="technicals-table">
+          <caption class="sr-only">Technical indicators</caption>
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
-              <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol &amp; asset type (CEDEAR, Argentine stock, US stock)</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="price">Price USD<span class="tip">Current price in USD</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pct_below_ath">% Below ATH<span class="tip">How far below the all-time high</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="rsi14">RSI(14)<span class="tip">Relative Strength Index, 14 periods</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="stochastic_k">Stoch K/D<span class="tip">Stochastic oscillator</span></th>
-              <th class="text-center py-2 px-2 relative" data-sort="supertrend_trend">Supertrend<span class="tip">Trend-following indicator</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="sma20_pct">vs SMA20<span class="tip">% above or below 20-day moving average</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="sma50_pct">vs SMA50<span class="tip">% above or below 50-day moving average</span></th>
-              <th class="text-center py-2 px-2 relative" data-sort="health">Health<span class="tip">Combined health score from all indicators</span></th>
+              <th class="text-left py-2 px-2 relative" data-sort="ticker"><span data-i18n="th.ticker">Ticker</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.ticker_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="price"><span data-i18n="th.price_usd">Precio USD</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.tech_price_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pct_below_ath"><span data-i18n="th.ath">% Bajo ATH</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.ath_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="rsi14"><span data-i18n="th.rsi">RSI(14)</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.rsi_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="stochastic_k"><span data-i18n="th.stoch">Estoc K/D</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.stoch_tip"></span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="supertrend_trend"><span data-i18n="th.supertrend">Supertrend</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.supertrend_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="sma20_pct"><span data-i18n="th.sma20">vs SMA20</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.sma20_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="sma50_pct"><span data-i18n="th.sma50">vs SMA50</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.sma50_tip"></span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="health"><span data-i18n="th.health">Salud</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.health_tip"></span></th>
             </tr>
           </thead>
           <tbody id="technicals-body"></tbody>
         </table>
+      </div>
     </section>
 
     <!-- Fundamentals Tab -->
     <section id="tab-fundamentals" class="hidden">
+      <div class="overflow-x-auto">
         <table class="w-full text-sm font-mono tabular-nums" id="fundamentals-table">
+          <caption class="sr-only">Fundamental metrics</caption>
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
-              <th class="text-left py-2 px-2 relative" data-sort="ticker">Ticker<span class="tip">Asset symbol &amp; asset type (CEDEAR, Argentine stock, US stock)</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pe">P/E<span class="tip">Price to trailing earnings</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="forward_pe">Fwd P/E<span class="tip">Price to estimated forward earnings</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pb">P/B<span class="tip">Price to book value</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="roe">ROE %<span class="tip">Return on equity</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="eps_growth">EPS Gr %<span class="tip">Earnings per share growth YoY</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="dividend_yield">Div Yld %<span class="tip">Annual dividend yield</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="debt_to_equity">D/E<span class="tip">Debt to equity ratio</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="profit_margin">Margin %<span class="tip">Net profit margin</span></th>
-              <th class="text-left py-2 px-2 relative">Sector<span class="tip">GICS sector classification</span></th>
+              <th class="text-left py-2 px-2 relative" data-sort="ticker"><span data-i18n="th.ticker">Ticker</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.ticker_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pe">P/E<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.pe_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="forward_pe">Fwd P/E<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.fwd_pe_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pb">P/B<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.pb_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="roe">ROE %<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.roe_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="eps_growth">EPS Gr %<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.eps_gr_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="dividend_yield">Div Yld %<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.div_yld_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="debt_to_equity">D/E<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.de_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="profit_margin">Margin %<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.margin_tip"></span></th>
+              <th class="text-left py-2 pl-8 pr-4 relative"><span data-i18n="th.sector">Sector</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.sector_tip"></span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="health"><span data-i18n="th.health">Salud</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.health_tip"></span></th>
             </tr>
           </thead>
           <tbody id="fundamentals-body"></tbody>
         </table>
+      </div>
     </section>
 
     <!-- Glossary Tab -->
-    <section id="tab-glossary" class="hidden text-sm text-muted space-y-8 max-w-4xl">
+    <section id="tab-glossary" class="hidden text-sm text-muted space-y-6">
 
       <!-- Asset Types & FX -->
-      <div>
-        <h2 class="text-white font-semibold text-lg mb-1">Asset Types & Currency Conversion</h2>
-        <p class="text-xs text-muted mb-4">How each asset type is priced and converted between ARS and USD.</p>
-        <dl class="space-y-4">
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">CEDEAR</dt>
-            <dd class="text-xs text-muted mt-0.5">Argentine Depositary Receipt</dd>
-            <dd class="mt-2">Local wrapper for US stocks, priced in ARS on BYMA. USD value derived via MEP rate. The ratio (e.g., 1:20) shows how many CEDEARs equal one US share.</dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Argentine Stock</dt>
-            <dd class="text-xs text-muted mt-0.5">BYMA-listed equity</dd>
-            <dd class="mt-2">Priced in ARS. USD value derived via MEP rate.</dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">US Stock</dt>
-            <dd class="text-xs text-muted mt-0.5">NYSE / NASDAQ equity</dd>
-            <dd class="mt-2">Priced in USD. No currency conversion needed.</dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">MEP (Dolar MEP)</dt>
-            <dd class="text-xs text-muted mt-0.5">Implicit USD rate via local bond trades</dd>
-            <dd class="mt-2">Obtained via local bond pair trades (AL30/AL30D). Used to convert ARS-priced assets to USD. Source: Data912.</dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">CCL (Dolar CCL)</dt>
-            <dd class="text-xs text-muted mt-0.5">Implicit USD rate via ADR arbitrage</dd>
-            <dd class="mt-2">Settles abroad. Used to display US stocks in ARS.</dd>
-          </div>
-        </dl>
+      <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
+        <h3 class="text-white font-medium text-base" data-i18n="glossary.asset_types_title">Tipos de Activos y Conversion de Moneda</h3>
+        <div class="space-y-2">
+          <p data-i18n="glossary.cedear_def" data-i18n-html></p>
+          <p data-i18n="glossary.arg_stock_def" data-i18n-html></p>
+          <p data-i18n="glossary.us_stock_def" data-i18n-html></p>
+          <p data-i18n="glossary.mep_def" data-i18n-html></p>
+          <p data-i18n="glossary.ccl_def" data-i18n-html></p>
+        </div>
       </div>
 
       <!-- Portfolio Columns -->
-      <div>
-        <h2 class="text-white font-semibold text-lg mb-1">Portfolio</h2>
-        <p class="text-xs text-muted mb-4">Columns shown in the Portfolio tab and how each value is calculated.</p>
-        <dl class="space-y-4">
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Avg ARS</dt>
-            <dd class="text-xs text-muted mt-0.5">Average purchase price in pesos</dd>
-            <dd class="mt-2">Per-share average cost in ARS. Only shown for Argentine assets (CEDEARs, Arg stocks).</dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Avg USD</dt>
-            <dd class="text-xs text-muted mt-0.5">Average purchase price in dollars</dd>
-            <dd class="mt-2">Argentine assets: <code class="text-accent">avg_price_ars &divide; entry_mep_rate</code><br>
-              US stocks: the purchase price itself (already in USD).</dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Price USD</dt>
-            <dd class="text-xs text-muted mt-0.5">Current market price in dollars</dd>
-            <dd class="mt-2">Argentine assets: <code class="text-accent">current_price_ars &divide; current_mep_rate</code><br>
-              US stocks: the market price itself.</dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Price %</dt>
-            <dd class="text-xs text-muted mt-0.5">Price change since purchase in native currency</dd>
-            <dd class="mt-2"><code class="text-accent">(current_price &minus; avg_price) &divide; avg_price &times; 100</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Currency %</dt>
-            <dd class="text-xs text-muted mt-0.5">MEP rate change since purchase</dd>
-            <dd class="mt-2">Reflects peso depreciation or appreciation. Only applies to Argentine assets.<br>
-              <code class="text-accent">(entry_mep_rate &divide; current_mep_rate &minus; 1) &times; 100</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">USD Ret %</dt>
-            <dd class="text-xs text-muted mt-0.5">Total compounded return in USD</dd>
-            <dd class="mt-2">Combines price and currency effects. Compounding avoids overstating or understating the real USD result.<br>
-              <code class="text-accent">(1 + price%) &times; (1 + currency%) &minus; 1</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Value USD</dt>
-            <dd class="text-xs text-muted mt-0.5">Total position value in dollars</dd>
-            <dd class="mt-2"><code class="text-accent">shares &times; price_usd</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">USD P&L</dt>
-            <dd class="text-xs text-muted mt-0.5">Profit or loss in dollars</dd>
-            <dd class="mt-2"><code class="text-accent">(price_usd &minus; avg_usd) &times; shares</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Weight %</dt>
-            <dd class="text-xs text-muted mt-0.5">Position size as portfolio percentage</dd>
-            <dd class="mt-2"><code class="text-accent">value_usd &divide; total_portfolio_usd &times; 100</code></dd>
-          </div>
-        </dl>
+      <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
+        <h3 class="text-white font-medium text-base" data-i18n="glossary.portfolio_title">Portafolio</h3>
+        <div class="space-y-2">
+          <p data-i18n="glossary.avg_ars_def" data-i18n-html></p>
+          <p data-i18n="glossary.avg_usd_def" data-i18n-html></p>
+          <p data-i18n="glossary.price_usd_def" data-i18n-html></p>
+          <p data-i18n="glossary.price_pct_def" data-i18n-html></p>
+          <p data-i18n="glossary.currency_pct_def" data-i18n-html></p>
+          <p data-i18n="glossary.usd_ret_def" data-i18n-html></p>
+          <p data-i18n="glossary.value_usd_def" data-i18n-html></p>
+          <p data-i18n="glossary.pnl_usd_def" data-i18n-html></p>
+          <p data-i18n="glossary.weight_def" data-i18n-html></p>
+        </div>
       </div>
 
       <!-- Technicals Columns -->
-      <div>
-        <h2 class="text-white font-semibold text-lg mb-1">Technicals</h2>
-        <p class="text-xs text-muted mb-4">Colors show <strong class="text-white">portfolio health</strong>: <span class="text-gain">green</span> = holding is strong, <span class="text-loss">red</span> = holding is struggling. Colors fade through white — only extremes get full color.</p>
-        <dl class="space-y-4">
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">% Below ATH</dt>
-            <dd class="text-xs text-muted mt-0.5">Distance from all-time high</dd>
-            <dd class="mt-2"><span class="text-gain">Full green</span> at 0% (at ATH), fades to white at 15%, <span class="text-loss">full red</span> at 30%+.<br>
-              <code class="text-accent">(price &divide; all_time_high &minus; 1) &times; 100</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">RSI(14)</dt>
-            <dd class="text-xs text-muted mt-0.5">Relative Strength Index &mdash; momentum oscillator</dd>
-            <dd class="mt-2">Compares average gains vs average losses over 14 periods.<br>
-              <span class="text-loss">Full red</span> &le;20 (deeply oversold), fades to white at 30, white 30&ndash;70 (neutral), fades to green at 80, <span class="text-gain">full green</span> &ge;80 (strong momentum).<br>
-              <code class="text-accent">100 &minus; 100 &divide; (1 + avg_gain &divide; avg_loss)</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Stoch K/D</dt>
-            <dd class="text-xs text-muted mt-0.5">Stochastic oscillator &mdash; overbought / oversold</dd>
-            <dd class="mt-2">%K = where price closed vs the high-low range (14 periods). %D = 3-period SMA of %K. When K crosses above D, momentum is shifting up (and vice versa).<br>
-              <span class="text-loss">Full red</span> at 0 (deeply oversold), fades to white at 20, white 20&ndash;80 (neutral), fades to green at 80, <span class="text-gain">full green</span> at 100.<br>
-              <code class="text-accent">%K = (close &minus; low&#x2081;&#x2084;) &divide; (high&#x2081;&#x2084; &minus; low&#x2081;&#x2084;) &times; 100</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Supertrend</dt>
-            <dd class="text-xs text-muted mt-0.5">Trend-following indicator based on ATR</dd>
-            <dd class="mt-2"><span class="text-gain">Green</span> = uptrend (price above band), <span class="text-loss">red</span> = downtrend (price below band).<br>
-              <code class="text-accent">upper = (high + low) &divide; 2 + multiplier &times; ATR</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">vs SMA20 / vs SMA50</dt>
-            <dd class="text-xs text-muted mt-0.5">Distance from moving averages</dd>
-            <dd class="mt-2">How far the price is above or below the 20/50-day simple moving average, shown as %.<br>
-              White within &plusmn;1%, fades to <span class="text-gain">full green</span> at +10% or <span class="text-loss">full red</span> at &minus;10%. Tooltip shows actual SMA value. For CEDEARs, uses the underlying US stock price.<br>
-              <code class="text-accent">(price &minus; SMA) &divide; SMA &times; 100</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Health</dt>
-            <dd class="text-xs text-muted mt-0.5">Composite technical score (&minus;5 to +5)</dd>
-            <dd class="mt-2">Each of 5 indicators contributes +1 (bullish) or &minus;1 (bearish):<br>
-              RSI &ge;50, Stoch K &gt; D, Supertrend up, price &gt; SMA20, price &gt; SMA50.<br>
-              Range: <span class="text-gain">+5</span> (all bullish) to <span class="text-loss">&minus;5</span> (all bearish). Hover for breakdown.</dd>
-          </div>
-        </dl>
+      <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
+        <h3 class="text-white font-medium text-base" data-i18n="glossary.technicals_title">Tecnicos</h3>
+        <p class="text-xs text-muted" data-i18n="glossary.technicals_intro" data-i18n-html></p>
+        <div class="space-y-2">
+          <p data-i18n="glossary.ath_def" data-i18n-html></p>
+          <p data-i18n="glossary.rsi_def" data-i18n-html></p>
+          <p data-i18n="glossary.stoch_def" data-i18n-html></p>
+          <p data-i18n="glossary.supertrend_def" data-i18n-html></p>
+          <p data-i18n="glossary.sma_def" data-i18n-html></p>
+          <p data-i18n="glossary.health_def" data-i18n-html></p>
+        </div>
       </div>
 
       <!-- Fundamentals Columns -->
-      <div>
-        <h2 class="text-white font-semibold text-lg mb-1">Fundamentals</h2>
-        <p class="text-xs text-muted mb-4">Metrics compared to <strong class="text-white">sector medians</strong>: <span class="text-gain">green</span> = better than sector, <span style="color: #d29922">yellow</span> = near average, <span class="text-loss">red</span> = worse. When no sector data is available, absolute thresholds are used.</p>
-        <dl class="space-y-4">
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">P/E</dt>
-            <dd class="text-xs text-muted mt-0.5">Price to trailing earnings &mdash; valuation</dd>
-            <dd class="mt-2">Lower is better (cheaper). <span class="text-gain">Green</span> below sector median, <span class="text-loss">red</span> above 1.5&times;.<br>
-              <code class="text-accent">share_price &divide; earnings_per_share</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Fwd P/E</dt>
-            <dd class="text-xs text-muted mt-0.5">Price to estimated forward earnings</dd>
-            <dd class="mt-2">Same as P/E but based on analyst estimates.<br>
-              <code class="text-accent">share_price &divide; estimated_future_eps</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">P/B</dt>
-            <dd class="text-xs text-muted mt-0.5">Price to book value &mdash; valuation</dd>
-            <dd class="mt-2">Compares market price to accounting (book) value.<br>
-              <code class="text-accent">share_price &divide; book_value_per_share</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">ROE %</dt>
-            <dd class="text-xs text-muted mt-0.5">Return on equity &mdash; profitability</dd>
-            <dd class="mt-2">Higher is better (efficient use of capital). <span class="text-gain">Green</span> above sector median, <span class="text-loss">red</span> below 50% of it.<br>
-              <code class="text-accent">net_income &divide; shareholder_equity &times; 100</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">EPS Gr %</dt>
-            <dd class="text-xs text-muted mt-0.5">Earnings per share growth &mdash; year over year</dd>
-            <dd class="mt-2"><code class="text-accent">(eps_current &minus; eps_prior) &divide; |eps_prior| &times; 100</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Div Yld %</dt>
-            <dd class="text-xs text-muted mt-0.5">Annual dividend yield</dd>
-            <dd class="mt-2"><code class="text-accent">annual_dividends &divide; share_price &times; 100</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">D/E</dt>
-            <dd class="text-xs text-muted mt-0.5">Debt to equity &mdash; leverage</dd>
-            <dd class="mt-2">Lower is better (less leverage). <span class="text-gain">Green</span> below sector median, <span class="text-loss">red</span> above 2&times;.<br>
-              <code class="text-accent">total_debt &divide; shareholder_equity</code></dd>
-          </div>
-          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
-            <dt class="text-white font-medium">Margin %</dt>
-            <dd class="text-xs text-muted mt-0.5">Net profit margin &mdash; profitability</dd>
-            <dd class="mt-2">Higher is better. <span class="text-gain">Green</span> above sector median, <span class="text-loss">red</span> below 50% of it.<br>
-              <code class="text-accent">net_income &divide; revenue &times; 100</code></dd>
-          </div>
-        </dl>
+      <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
+        <h3 class="text-white font-medium text-base" data-i18n="glossary.fundamentals_title">Fundamentales</h3>
+        <p class="text-xs text-muted" data-i18n="glossary.fundamentals_intro" data-i18n-html></p>
+        <div class="space-y-2">
+          <p data-i18n="glossary.pe_def" data-i18n-html></p>
+          <p data-i18n="glossary.fwd_pe_def" data-i18n-html></p>
+          <p data-i18n="glossary.pb_def" data-i18n-html></p>
+          <p data-i18n="glossary.roe_def" data-i18n-html></p>
+          <p data-i18n="glossary.eps_gr_def" data-i18n-html></p>
+          <p data-i18n="glossary.div_yld_def" data-i18n-html></p>
+          <p data-i18n="glossary.de_def" data-i18n-html></p>
+          <p data-i18n="glossary.margin_def" data-i18n-html></p>
+        </div>
       </div>
 
     </section>
   </main>
 
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/currency.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/portfolio.js"></script>
   <script src="js/tabs.js"></script>
+  <script src="js/filter.js"></script>
   <script src="js/table.js"></script>
+  <script src="js/toast.js"></script>
   <script src="js/import.js"></script>
   <script src="js/form.js"></script>
   <script src="js/technicals.js"></script>
   <script src="js/fundamentals.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/column-help.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

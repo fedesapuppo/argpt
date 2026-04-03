@@ -23,6 +23,9 @@ const Tabs = {
       section.classList.toggle('hidden', section.id !== `tab-${tabName}`);
     });
 
+    const filterBar = document.getElementById('filter-bar');
+    if (filterBar) filterBar.classList.toggle('hidden', tabName === 'glossary');
+
     window.location.hash = tabName;
   }
 };

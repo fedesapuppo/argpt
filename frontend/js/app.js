@@ -2,13 +2,24 @@ const App = {
   data: { prices: null, exchangeRates: null, technicals: null, fundamentals: null },
 
   async init() {
+    Toast.init();
+    I18n.init();
     Tabs.init();
+    Filter.init();
     Form.init();
     Import.init();
+    Export.init();
+    ColumnHelp.init();
 
     await Storage.loadFromJson();
+    if (Storage.isEmpty()) {
+      Storage.saveHoldings(Import._sampleHoldings());
+      this._sampleMode = true;
+    }
     await this.loadData();
+    document.getElementById('loading-overlay').classList.add('hidden');
     this.refresh();
+    this._updateSampleBanner();
   },
 
   async loadData() {
@@ -29,7 +40,7 @@ const App = {
 
     if (exchangeRates?.fetched_at) {
       const d = new Date(exchangeRates.fetched_at);
-      document.getElementById('last-updated').textContent = `Updated ${d.toLocaleString()}`;
+      document.getElementById('last-updated').textContent = I18n.t('updated', { date: d.toLocaleString() });
     }
   },
 
@@ -49,6 +60,7 @@ const App = {
     );
 
     this._updateSummary(result);
+    Chart.render(result.holdings);
     Table.renderPortfolio(result, fundamentals);
 
     const warning = document.getElementById('fx-warning');
@@ -56,6 +68,13 @@ const App = {
 
     Technicals.render(technicals, prices, holdings, exchangeRates?.mep, fundamentals);
     Fundamentals.render(fundamentals, holdings);
+    this._updateSampleBanner();
+  },
+
+  _updateSampleBanner() {
+    const banner = document.getElementById('sample-banner');
+    if (!banner) return;
+    banner.classList.toggle('hidden', !this._sampleMode);
   },
 
   _updateSummary(result) {
@@ -67,7 +86,7 @@ const App = {
     const totalPnlPct = totalCostUsd > 0 ? (result.total_pnl_usd / totalCostUsd) * 100 : 0;
     const pnlUsdEl = el('total-pnl-usd');
     pnlUsdEl.textContent = `${Currency.formatUSD(result.total_pnl_usd)} (${Currency.formatPct(totalPnlPct)})`;
-    pnlUsdEl.className = `text-lg font-mono font-medium tabular-nums ${Currency.pctClass(result.total_pnl_usd)}`;
+    pnlUsdEl.className = `text-2xl font-mono font-semibold tabular-nums ${Currency.pctClass(result.total_pnl_usd)}`;
 
     const argHoldings = result.holdings.filter(h => h.type === 'arg_stock');
     const cedHoldings = result.holdings.filter(h => h.type === 'cedear' || h.type === 'us_stock');

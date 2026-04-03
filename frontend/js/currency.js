@@ -40,5 +40,18 @@ const Currency = {
     if (!threshold) return '';
     const map = { green: 'text-gain', yellow: 'text-caution', red: 'text-loss' };
     return map[threshold] || '';
+  },
+
+  pctArrow(value) {
+    if (value == null || typeof value !== 'number' || isNaN(value)) return '';
+    if (value > 0) return '▲ ';
+    if (value < 0) return '▼ ';
+    return '';
+  },
+
+  thresholdArrow(threshold) {
+    if (threshold === 'green') return '▲ ';
+    if (threshold === 'red') return '▼ ';
+    return '';
   }
 };
