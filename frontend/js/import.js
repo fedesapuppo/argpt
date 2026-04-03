@@ -6,6 +6,16 @@ const Import = {
     this._bindInput('import-balanz', (file) => this._processBalanz(file));
     this._bindInput('import-ib', (file) => this._processIB(file));
 
+    const sampleBtn = document.getElementById('load-sample');
+    if (sampleBtn) {
+      sampleBtn.addEventListener('click', () => {
+        Storage.saveHoldings(this._sampleHoldings());
+        App.refresh();
+        document.getElementById('import-status').textContent = 'Sample portfolio loaded';
+        document.getElementById('import-status').className = 'self-center text-xs text-gain';
+      });
+    }
+
     const clearBtn = document.getElementById('clear-holdings');
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
@@ -178,5 +188,28 @@ const Import = {
     }
 
     return holdings;
+  },
+
+  _sampleHoldings() {
+    const h = (ticker, type, shares, avg_price, broker, entry_fx_rate) => ({
+      ticker, type, shares, avg_price,
+      purchase_date: null,
+      entry_fx_rate: entry_fx_rate || null,
+      broker: broker || (type === 'us_stock' ? 'ib' : 'balanz')
+    });
+    return [
+      h('AAPL',  'cedear',    50, 32500, 'balanz', 1180),
+      h('GOOGL', 'cedear',    30, 8200,  'balanz', 1150),
+      h('MELI',  'cedear',    10, 45000, 'balanz', 1200),
+      h('NVDA',  'cedear',    40, 2800,  'balanz', 1100),
+      h('MSFT',  'cedear',    20, 18500, 'balanz', 1170),
+      h('GGAL',  'arg_stock', 200, 6800, 'balanz', 1160),
+      h('YPFD',  'arg_stock', 50, 42000, 'balanz', 1190),
+      h('TXAR',  'arg_stock', 300, 1050, 'balanz', 1140),
+      h('PAMP',  'arg_stock', 100, 3800, 'balanz', 1175),
+      h('TSLA',  'us_stock',  5,   220),
+      h('AVGO',  'us_stock',  2,   180),
+      h('QQQ',   'us_stock',  10,  380),
+    ];
   }
 };
