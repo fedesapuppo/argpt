@@ -236,94 +236,198 @@
     </section>
 
     <!-- Glossary Tab -->
-    <section id="tab-glossary" class="hidden text-sm text-muted space-y-6">
+    <section id="tab-glossary" class="hidden text-sm text-muted space-y-8 max-w-4xl">
 
       <!-- Asset Types & FX -->
-      <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
-        <h3 class="text-white font-medium text-base">Asset Types & Currency Conversion</h3>
-        <div class="space-y-2">
-          <p><strong class="text-white">CEDEAR</strong> — Argentine Depositary Receipt. Local wrapper for US stocks, priced in ARS on BYMA. USD value derived via MEP rate. The ratio (e.g., 1:20) shows how many CEDEARs equal one US share.</p>
-          <p><strong class="text-white">Argentine Stock</strong> — Equity listed on BYMA, priced in ARS. USD value derived via MEP rate.</p>
-          <p><strong class="text-white">US Stock</strong> — Equity listed on NYSE/NASDAQ, priced in USD. No currency conversion needed.</p>
-          <p><strong class="text-white">MEP (Dolar MEP)</strong> — Implicit USD exchange rate obtained via local bond pair trades (AL30/AL30D). Used to convert ARS-priced assets to USD. Source: Data912.</p>
-          <p><strong class="text-white">CCL (Dolar CCL)</strong> — Implicit USD rate via ADR arbitrage (settles abroad). Used to display US stocks in ARS.</p>
-        </div>
+      <div>
+        <h2 class="text-white font-semibold text-lg mb-1">Asset Types & Currency Conversion</h2>
+        <p class="text-xs text-muted mb-4">How each asset type is priced and converted between ARS and USD.</p>
+        <dl class="space-y-4">
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">CEDEAR</dt>
+            <dd class="text-xs text-muted mt-0.5">Argentine Depositary Receipt</dd>
+            <dd class="mt-2">Local wrapper for US stocks, priced in ARS on BYMA. USD value derived via MEP rate. The ratio (e.g., 1:20) shows how many CEDEARs equal one US share.</dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Argentine Stock</dt>
+            <dd class="text-xs text-muted mt-0.5">BYMA-listed equity</dd>
+            <dd class="mt-2">Priced in ARS. USD value derived via MEP rate.</dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">US Stock</dt>
+            <dd class="text-xs text-muted mt-0.5">NYSE / NASDAQ equity</dd>
+            <dd class="mt-2">Priced in USD. No currency conversion needed.</dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">MEP (Dolar MEP)</dt>
+            <dd class="text-xs text-muted mt-0.5">Implicit USD rate via local bond trades</dd>
+            <dd class="mt-2">Obtained via local bond pair trades (AL30/AL30D). Used to convert ARS-priced assets to USD. Source: Data912.</dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">CCL (Dolar CCL)</dt>
+            <dd class="text-xs text-muted mt-0.5">Implicit USD rate via ADR arbitrage</dd>
+            <dd class="mt-2">Settles abroad. Used to display US stocks in ARS.</dd>
+          </div>
+        </dl>
       </div>
 
       <!-- Portfolio Columns -->
-      <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
-        <h3 class="text-white font-medium text-base">Portfolio</h3>
-        <div class="space-y-2">
-          <p><strong class="text-white">Avg ARS</strong> — Average purchase price in ARS per share. Only shown for Argentine assets (CEDEARs, Arg stocks).</p>
-          <p><strong class="text-white">Avg USD</strong> — Average purchase price in USD per share.<br>
-            Argentine assets: <code class="text-accent">avg_price_ars &divide; entry_mep_rate</code><br>
-            US stocks: the purchase price itself (already in USD).</p>
-          <p><strong class="text-white">Price USD</strong> — Current market price in USD.<br>
-            Argentine assets: <code class="text-accent">current_price_ars &divide; current_mep_rate</code><br>
-            US stocks: the market price itself.</p>
-          <p><strong class="text-white">Price %</strong> — Price change since purchase in the asset's native currency.<br>
-            <code class="text-accent">(current_price &minus; avg_price) &divide; avg_price &times; 100</code></p>
-          <p><strong class="text-white">Currency %</strong> — Change in the MEP rate since purchase, reflecting peso depreciation or appreciation. Only applies to Argentine assets.<br>
-            <code class="text-accent">(entry_mep_rate &divide; current_mep_rate &minus; 1) &times; 100</code></p>
-          <p><strong class="text-white">USD Ret %</strong> — Total return in USD, combining price and currency effects. Compounding avoids overstating or understating the real USD result.<br>
-            <code class="text-accent">(1 + price%) &times; (1 + currency%) &minus; 1</code></p>
-          <p><strong class="text-white">Value USD</strong> — Total position value in USD.<br>
-            <code class="text-accent">shares &times; price_usd</code></p>
-          <p><strong class="text-white">USD P&L</strong> — Profit or loss in US dollars.<br>
-            <code class="text-accent">(price_usd &minus; avg_usd) &times; shares</code></p>
-          <p><strong class="text-white">Weight %</strong> — Position size as a percentage of total portfolio value.<br>
-            <code class="text-accent">value_usd &divide; total_portfolio_usd &times; 100</code></p>
-        </div>
+      <div>
+        <h2 class="text-white font-semibold text-lg mb-1">Portfolio</h2>
+        <p class="text-xs text-muted mb-4">Columns shown in the Portfolio tab and how each value is calculated.</p>
+        <dl class="space-y-4">
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Avg ARS</dt>
+            <dd class="text-xs text-muted mt-0.5">Average purchase price in pesos</dd>
+            <dd class="mt-2">Per-share average cost in ARS. Only shown for Argentine assets (CEDEARs, Arg stocks).</dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Avg USD</dt>
+            <dd class="text-xs text-muted mt-0.5">Average purchase price in dollars</dd>
+            <dd class="mt-2">Argentine assets: <code class="text-accent">avg_price_ars &divide; entry_mep_rate</code><br>
+              US stocks: the purchase price itself (already in USD).</dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Price USD</dt>
+            <dd class="text-xs text-muted mt-0.5">Current market price in dollars</dd>
+            <dd class="mt-2">Argentine assets: <code class="text-accent">current_price_ars &divide; current_mep_rate</code><br>
+              US stocks: the market price itself.</dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Price %</dt>
+            <dd class="text-xs text-muted mt-0.5">Price change since purchase in native currency</dd>
+            <dd class="mt-2"><code class="text-accent">(current_price &minus; avg_price) &divide; avg_price &times; 100</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Currency %</dt>
+            <dd class="text-xs text-muted mt-0.5">MEP rate change since purchase</dd>
+            <dd class="mt-2">Reflects peso depreciation or appreciation. Only applies to Argentine assets.<br>
+              <code class="text-accent">(entry_mep_rate &divide; current_mep_rate &minus; 1) &times; 100</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">USD Ret %</dt>
+            <dd class="text-xs text-muted mt-0.5">Total compounded return in USD</dd>
+            <dd class="mt-2">Combines price and currency effects. Compounding avoids overstating or understating the real USD result.<br>
+              <code class="text-accent">(1 + price%) &times; (1 + currency%) &minus; 1</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Value USD</dt>
+            <dd class="text-xs text-muted mt-0.5">Total position value in dollars</dd>
+            <dd class="mt-2"><code class="text-accent">shares &times; price_usd</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">USD P&L</dt>
+            <dd class="text-xs text-muted mt-0.5">Profit or loss in dollars</dd>
+            <dd class="mt-2"><code class="text-accent">(price_usd &minus; avg_usd) &times; shares</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Weight %</dt>
+            <dd class="text-xs text-muted mt-0.5">Position size as portfolio percentage</dd>
+            <dd class="mt-2"><code class="text-accent">value_usd &divide; total_portfolio_usd &times; 100</code></dd>
+          </div>
+        </dl>
       </div>
 
       <!-- Technicals Columns -->
-      <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
-        <h3 class="text-white font-medium text-base">Technicals</h3>
-        <p class="text-xs text-muted">Colors show <strong class="text-white">portfolio health</strong>: <span class="text-gain">green</span> = holding is strong, <span class="text-loss">red</span> = holding is struggling. Colors fade through white — only extremes get full color.</p>
-        <div class="space-y-2">
-          <p><strong class="text-white">% Below ATH</strong> — How far the current price is below its all-time high.<br>
-            <span class="text-gain">Full green</span> at 0% (at ATH), fades to white at 15%, <span class="text-loss">full red</span> at 30%+.<br>
-            <code class="text-accent">(price &divide; all_time_high &minus; 1) &times; 100</code></p>
-          <p><strong class="text-white">RSI(14)</strong> — Relative Strength Index over 14 periods. Measures momentum by comparing average gains vs average losses.<br>
-            <span class="text-loss">Full red</span> &le;20 (deeply oversold), fades to white at 30, white 30–70 (neutral), fades to green at 80, <span class="text-gain">full green</span> &ge;80 (strong momentum).<br>
-            <code class="text-accent">100 &minus; 100 &divide; (1 + avg_gain &divide; avg_loss)</code></p>
-          <p><strong class="text-white">Stoch K/D</strong> — Stochastic oscillator. %K = where price closed vs the high-low range (14 periods). %D = 3-period SMA of %K. When K crosses above D, momentum is shifting up (and vice versa).<br>
-            <span class="text-loss">Full red</span> at 0 (deeply oversold), fades to white at 20, white 20–80 (neutral), fades to green at 80, <span class="text-gain">full green</span> at 100.<br>
-            <code class="text-accent">%K = (close &minus; low₁₄) &divide; (high₁₄ &minus; low₁₄) &times; 100</code></p>
-          <p><strong class="text-white">Supertrend</strong> — Trend-following indicator based on Average True Range (ATR).<br>
-            <span class="text-gain">Green</span> = uptrend (price above band), <span class="text-loss">red</span> = downtrend (price below band).<br>
-            <code class="text-accent">upper = (high + low) &divide; 2 + multiplier &times; ATR</code></p>
-          <p><strong class="text-white">vs SMA20 / vs SMA50</strong> — How far the price is above or below the 20/50-day simple moving average, shown as %.<br>
-            White within &plusmn;1%, fades to <span class="text-gain">full green</span> at +10% (above SMA) or <span class="text-loss">full red</span> at &minus;10% (below SMA). Tooltip shows actual SMA value. For CEDEARs, uses the underlying US stock price for comparison.<br>
-            <code class="text-accent">(price &minus; SMA) &divide; SMA &times; 100</code></p>
-          <p><strong class="text-white">Health</strong> — Combined score from 5 indicators. Each contributes +1 (bullish) or &minus;1 (bearish):<br>
-            RSI &ge;50 = +1, Stoch K &gt; D = +1, Supertrend up = +1, price &gt; SMA20 = +1, price &gt; SMA50 = +1.<br>
-            Range: <span class="text-gain">+5</span> (all bullish) to <span class="text-loss">&minus;5</span> (all bearish). Hover for per-indicator breakdown.</p>
-        </div>
+      <div>
+        <h2 class="text-white font-semibold text-lg mb-1">Technicals</h2>
+        <p class="text-xs text-muted mb-4">Colors show <strong class="text-white">portfolio health</strong>: <span class="text-gain">green</span> = holding is strong, <span class="text-loss">red</span> = holding is struggling. Colors fade through white — only extremes get full color.</p>
+        <dl class="space-y-4">
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">% Below ATH</dt>
+            <dd class="text-xs text-muted mt-0.5">Distance from all-time high</dd>
+            <dd class="mt-2"><span class="text-gain">Full green</span> at 0% (at ATH), fades to white at 15%, <span class="text-loss">full red</span> at 30%+.<br>
+              <code class="text-accent">(price &divide; all_time_high &minus; 1) &times; 100</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">RSI(14)</dt>
+            <dd class="text-xs text-muted mt-0.5">Relative Strength Index &mdash; momentum oscillator</dd>
+            <dd class="mt-2">Compares average gains vs average losses over 14 periods.<br>
+              <span class="text-loss">Full red</span> &le;20 (deeply oversold), fades to white at 30, white 30&ndash;70 (neutral), fades to green at 80, <span class="text-gain">full green</span> &ge;80 (strong momentum).<br>
+              <code class="text-accent">100 &minus; 100 &divide; (1 + avg_gain &divide; avg_loss)</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Stoch K/D</dt>
+            <dd class="text-xs text-muted mt-0.5">Stochastic oscillator &mdash; overbought / oversold</dd>
+            <dd class="mt-2">%K = where price closed vs the high-low range (14 periods). %D = 3-period SMA of %K. When K crosses above D, momentum is shifting up (and vice versa).<br>
+              <span class="text-loss">Full red</span> at 0 (deeply oversold), fades to white at 20, white 20&ndash;80 (neutral), fades to green at 80, <span class="text-gain">full green</span> at 100.<br>
+              <code class="text-accent">%K = (close &minus; low&#x2081;&#x2084;) &divide; (high&#x2081;&#x2084; &minus; low&#x2081;&#x2084;) &times; 100</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Supertrend</dt>
+            <dd class="text-xs text-muted mt-0.5">Trend-following indicator based on ATR</dd>
+            <dd class="mt-2"><span class="text-gain">Green</span> = uptrend (price above band), <span class="text-loss">red</span> = downtrend (price below band).<br>
+              <code class="text-accent">upper = (high + low) &divide; 2 + multiplier &times; ATR</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">vs SMA20 / vs SMA50</dt>
+            <dd class="text-xs text-muted mt-0.5">Distance from moving averages</dd>
+            <dd class="mt-2">How far the price is above or below the 20/50-day simple moving average, shown as %.<br>
+              White within &plusmn;1%, fades to <span class="text-gain">full green</span> at +10% or <span class="text-loss">full red</span> at &minus;10%. Tooltip shows actual SMA value. For CEDEARs, uses the underlying US stock price.<br>
+              <code class="text-accent">(price &minus; SMA) &divide; SMA &times; 100</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Health</dt>
+            <dd class="text-xs text-muted mt-0.5">Composite technical score (&minus;5 to +5)</dd>
+            <dd class="mt-2">Each of 5 indicators contributes +1 (bullish) or &minus;1 (bearish):<br>
+              RSI &ge;50, Stoch K &gt; D, Supertrend up, price &gt; SMA20, price &gt; SMA50.<br>
+              Range: <span class="text-gain">+5</span> (all bullish) to <span class="text-loss">&minus;5</span> (all bearish). Hover for breakdown.</dd>
+          </div>
+        </dl>
       </div>
 
       <!-- Fundamentals Columns -->
-      <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
-        <h3 class="text-white font-medium text-base">Fundamentals</h3>
-        <p class="text-xs text-muted">Metrics with color are compared to <strong class="text-white">sector medians</strong>: <span class="text-gain">green</span> = better than sector, <span style="color: #d29922">yellow</span> = near sector average, <span class="text-loss">red</span> = worse than sector. When no sector data is available, absolute thresholds are used.</p>
-        <div class="space-y-2">
-          <p><strong class="text-white">P/E</strong> — Price to trailing twelve-month earnings. Lower is better (cheaper valuation). <span class="text-gain">Green</span> below sector median, <span class="text-loss">red</span> above 1.5&times;.<br>
-            <code class="text-accent">share_price &divide; earnings_per_share</code></p>
-          <p><strong class="text-white">Fwd P/E</strong> — Price to estimated forward earnings. Same interpretation as P/E but based on analyst estimates.<br>
-            <code class="text-accent">share_price &divide; estimated_future_eps</code></p>
-          <p><strong class="text-white">P/B</strong> — Price to book value per share. Compares market price to accounting value.<br>
-            <code class="text-accent">share_price &divide; book_value_per_share</code></p>
-          <p><strong class="text-white">ROE %</strong> — Return on equity. Higher is better (efficient use of capital). <span class="text-gain">Green</span> above sector median, <span class="text-loss">red</span> below 50% of it.<br>
-            <code class="text-accent">net_income &divide; shareholder_equity &times; 100</code></p>
-          <p><strong class="text-white">EPS Gr %</strong> — Year-over-year earnings per share growth.<br>
-            <code class="text-accent">(eps_current &minus; eps_prior) &divide; |eps_prior| &times; 100</code></p>
-          <p><strong class="text-white">Div Yld %</strong> — Annual dividend yield as a percentage of share price.<br>
-            <code class="text-accent">annual_dividends &divide; share_price &times; 100</code></p>
-          <p><strong class="text-white">D/E</strong> — Debt to equity ratio. Lower is better (less leverage). <span class="text-gain">Green</span> below sector median, <span class="text-loss">red</span> above 2&times;.<br>
-            <code class="text-accent">total_debt &divide; shareholder_equity</code></p>
-          <p><strong class="text-white">Margin %</strong> — Net profit margin. Higher is better. <span class="text-gain">Green</span> above sector median, <span class="text-loss">red</span> below 50% of it.<br>
-            <code class="text-accent">net_income &divide; revenue &times; 100</code></p>
-        </div>
+      <div>
+        <h2 class="text-white font-semibold text-lg mb-1">Fundamentals</h2>
+        <p class="text-xs text-muted mb-4">Metrics compared to <strong class="text-white">sector medians</strong>: <span class="text-gain">green</span> = better than sector, <span style="color: #d29922">yellow</span> = near average, <span class="text-loss">red</span> = worse. When no sector data is available, absolute thresholds are used.</p>
+        <dl class="space-y-4">
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">P/E</dt>
+            <dd class="text-xs text-muted mt-0.5">Price to trailing earnings &mdash; valuation</dd>
+            <dd class="mt-2">Lower is better (cheaper). <span class="text-gain">Green</span> below sector median, <span class="text-loss">red</span> above 1.5&times;.<br>
+              <code class="text-accent">share_price &divide; earnings_per_share</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Fwd P/E</dt>
+            <dd class="text-xs text-muted mt-0.5">Price to estimated forward earnings</dd>
+            <dd class="mt-2">Same as P/E but based on analyst estimates.<br>
+              <code class="text-accent">share_price &divide; estimated_future_eps</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">P/B</dt>
+            <dd class="text-xs text-muted mt-0.5">Price to book value &mdash; valuation</dd>
+            <dd class="mt-2">Compares market price to accounting (book) value.<br>
+              <code class="text-accent">share_price &divide; book_value_per_share</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">ROE %</dt>
+            <dd class="text-xs text-muted mt-0.5">Return on equity &mdash; profitability</dd>
+            <dd class="mt-2">Higher is better (efficient use of capital). <span class="text-gain">Green</span> above sector median, <span class="text-loss">red</span> below 50% of it.<br>
+              <code class="text-accent">net_income &divide; shareholder_equity &times; 100</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">EPS Gr %</dt>
+            <dd class="text-xs text-muted mt-0.5">Earnings per share growth &mdash; year over year</dd>
+            <dd class="mt-2"><code class="text-accent">(eps_current &minus; eps_prior) &divide; |eps_prior| &times; 100</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Div Yld %</dt>
+            <dd class="text-xs text-muted mt-0.5">Annual dividend yield</dd>
+            <dd class="mt-2"><code class="text-accent">annual_dividends &divide; share_price &times; 100</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">D/E</dt>
+            <dd class="text-xs text-muted mt-0.5">Debt to equity &mdash; leverage</dd>
+            <dd class="mt-2">Lower is better (less leverage). <span class="text-gain">Green</span> below sector median, <span class="text-loss">red</span> above 2&times;.<br>
+              <code class="text-accent">total_debt &divide; shareholder_equity</code></dd>
+          </div>
+          <div class="bg-surface-secondary rounded-lg border border-surface-border p-4">
+            <dt class="text-white font-medium">Margin %</dt>
+            <dd class="text-xs text-muted mt-0.5">Net profit margin &mdash; profitability</dd>
+            <dd class="mt-2">Higher is better. <span class="text-gain">Green</span> above sector median, <span class="text-loss">red</span> below 50% of it.<br>
+              <code class="text-accent">net_income &divide; revenue &times; 100</code></dd>
+          </div>
+        </dl>
       </div>
 
     </section>
