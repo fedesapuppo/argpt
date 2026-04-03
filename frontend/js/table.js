@@ -36,7 +36,7 @@ const Table = {
       <tr class="border-b border-surface-border/50 hover:bg-surface-secondary/50 cursor-pointer" data-index="${h.index}">
         <td class="py-2 px-2 text-left relative">
           <span class="text-white font-medium">${this._esc(h.ticker)}</span>
-          <span class="text-[10px] text-muted ml-1">${this._typeLabel(h.type)}</span>
+          ${this._typeBadge(h.type)}
           ${ratio ? '<span class="text-[10px] text-accent/60 ml-0.5">' + this._esc(ratio) + '</span>' : ''}
           <span class="tip">${this._esc(h.ticker)} · ${this._typeTip(h.type)}${ratio ? ' · ' + I18n.t('tip.ratio', { ratio: this._esc(ratio) }) : ''}</span>
         </td>
@@ -120,8 +120,27 @@ const Table = {
     return I18n.t('type.' + type) || type;
   },
 
+  _typeBadge(type) {
+    const base = 'font-size:10px;margin-left:4px;padding:1px 5px;border-radius:3px;';
+    if (type === 'arg_stock') {
+      return `<span style="${base}background:linear-gradient(180deg,#74ACDF 30%,#fff 30%,#fff 70%,#74ACDF 70%);color:#1a4a6e;font-weight:600;">${this._typeLabel(type)}</span>`;
+    }
+    if (type === 'us_stock') {
+      return `<span style="${base}background:#002868;color:#fff;font-weight:600;border-left:2px solid #fff;border-right:2px solid #bf0a30;">${this._typeLabel(type)}</span>`;
+    }
+    if (type === 'cedear') {
+      return `<span style="${base}background:linear-gradient(135deg,rgba(116,172,223,0.3),rgba(139,92,246,0.3));color:#c4b5fd;">${this._typeLabel(type)}</span>`;
+    }
+    return `<span style="${base}color:#8b949e;">${this._typeLabel(type)}</span>`;
+  },
+
   _typeTip(type) {
-    return I18n.t('type.' + type + '_tip') || type;
+    const flags = {
+      arg_stock: '<span style="display:inline-block;width:14px;height:9px;border-radius:2px;vertical-align:middle;margin-right:4px;background:linear-gradient(180deg,#74ACDF 33%,#fff 33%,#fff 66%,#74ACDF 66%);"></span>',
+      us_stock:  '<span style="display:inline-block;width:14px;height:9px;border-radius:2px;vertical-align:middle;margin-right:4px;background:linear-gradient(90deg,#002868 33%,#fff 33%,#fff 66%,#bf0a30 66%);"></span>',
+      cedear:    '<span style="display:inline-block;width:14px;height:9px;border-radius:2px;vertical-align:middle;margin-right:4px;background:linear-gradient(135deg,#74ACDF,#8b5cf6);"></span>'
+    };
+    return (flags[type] || '') + I18n.t('type.' + type + '_tip');
   },
 
   _brokerLabel(broker) {

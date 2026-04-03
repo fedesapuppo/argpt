@@ -72,7 +72,7 @@ const Fundamentals = {
       <tr class="border-b border-surface-border/50 hover:bg-surface-secondary/50">
         <td class="py-2 px-2 text-left relative">
           <span class="text-white font-medium">${Table._esc(r.ticker)}</span>
-          ${r.type ? '<span class="text-[10px] text-muted ml-1">' + Table._typeLabel(r.type) + '</span>' : ''}
+          ${r.type ? Table._typeBadge(r.type) : ''}
           <span class="tip">${Table._esc(r.ticker)}${r.type ? ' · ' + Table._typeTip(r.type) : ''}</span>
         </td>
         <td class="py-2 px-2 text-right relative ${Currency.thresholdClass(th.pe)}">${Currency.thresholdArrow(th.pe)}${Currency.formatNum(r.pe, 1)}<span class="tip">${this._thresholdTip(th.pe, 'P/E', sec, med.pe, etf)}</span></td>
