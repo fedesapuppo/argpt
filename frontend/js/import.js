@@ -6,16 +6,6 @@ const Import = {
     this._bindInput('import-balanz', (file) => this._processBalanz(file));
     this._bindInput('import-ib', (file) => this._processIB(file));
 
-    const sampleBtn = document.getElementById('load-sample');
-    if (sampleBtn) {
-      sampleBtn.addEventListener('click', () => {
-        Storage.saveHoldings(this._sampleHoldings());
-        App._sampleMode = true;
-        App.refresh();
-        Toast.success(I18n.t('import.sample_loaded'));
-      });
-    }
-
     const clearBtn = document.getElementById('clear-holdings');
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
