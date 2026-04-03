@@ -60,7 +60,8 @@ module Argpt
           if paid.empty?
             next [] if free_shares.zero?
 
-            [build_holding(ticker, ticker_lots.first[:type], free_shares, 0.01, nil, nil)]
+            ref = ticker_lots.max_by { |l| l[:date] || Date.new(0) }
+            [build_holding(ticker, ref[:type], free_shares, 0.01, ref[:date], ref[:mep].positive? ? ref[:mep] : nil)]
           else
             extra_per_lot = paid.length > 0 ? free_shares / paid.length : 0
 

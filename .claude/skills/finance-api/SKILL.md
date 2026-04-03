@@ -30,6 +30,15 @@ Reference for the three data sources used in ARGPT. For full details, see
 - `D` suffix = USD/MEP price (e.g., `AAPLD`, `AL30D`)
 - `C` suffix = Cable/CCL price (e.g., `AAPLC`, `AL30C`)
 
+### Historical endpoint (`GET /historical/{type}/{ticker}`)
+
+Types: `stocks`, `cedears`, `bonds`.
+
+**Gotchas**:
+- Returns **abbreviated keys**: `o`, `h`, `l`, `c`, `v`, `dr`, `sa` (not `open`/`high`/`low`/`close`). The spec fixture `data912_historical_stocks_ggal.json` uses long names — always handle both (`entry[:close] || entry[:c]`).
+- Returns `{ Error: "..." }` hash for unknown tickers instead of HTTP 404 — guard with `.is_a?(Array)` before iterating results.
+- Data is sorted oldest-first.
+
 ### Common response fields
 
 | Field    | Meaning                              |
@@ -74,9 +83,20 @@ Reference for the three data sources used in ARGPT. For full details, see
 | `GET /v2/quotes?symbols=X,Y`    | Batch quotes (130+ fields each)  |
 | `GET /v2/search?query=X`        | Ticker search                    |
 
+### CEDEAR ratio from `shortName`
+
+The REST `/v2/quotes` endpoint for `.BA` tickers includes the CEDEAR-to-stock ratio in `shortName`. Two formats:
+- `"APPLE INC CEDEAR(REPR 1/20 SHR)"` → 1 CEDEAR = 1/20 share
+- `"BOEING CO CEDEAR EACH 24 REP 1"` → 24 CEDEARs = 1 share
+
+Parse with: `/(?:REPR\s+(\d+)\/(\d+)|EACH\s+(\d+))/i`
+
+Note: The GraphQL `quote` for US tickers (`AAPL`) returns the US company name without ratio info. Only the `.BA` REST endpoint has it.
+
 ### Ticker conventions
 
 - US tickers as-is: `AAPL`, `MSFT`, `GGAL` (ADR)
+- Balanz uses `.C` suffix for Cable/CCL tickers (e.g., `BA.C` for Boeing). Strip `.C` before querying finance-query or Data912 — it's a broker-internal convention, not recognized by external APIs.
 - Argentine tickers: `.BA` suffix — `GGAL.BA`, `YPFD.BA`, `ALUA.BA`
 
 ## ArgentinaDatos (`https://api.argentinadatos.com`)

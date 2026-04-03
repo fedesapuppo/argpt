@@ -11,6 +11,13 @@ end
 
 holdings = Argpt::Import::Balanz.new(path:).call
 
+spinoffs = holdings.select { |h| h.avg_price <= 0.01 && h.purchase_date }
+if spinoffs.any?
+  puts "Resolving prices for #{spinoffs.length} spinoff lot(s): #{spinoffs.map(&:ticker).join(', ')}"
+  data912 = Argpt::DataSources::Data912.new(client: Argpt::HttpClient.new)
+  holdings = Argpt::Import::SpinoffPricer.new(holdings:, data912:).call
+end
+
 # Merge with existing holdings (keep non-Balanz holdings)
 data_dir = File.join(__dir__, "..", "frontend", "data")
 holdings_path = File.join(data_dir, "holdings.json")

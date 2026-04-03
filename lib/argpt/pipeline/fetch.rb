@@ -29,6 +29,7 @@ module Argpt
 
         unique_tickers = entry_by_ticker.keys
         fundamentals = fetch_fundamentals(unique_tickers, entry_by_ticker)
+        enrich_cedear_ratios(fundamentals, entry_by_ticker)
         technicals = fetch_technicals(unique_tickers, entry_by_ticker, fundamentals)
 
         exchange_rates = {}
@@ -45,7 +46,8 @@ module Argpt
       private
 
       def fq_symbol(ticker, entry)
-        entry[:type] == :arg_stock ? "#{ticker}.BA" : ticker
+        base = ticker.sub(/\.C$/, '')
+        entry[:type] == :arg_stock ? "#{base}.BA" : base
       end
 
       def fetch_technicals(tickers, entry_by_ticker, fundamentals)
@@ -79,6 +81,39 @@ module Argpt
           result[ticker] = Fundamentals::Analyzer.new(quote:).call
         rescue Argpt::GraphqlError, Argpt::HttpError => e
           warn "  [skip fundamentals] #{ticker}: #{e.message}"
+        end
+      end
+
+      def enrich_cedear_ratios(fundamentals, entry_by_ticker)
+        cedear_tickers = entry_by_ticker.select { |_, e| e[:type] == :cedear }.keys
+        return if cedear_tickers.empty?
+
+        ba_symbols = cedear_tickers.map { |t| "#{t.sub(/\.C$/, '')}.BA" }
+        quotes = @finance_query.quotes(ba_symbols)
+        return unless quotes.is_a?(Hash) && quotes[:quotes]
+
+        cedear_tickers.each do |ticker|
+          ba_sym = "#{ticker.sub(/\.C$/, '')}.BA".to_sym
+          short_name = quotes[:quotes].dig(ba_sym, :shortName)
+          next unless short_name
+
+          ratio = parse_cedear_ratio(short_name)
+          fundamentals[ticker][:cedear_ratio] = ratio if ratio && fundamentals[ticker]
+        end
+      rescue Argpt::HttpError => e
+        warn "  [skip cedear ratios] #{e.message}"
+      end
+
+      RATIO_PATTERN = /(?:REPR\s+(\d+)\/(\d+)|EACH\s+(\d+))/i
+
+      def parse_cedear_ratio(short_name)
+        match = short_name.match(RATIO_PATTERN)
+        return nil unless match
+
+        if match[1]
+          "#{match[1]}:#{match[2]}"
+        else
+          "1:#{match[3]}"
         end
       end
 

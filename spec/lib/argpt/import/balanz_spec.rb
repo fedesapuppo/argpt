@@ -58,6 +58,16 @@ RSpec.describe Argpt::Import::Balanz do
       expect(result.none? { |h| h.ticker == "BCACCA" }).to be true
     end
 
+    it "preserves date and mep for spinoff-only tickers" do
+      result = Argpt::Import::Balanz.new(path: fixture_path).call
+      irsa = result.find { |h| h.ticker == "IRSA" }
+
+      expect(irsa.shares).to eq(5)
+      expect(irsa.avg_price).to eq(0.01)
+      expect(irsa.purchase_date).to eq(Date.new(2025, 11, 7))
+      expect(irsa.purchase_fx_rate).to eq(1452.57)
+    end
+
     it "sets purchase_date per lot" do
       result = Argpt::Import::Balanz.new(path: fixture_path).call
       ggal_lots = result.select { |h| h.ticker == "GGAL" }.sort_by(&:purchase_date)
