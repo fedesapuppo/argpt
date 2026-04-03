@@ -12,6 +12,7 @@ module Argpt
         @output_dir = output_dir
         @data912 = data912
         @finance_query = finance_query
+        @skipped = []
       end
 
       def call
@@ -22,8 +23,8 @@ module Argpt
 
         mep_data = @data912.mep_rates
         ccl_data = @data912.ccl_rates
-        mep = mep_data.empty? ? nil : Portfolio::ExchangeRate.best_mep(mep_data)
-        ccl = ccl_data.empty? ? nil : Portfolio::ExchangeRate.best_ccl(ccl_data)
+        mep = mep_data.empty? ? nil : Portfolio::ExchangeRate.best(mep_data)
+        ccl = ccl_data.empty? ? nil : Portfolio::ExchangeRate.best(ccl_data)
 
         prices = PriceFetcher.new(data912: @data912, entries:, finance_query: @finance_query).call
 
@@ -40,13 +41,16 @@ module Argpt
           exchange_rates:, prices:, technicals:, fundamentals:
         )
 
-        { tickers_count: unique_tickers.length, output_dir: @output_dir }
+        { tickers_count: unique_tickers.length, output_dir: @output_dir, skipped: @skipped }
       end
 
       private
 
+      TICKER_ALIASES = { "BRKB" => "BRK-B" }.freeze
+
       def fq_symbol(ticker, entry)
         base = ticker.sub(/\.C$/, '')
+        base = TICKER_ALIASES.fetch(base, base)
         entry[:type] == :arg_stock ? "#{base}.BA" : base
       end
 
@@ -67,7 +71,8 @@ module Argpt
             current_price: fund&.dig(:current_price)
           ).call
         rescue Argpt::GraphqlError, Argpt::HttpError => e
-          warn "  [skip technicals] #{ticker}: #{e.message}"
+          @skipped << { ticker:, section: :technicals, reason: e.message }
+          Argpt::Logger.warn("technicals", ticker, e.message)
         end
       end
 
@@ -80,7 +85,8 @@ module Argpt
 
           result[ticker] = Fundamentals::Analyzer.new(quote:).call
         rescue Argpt::GraphqlError, Argpt::HttpError => e
-          warn "  [skip fundamentals] #{ticker}: #{e.message}"
+          @skipped << { ticker:, section: :fundamentals, reason: e.message }
+          Argpt::Logger.warn("fundamentals", ticker, e.message)
         end
       end
 
@@ -88,12 +94,12 @@ module Argpt
         cedear_tickers = entry_by_ticker.select { |_, e| e[:type] == :cedear }.keys
         return if cedear_tickers.empty?
 
-        ba_symbols = cedear_tickers.map { |t| "#{t.sub(/\.C$/, '')}.BA" }
+        ba_symbols = cedear_tickers.map { |t| cedear_ba_symbol(t) }
         quotes = @finance_query.quotes(ba_symbols)
         return unless quotes.is_a?(Hash) && quotes[:quotes]
 
         cedear_tickers.each do |ticker|
-          ba_sym = "#{ticker.sub(/\.C$/, '')}.BA".to_sym
+          ba_sym = cedear_ba_symbol(ticker).to_sym
           short_name = quotes[:quotes].dig(ba_sym, :shortName)
           next unless short_name
 
@@ -101,7 +107,14 @@ module Argpt
           fundamentals[ticker][:cedear_ratio] = ratio if ratio && fundamentals[ticker]
         end
       rescue Argpt::HttpError => e
-        warn "  [skip cedear ratios] #{e.message}"
+        @skipped << { ticker: "cedear_ratios", section: :fundamentals, reason: e.message }
+        Argpt::Logger.warn("fundamentals", "cedear_ratios", e.message)
+      end
+
+      def cedear_ba_symbol(ticker)
+        base = ticker.sub(/\.C$/, '')
+        base = TICKER_ALIASES.fetch(base, base)
+        "#{base}.BA"
       end
 
       RATIO_PATTERN = /(?:REPR\s+(\d+)\/(\d+)|EACH\s+(\d+))/i

@@ -147,6 +147,91 @@ RSpec.describe Argpt::Pipeline::Fetch do
       FileUtils.rm_rf(output_dir)
       config_file.close!
     end
+
+    it "tracks skipped fundamentals in result" do
+      output_dir = Dir.mktmpdir
+      config_file = write_config("tickers:\n  - ticker: AAPL\n    type: us_stock\n")
+      data912 = stub_data912
+      finance_query = stub_finance_query
+      allow(finance_query).to receive(:quote).and_raise(Argpt::GraphqlError, "query failed")
+
+      result = Argpt::Pipeline::Fetch.new(
+        config_path: config_file.path,
+        output_dir:,
+        data912:,
+        finance_query:
+      ).call
+
+      expect(result[:skipped]).to include(
+        hash_including(ticker: "AAPL", section: :fundamentals)
+      )
+    ensure
+      FileUtils.rm_rf(output_dir)
+      config_file.close!
+    end
+
+    it "tracks skipped technicals in result" do
+      output_dir = Dir.mktmpdir
+      config_file = write_config("tickers:\n  - ticker: AAPL\n    type: us_stock\n")
+      data912 = stub_data912
+      finance_query = stub_finance_query
+      allow(finance_query).to receive(:indicators).and_raise(Argpt::HttpError, "timeout")
+
+      result = Argpt::Pipeline::Fetch.new(
+        config_path: config_file.path,
+        output_dir:,
+        data912:,
+        finance_query:
+      ).call
+
+      expect(result[:skipped]).to include(
+        hash_including(ticker: "AAPL", section: :technicals)
+      )
+    ensure
+      FileUtils.rm_rf(output_dir)
+      config_file.close!
+    end
+
+    it "returns empty skipped array when nothing is skipped" do
+      output_dir = Dir.mktmpdir
+      config_file = write_config("tickers:\n  - ticker: AAPL\n    type: us_stock\n")
+      data912 = stub_data912
+      finance_query = stub_finance_query
+
+      result = Argpt::Pipeline::Fetch.new(
+        config_path: config_file.path,
+        output_dir:,
+        data912:,
+        finance_query:
+      ).call
+
+      expect(result[:skipped]).to eq([])
+    ensure
+      FileUtils.rm_rf(output_dir)
+      config_file.close!
+    end
+  end
+
+  describe "#fq_symbol via TICKER_ALIASES" do
+    it "resolves BRKB to BRK-B for finance-query" do
+      output_dir = Dir.mktmpdir
+      config_file = write_config("tickers:\n  - ticker: BRKB\n    type: cedear\n")
+      data912 = stub_data912
+      finance_query = stub_finance_query
+      allow(finance_query).to receive(:quotes).and_return({ quotes: {} })
+
+      Argpt::Pipeline::Fetch.new(
+        config_path: config_file.path,
+        output_dir:,
+        data912:,
+        finance_query:
+      ).call
+
+      expect(finance_query).to have_received(:quote).with("BRK-B")
+    ensure
+      FileUtils.rm_rf(output_dir)
+      config_file.close!
+    end
   end
 
   private

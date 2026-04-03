@@ -3,6 +3,8 @@ module Argpt
     class Analyzer
       ABSOLUTE_THRESHOLDS = {
         pe:             { direction: :lower,  green: 15, yellow: 25 },
+        forward_pe:     { direction: :lower,  green: 15, yellow: 25 },
+        pb:             { direction: :lower,  green: 2,  yellow: 4 },
         roe:            { direction: :higher, green: 15, yellow: 10 },
         debt_to_equity: { direction: :lower,  green: 1,  yellow: 2 },
         profit_margin:  { direction: :higher, green: 20, yellow: 10 }
@@ -10,6 +12,8 @@ module Argpt
 
       RELATIVE_MULTIPLIERS = {
         pe:             { direction: :lower,  yellow: 1.5 },
+        forward_pe:     { direction: :lower,  yellow: 1.5 },
+        pb:             { direction: :lower,  yellow: 1.5 },
         roe:            { direction: :higher, yellow: 0.5 },
         debt_to_equity: { direction: :lower,  yellow: 2.0 },
         profit_margin:  { direction: :higher, yellow: 0.5 }
@@ -28,6 +32,7 @@ module Argpt
         operating_margin = to_pct(@quote[:operatingMargins])
         dividend_yield = to_pct(@quote[:dividendYield])
         eps_growth = to_pct(@quote[:earningsGrowth])
+        de_ratio = to_ratio(@quote[:debtToEquity])
 
         {
           pe:,
@@ -36,7 +41,7 @@ module Argpt
           roe:,
           eps_growth:,
           dividend_yield:,
-          debt_to_equity: numeric_or_nil(@quote[:debtToEquity]),
+          debt_to_equity: de_ratio,
           profit_margin:,
           operating_margin:,
           sector: @quote[:sector],
@@ -47,8 +52,10 @@ module Argpt
           market_cap: @quote[:marketCap],
           thresholds: {
             pe: threshold(:pe, pe),
+            forward_pe: threshold(:forward_pe, forward_pe),
+            pb: threshold(:pb, @quote[:priceToBook]),
             roe: threshold(:roe, roe),
-            debt_to_equity: threshold(:debt_to_equity, @quote[:debtToEquity]),
+            debt_to_equity: threshold(:debt_to_equity, de_ratio),
             profit_margin: threshold(:profit_margin, profit_margin)
           },
           medians: @benchmarks || {}
@@ -75,10 +82,19 @@ module Argpt
         value * 100
       end
 
+      def to_ratio(value)
+        return nil unless value.is_a?(Numeric)
+
+        value / 100.0
+      end
+
+      BENCHMARK_KEYS = { forward_pe: :pe }.freeze
+
       def threshold(metric, value)
         return nil unless value.is_a?(Numeric)
 
-        benchmark = @benchmarks&.dig(metric)
+        benchmark_key = BENCHMARK_KEYS.fetch(metric, metric)
+        benchmark = @benchmarks&.dig(benchmark_key)
         benchmark ? relative_threshold(metric, value, benchmark) : absolute_threshold(metric, value)
       end
 
