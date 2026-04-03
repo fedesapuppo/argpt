@@ -50,7 +50,8 @@ module Argpt
             roe: threshold(:roe, roe),
             debt_to_equity: threshold(:debt_to_equity, @quote[:debtToEquity]),
             profit_margin: threshold(:profit_margin, profit_margin)
-          }
+          },
+          medians: @benchmarks || {}
         }
       end
 
