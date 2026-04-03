@@ -1,7 +1,14 @@
 {
-  "GGAL:arg_stock": { "last": 5200.0, "change": 2.5, "volume": 1500000, "currency": "ars", "type": "arg_stock" },
-  "YPF:arg_stock": { "last": 38000.0, "change": -1.2, "volume": 800000, "currency": "ars", "type": "arg_stock" },
-  "AAPL:cedear": { "last": 15200.0, "change": 0.8, "volume": 500000, "currency": "ars", "type": "cedear" },
-  "AAPL:us_stock": { "last": 185.5, "change": 1.2, "volume": 45000000, "currency": "usd", "type": "us_stock" },
-  "MSFT:us_stock": { "last": 420.3, "change": 0.5, "volume": 30000000, "currency": "usd", "type": "us_stock" }
+  "AAPL:cedear":    { "last": 19000.0, "change": 1.2, "volume": 500000, "currency": "ars", "type": "cedear" },
+  "GOOGL:cedear":   { "last": 7600.0,  "change": 0.8, "volume": 300000, "currency": "ars", "type": "cedear" },
+  "MELI:cedear":    { "last": 21400.0, "change": 2.1, "volume": 150000, "currency": "ars", "type": "cedear" },
+  "NVDA:cedear":    { "last": 10900.0, "change": 1.5, "volume": 400000, "currency": "ars", "type": "cedear" },
+  "MSFT:cedear":    { "last": 18300.0, "change": 0.6, "volume": 200000, "currency": "ars", "type": "cedear" },
+  "GGAL:arg_stock": { "last": 6900.0,  "change": 1.8, "volume": 1500000, "currency": "ars", "type": "arg_stock" },
+  "YPFD:arg_stock": { "last": 65500.0, "change": 2.2, "volume": 800000, "currency": "ars", "type": "arg_stock" },
+  "TXAR:arg_stock": { "last": 700.0,   "change": 0.9, "volume": 600000, "currency": "ars", "type": "arg_stock" },
+  "PAMP:arg_stock": { "last": 5200.0,  "change": 1.4, "volume": 400000, "currency": "ars", "type": "arg_stock" },
+  "TSLA:us_stock":  { "last": 360.0,   "change": 3.1, "volume": 45000000, "currency": "usd", "type": "us_stock" },
+  "AVGO:us_stock":  { "last": 315.0,   "change": 1.8, "volume": 12000000, "currency": "usd", "type": "us_stock" },
+  "QQQ:us_stock":   { "last": 585.0,   "change": 0.9, "volume": 30000000, "currency": "usd", "type": "us_stock" }
 }
