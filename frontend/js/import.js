@@ -194,18 +194,18 @@ const Import = {
       broker: broker || (type === 'us_stock' ? 'ib' : 'balanz')
     });
     return [
-      h('AAPL',  'cedear',    50, 32500, 'balanz', 1180),
-      h('GOOGL', 'cedear',    30, 8200,  'balanz', 1150),
-      h('MELI',  'cedear',    10, 45000, 'balanz', 1200),
-      h('NVDA',  'cedear',    40, 2800,  'balanz', 1100),
-      h('MSFT',  'cedear',    20, 18500, 'balanz', 1170),
-      h('GGAL',  'arg_stock', 200, 6800, 'balanz', 1160),
-      h('YPFD',  'arg_stock', 50, 42000, 'balanz', 1190),
-      h('TXAR',  'arg_stock', 300, 1050, 'balanz', 1140),
-      h('PAMP',  'arg_stock', 100, 3800, 'balanz', 1175),
-      h('TSLA',  'us_stock',  5,   220),
-      h('AVGO',  'us_stock',  2,   180),
-      h('QQQ',   'us_stock',  10,  380),
+      h('AAPL',  'cedear',    50, 15000, 'balanz', 1350),
+      h('GOOGL', 'cedear',    30, 6200,  'balanz', 1300),
+      h('MELI',  'cedear',    10, 18000, 'balanz', 1350),
+      h('NVDA',  'cedear',    40, 7500,  'balanz', 1250),
+      h('MSFT',  'cedear',    20, 15000, 'balanz', 1300),
+      h('GGAL',  'arg_stock', 200, 5200, 'balanz', 1300),
+      h('YPFD',  'arg_stock', 50, 48000, 'balanz', 1280),
+      h('TXAR',  'arg_stock', 300, 580,  'balanz', 1300),
+      h('PAMP',  'arg_stock', 100, 3800, 'balanz', 1280),
+      h('TSLA',  'us_stock',  5,   280),
+      h('AVGO',  'us_stock',  2,   250),
+      h('QQQ',   'us_stock',  10,  480),
     ];
   }
 };
