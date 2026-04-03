@@ -7,7 +7,7 @@ const Table = {
     return div.innerHTML;
   },
 
-  renderPortfolio(result) {
+  renderPortfolio(result, fundamentals) {
     const empty = document.getElementById('empty-state');
 
     if (!result.holdings.length) {
@@ -18,6 +18,7 @@ const Table = {
 
     empty.classList.add('hidden');
     this._portfolioData = result.holdings;
+    this._fundamentals = fundamentals || {};
     this._renderPortfolioRows(result.holdings);
     this.setupSorting('portfolio-table', this._portfolioData, (sorted) => {
       this._renderPortfolioRows(sorted);
@@ -27,12 +28,16 @@ const Table = {
   _renderPortfolioRows(holdings) {
     const tbody = document.getElementById('portfolio-body');
     const isArs = (t) => t === 'cedear' || t === 'arg_stock';
-    tbody.innerHTML = holdings.map(h => `
+    const fund = this._fundamentals || {};
+    tbody.innerHTML = holdings.map(h => {
+      const ratio = h.type === 'cedear' ? fund[h.ticker]?.cedear_ratio : null;
+      return `
       <tr class="border-b border-surface-border/50 hover:bg-surface-secondary/50">
         <td class="py-2 px-2 text-left relative">
           <span class="text-white font-medium">${this._esc(h.ticker)}</span>
           <span class="text-[10px] text-muted ml-1">${this._typeLabel(h.type)}</span>
-          <span class="tip">${this._esc(h.ticker)} · ${this._typeTip(h.type)}</span>
+          ${ratio ? '<span class="text-[10px] text-accent/60 ml-0.5">' + this._esc(ratio) + '</span>' : ''}
+          <span class="tip">${this._esc(h.ticker)} · ${this._typeTip(h.type)}${ratio ? ' · Ratio: ' + this._esc(ratio) + ' (CEDEARs per share)' : ''}</span>
         </td>
         <td class="py-2 px-2 text-center text-xs text-muted relative">${this._brokerLabel(h.broker)}<span class="tip">${this._brokerTip(h.broker)}</span></td>
         <td class="py-2 px-2 text-right relative">${Currency.formatNum(h.shares, h.shares % 1 ? 2 : 0)}<span class="tip">Shares held</span></td>
@@ -45,12 +50,12 @@ const Table = {
         <td class="py-2 px-2 text-right relative ${Currency.pctClass(h.total_return_usd_pct)}">${Currency.formatPct(h.total_return_usd_pct)}<span class="tip">Total return in USD since purchase</span></td>
         <td class="py-2 px-2 text-right relative">${h.value_usd ? Currency.formatUSD(h.value_usd) : '--'}<span class="tip">Total position value in USD</span></td>
         <td class="py-2 px-2 text-right relative ${Currency.pctClass(h.pnl_usd)}">${h.pnl_usd != null ? Currency.formatUSD(h.pnl_usd) : '--'}<span class="tip">Profit or loss in USD</span></td>
-        <td class="py-2 px-2 text-right relative">${Currency.formatNum(h.weight_pct, 1)}%<span class="tip">% of total portfolio value in USD</span></td>
+        <td class="py-2 px-2 text-right relative">${Currency.formatNum(h.weight_pct, 2)}%<span class="tip">% of total portfolio value in USD</span></td>
         <td class="py-2 px-2 text-center">
           <button class="remove-btn text-muted hover:text-loss text-xs" data-index="${h.index}">✕</button>
         </td>
       </tr>
-    `).join('');
+    `}).join('');
 
     tbody.addEventListener('click', (e) => {
       const btn = e.target.closest('.remove-btn');

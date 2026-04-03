@@ -205,9 +205,9 @@
               <th class="text-right py-2 px-2 relative" data-sort="rsi14">RSI(14)<span class="tip">Relative Strength Index, 14 periods</span></th>
               <th class="text-right py-2 px-2 relative" data-sort="stochastic_k">Stoch K/D<span class="tip">Stochastic oscillator</span></th>
               <th class="text-center py-2 px-2 relative" data-sort="supertrend_trend">Supertrend<span class="tip">Trend-following indicator</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="sma20">SMA20<span class="tip">20-day simple moving average</span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="sma50">SMA50<span class="tip">50-day simple moving average</span></th>
-              <th class="text-center py-2 px-2 relative">Signal<span class="tip">Combined momentum signal</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="sma20_pct">vs SMA20<span class="tip">% above or below 20-day moving average</span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="sma50_pct">vs SMA50<span class="tip">% above or below 50-day moving average</span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="health">Health<span class="tip">Combined health score from all indicators</span></th>
             </tr>
           </thead>
           <tbody id="technicals-body"></tbody>
@@ -245,7 +245,7 @@
       <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
         <h3 class="text-white font-medium text-base">Asset Types & Currency Conversion</h3>
         <div class="space-y-2">
-          <p><strong class="text-white">CEDEAR</strong> — Argentine Depositary Receipt. Local wrapper for US stocks, priced in ARS on BYMA. USD value derived via MEP rate.</p>
+          <p><strong class="text-white">CEDEAR</strong> — Argentine Depositary Receipt. Local wrapper for US stocks, priced in ARS on BYMA. USD value derived via MEP rate. The ratio (e.g., 1:20) shows how many CEDEARs equal one US share.</p>
           <p><strong class="text-white">Argentine Stock</strong> — Equity listed on BYMA, priced in ARS. USD value derived via MEP rate.</p>
           <p><strong class="text-white">US Stock</strong> — Equity listed on NYSE/NASDAQ, priced in USD. No currency conversion needed.</p>
           <p><strong class="text-white">MEP (Dolar MEP)</strong> — Implicit USD exchange rate obtained via local bond pair trades (AL30/AL30D). Used to convert ARS-priced assets to USD. Source: Data912.</p>
@@ -282,40 +282,49 @@
       <!-- Technicals Columns -->
       <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
         <h3 class="text-white font-medium text-base">Technicals</h3>
+        <p class="text-xs text-muted">Colors show <strong class="text-white">portfolio health</strong>: <span class="text-gain">green</span> = holding is strong, <span class="text-loss">red</span> = holding is struggling. Colors fade through white — only extremes get full color.</p>
         <div class="space-y-2">
           <p><strong class="text-white">% Below ATH</strong> — How far the current price is below its all-time high.<br>
+            <span class="text-gain">Full green</span> at 0% (at ATH), fades to white at 15%, <span class="text-loss">full red</span> at 30%+.<br>
             <code class="text-accent">(price &divide; all_time_high &minus; 1) &times; 100</code></p>
-          <p><strong class="text-white">RSI(14)</strong> — Relative Strength Index over 14 periods. Measures momentum by comparing average gains vs average losses. Below 30 is oversold, above 70 is overbought.<br>
+          <p><strong class="text-white">RSI(14)</strong> — Relative Strength Index over 14 periods. Measures momentum by comparing average gains vs average losses.<br>
+            <span class="text-loss">Full red</span> &le;20 (deeply oversold), fades to white at 30, white 30–70 (neutral), fades to green at 80, <span class="text-gain">full green</span> &ge;80 (strong momentum).<br>
             <code class="text-accent">100 &minus; 100 &divide; (1 + avg_gain &divide; avg_loss)</code></p>
-          <p><strong class="text-white">Stoch K/D</strong> — Stochastic oscillator. %K measures where the price closed relative to the high-low range over 14 periods. %D is a 3-period SMA of %K. Below 20 is oversold, above 80 is overbought.<br>
+          <p><strong class="text-white">Stoch K/D</strong> — Stochastic oscillator. %K = where price closed vs the high-low range (14 periods). %D = 3-period SMA of %K. When K crosses above D, momentum is shifting up (and vice versa).<br>
+            <span class="text-loss">Full red</span> at 0 (deeply oversold), fades to white at 20, white 20–80 (neutral), fades to green at 80, <span class="text-gain">full green</span> at 100.<br>
             <code class="text-accent">%K = (close &minus; low₁₄) &divide; (high₁₄ &minus; low₁₄) &times; 100</code></p>
-          <p><strong class="text-white">Supertrend</strong> — Trend-following indicator based on Average True Range (ATR). Price above the band = uptrend, below = downtrend.<br>
+          <p><strong class="text-white">Supertrend</strong> — Trend-following indicator based on Average True Range (ATR).<br>
+            <span class="text-gain">Green</span> = uptrend (price above band), <span class="text-loss">red</span> = downtrend (price below band).<br>
             <code class="text-accent">upper = (high + low) &divide; 2 + multiplier &times; ATR</code></p>
-          <p><strong class="text-white">SMA20 / SMA50</strong> — Simple moving averages. Sum of closing prices over N days divided by N.<br>
-            <code class="text-accent">SMA(N) = (close₁ + close₂ + &hellip; + closeₙ) &divide; N</code></p>
-          <p><strong class="text-white">Signal</strong> — Combined signal derived from RSI and Stochastic indicators. Flags oversold/overbought when both indicators agree.</p>
+          <p><strong class="text-white">vs SMA20 / vs SMA50</strong> — How far the price is above or below the 20/50-day simple moving average, shown as %.<br>
+            White within &plusmn;1%, fades to <span class="text-gain">full green</span> at +10% (above SMA) or <span class="text-loss">full red</span> at &minus;10% (below SMA). Tooltip shows actual SMA value. For CEDEARs, uses the underlying US stock price for comparison.<br>
+            <code class="text-accent">(price &minus; SMA) &divide; SMA &times; 100</code></p>
+          <p><strong class="text-white">Health</strong> — Combined score from 5 indicators. Each contributes +1 (bullish) or &minus;1 (bearish):<br>
+            RSI &ge;50 = +1, Stoch K &gt; D = +1, Supertrend up = +1, price &gt; SMA20 = +1, price &gt; SMA50 = +1.<br>
+            Range: <span class="text-gain">+5</span> (all bullish) to <span class="text-loss">&minus;5</span> (all bearish). Hover for per-indicator breakdown.</p>
         </div>
       </div>
 
       <!-- Fundamentals Columns -->
       <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
         <h3 class="text-white font-medium text-base">Fundamentals</h3>
+        <p class="text-xs text-muted">Metrics with color are compared to <strong class="text-white">sector medians</strong>: <span class="text-gain">green</span> = better than sector, <span style="color: #d29922">yellow</span> = near sector average, <span class="text-loss">red</span> = worse than sector. When no sector data is available, absolute thresholds are used.</p>
         <div class="space-y-2">
-          <p><strong class="text-white">P/E</strong> — Price to trailing twelve-month earnings. Color-coded relative to sector median.<br>
+          <p><strong class="text-white">P/E</strong> — Price to trailing twelve-month earnings. Lower is better (cheaper valuation). <span class="text-gain">Green</span> below sector median, <span class="text-loss">red</span> above 1.5&times;.<br>
             <code class="text-accent">share_price &divide; earnings_per_share</code></p>
-          <p><strong class="text-white">Fwd P/E</strong> — Price to estimated forward earnings.<br>
+          <p><strong class="text-white">Fwd P/E</strong> — Price to estimated forward earnings. Same interpretation as P/E but based on analyst estimates.<br>
             <code class="text-accent">share_price &divide; estimated_future_eps</code></p>
-          <p><strong class="text-white">P/B</strong> — Price to book value per share.<br>
+          <p><strong class="text-white">P/B</strong> — Price to book value per share. Compares market price to accounting value.<br>
             <code class="text-accent">share_price &divide; book_value_per_share</code></p>
-          <p><strong class="text-white">ROE %</strong> — Return on equity. Measures how efficiently the company generates profit from shareholder equity. Color-coded vs sector median.<br>
+          <p><strong class="text-white">ROE %</strong> — Return on equity. Higher is better (efficient use of capital). <span class="text-gain">Green</span> above sector median, <span class="text-loss">red</span> below 50% of it.<br>
             <code class="text-accent">net_income &divide; shareholder_equity &times; 100</code></p>
           <p><strong class="text-white">EPS Gr %</strong> — Year-over-year earnings per share growth.<br>
             <code class="text-accent">(eps_current &minus; eps_prior) &divide; |eps_prior| &times; 100</code></p>
           <p><strong class="text-white">Div Yld %</strong> — Annual dividend yield as a percentage of share price.<br>
             <code class="text-accent">annual_dividends &divide; share_price &times; 100</code></p>
-          <p><strong class="text-white">D/E</strong> — Debt to equity ratio. Measures financial leverage. Color-coded vs sector median.<br>
+          <p><strong class="text-white">D/E</strong> — Debt to equity ratio. Lower is better (less leverage). <span class="text-gain">Green</span> below sector median, <span class="text-loss">red</span> above 2&times;.<br>
             <code class="text-accent">total_debt &divide; shareholder_equity</code></p>
-          <p><strong class="text-white">Margin %</strong> — Net profit margin. Color-coded vs sector median.<br>
+          <p><strong class="text-white">Margin %</strong> — Net profit margin. Higher is better. <span class="text-gain">Green</span> above sector median, <span class="text-loss">red</span> below 50% of it.<br>
             <code class="text-accent">net_income &divide; revenue &times; 100</code></p>
         </div>
       </div>

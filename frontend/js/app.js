@@ -49,12 +49,12 @@ const App = {
     );
 
     this._updateSummary(result);
-    Table.renderPortfolio(result);
+    Table.renderPortfolio(result, fundamentals);
 
     const warning = document.getElementById('fx-warning');
     warning.classList.toggle('hidden', !result.has_estimated_fx);
 
-    Technicals.render(technicals, prices, holdings, exchangeRates?.mep);
+    Technicals.render(technicals, prices, holdings, exchangeRates?.mep, fundamentals);
     Fundamentals.render(fundamentals, holdings);
   },
 
