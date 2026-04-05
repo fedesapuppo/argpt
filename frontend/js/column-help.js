@@ -52,3 +52,5 @@ const ColumnHelp = {
     tip.style.top = top + 'px';
   }
 };
+
+export default ColumnHelp;

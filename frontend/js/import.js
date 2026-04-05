@@ -1,3 +1,8 @@
+import Storage from './storage.js';
+import Toast from './toast.js';
+import I18n from './i18n.js';
+import App from './app.js';
+
 const Import = {
   TYPE_MAP: { 'Cedears': 'cedear', 'Acciones': 'arg_stock' },
   SHEET: 'resultados_por_lotes_finales',
@@ -10,7 +15,7 @@ const Import = {
     if (sampleBtn) {
       sampleBtn.addEventListener('click', () => {
         Storage.saveHoldings(this._sampleHoldings());
-        App._sampleMode = true;
+        App.setSampleMode(true);
         App.fetchForHoldings(this._sampleHoldings());
         App.refresh();
         Toast.success(I18n.t('import.sample_loaded'));
@@ -22,7 +27,7 @@ const Import = {
       clearBtn.addEventListener('click', () => {
         if (!confirm(I18n.t('import.clear_confirm'))) return;
         localStorage.removeItem('argpt_holdings');
-        App._sampleMode = false;
+        App.setSampleMode(false);
         App.refresh();
         Toast.info(I18n.t('import.cleared'));
       });
@@ -47,7 +52,7 @@ const Import = {
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result);
-        const wb = XLSX.read(data, { type: 'array' });
+        const wb = window.XLSX.read(data, { type: 'array' });
         const sheet = wb.Sheets[this.SHEET];
 
         if (!sheet) {
@@ -55,11 +60,11 @@ const Import = {
           return;
         }
 
-        const rows = XLSX.utils.sheet_to_json(sheet);
+        const rows = window.XLSX.utils.sheet_to_json(sheet);
         const holdings = this._perLotHoldings(rows);
 
         Storage.mergeHoldings(holdings, 'balanz');
-        App._sampleMode = false;
+        App.setSampleMode(false);
         App.refresh();
         App.fetchForHoldings(holdings);
 
@@ -79,7 +84,7 @@ const Import = {
       try {
         const holdings = this._parseIB(e.target.result);
         Storage.mergeHoldings(holdings, 'ib');
-        App._sampleMode = false;
+        App.setSampleMode(false);
         App.refresh();
         App.fetchForHoldings(holdings);
         Toast.success(I18n.t('import.ib_success', { count: holdings.length }));
@@ -212,3 +217,5 @@ const Import = {
     ];
   }
 };
+
+export default Import;

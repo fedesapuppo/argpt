@@ -121,4 +121,4 @@ const FundamentalsAnalyzer = {
   }
 };
 
-if (typeof module !== 'undefined') module.exports = FundamentalsAnalyzer;
+export default FundamentalsAnalyzer;

@@ -1,3 +1,8 @@
+import Currency from './currency.js';
+import Filter from './filter.js';
+import I18n from './i18n.js';
+import Table from './table.js';
+
 const Technicals = {
   render(technicalsData, pricesData, holdings, mep, fundamentals) {
     const tbody = document.getElementById('technicals-body');
@@ -211,3 +216,5 @@ const Technicals = {
     return '';
   }
 };
+
+export default Technicals;

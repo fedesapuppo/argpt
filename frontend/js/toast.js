@@ -35,3 +35,5 @@ const Toast = {
   error(msg) { this.show(msg, 'error'); },
   info(msg) { this.show(msg, 'info'); }
 };
+
+export default Toast;

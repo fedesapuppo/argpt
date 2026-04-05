@@ -1,3 +1,8 @@
+import Storage from './storage.js';
+import Toast from './toast.js';
+import I18n from './i18n.js';
+import App from './app.js';
+
 const Form = {
   _editIndex: null,
 
@@ -113,3 +118,5 @@ const Form = {
     App.refresh();
   }
 };
+
+export default Form;

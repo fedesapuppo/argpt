@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Alpine.js x-cloak — hides elements until Alpine initializes, preventing
+   FOUC on page load. Pre-positioned here for Phase 4. */
+[x-cloak] { display: none !important; }

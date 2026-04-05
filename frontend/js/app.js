@@ -1,3 +1,24 @@
+import Toast from './toast.js';
+import I18n from './i18n.js';
+import Filter from './filter.js';
+import Form from './form.js';
+import Import from './import.js';
+import ColumnHelp from './column-help.js';
+import Storage from './storage.js';
+import LiveData from './api/live_data.js';
+import Cache from './cache.js';
+import Portfolio from './portfolio.js';
+import Chart from './chart.js';
+import Table from './table.js';
+import Technicals from './technicals.js';
+import Fundamentals from './fundamentals.js';
+import Currency from './currency.js';
+
+// Reference to the mounted Alpine "dashboard" component. Populated by the
+// component's init() hook so App can flip reactive flags (loading, sampleMode)
+// without touching the DOM directly.
+let dashboard = null;
+
 const App = {
   data: { prices: null, exchangeRates: null, technicals: null, fundamentals: null },
   AUTO_REFRESH_MS: 3 * 60 * 60 * 1000,
@@ -6,8 +27,6 @@ const App = {
   async init() {
     Toast.init();
     I18n.init();
-    Tabs.init();
-    Filter.init();
     Form.init();
     Import.init();
     ColumnHelp.init();
@@ -15,12 +34,11 @@ const App = {
     await Storage.loadFromJson();
     if (Storage.isEmpty()) {
       Storage.saveHoldings(Import._sampleHoldings());
-      this._sampleMode = true;
+      if (dashboard) dashboard.sampleMode = true;
     }
     await this.loadData();
-    document.getElementById('loading-overlay').classList.add('hidden');
+    if (dashboard) dashboard.loading = false;
     this.refresh();
-    this._updateSampleBanner();
     this._scheduleAutoRefresh();
   },
 
@@ -131,6 +149,12 @@ const App = {
     return this.data.exchangeRates?.mep?.mark || null;
   },
 
+  // Flips the sample-mode flag on the Alpine dashboard component. Used by
+  // import.js after a user loads real data or clears all holdings.
+  setSampleMode(value) {
+    if (dashboard) dashboard.sampleMode = value;
+  },
+
   refresh() {
     const holdings = Storage.getHoldings();
     const { exchangeRates, prices, technicals, fundamentals } = this.data;
@@ -151,13 +175,6 @@ const App = {
 
     Technicals.render(technicals, prices, holdings, exchangeRates?.mep, fundamentals);
     Fundamentals.render(fundamentals, holdings);
-    this._updateSampleBanner();
-  },
-
-  _updateSampleBanner() {
-    const banner = document.getElementById('sample-banner');
-    if (!banner) return;
-    banner.classList.toggle('hidden', !this._sampleMode);
   },
 
   _updateSummary(result) {
@@ -190,4 +207,60 @@ const App = {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => App.init());
+// Alpine component factory. Holds the shell UI state — tabs, filter, loading,
+// sampleMode, language. The table renderers stay imperative (innerHTML) so
+// Alpine never owns their subtrees.
+function dashboardFactory() {
+  const initialHash = window.location.hash.replace('#', '');
+  const initialTab = ['portfolio', 'technicals', 'fundamentals', 'glossary'].includes(initialHash)
+    ? initialHash
+    : 'portfolio';
+
+  return {
+    activeTab: initialTab,
+    filter: 'all',
+    loading: true,
+    sampleMode: false,
+
+    init() {
+      dashboard = this;
+    },
+
+    selectTab(tab) {
+      this.activeTab = tab;
+      window.location.hash = tab;
+    },
+
+    setFilter(f) {
+      this.filter = f;
+      Filter._current = f;
+      App.refresh();
+    },
+
+    toggleLang() {
+      I18n.setLang(I18n.lang() === 'es' ? 'en' : 'es');
+      location.reload();
+    }
+  };
+}
+
+// Register with Alpine. alpine:init fires once, before Alpine scans the DOM.
+// If Alpine has already fired the event (it's loaded before us), fall through
+// to register directly.
+if (window.Alpine) {
+  window.Alpine.data('dashboard', dashboardFactory);
+} else {
+  document.addEventListener('alpine:init', () => {
+    window.Alpine.data('dashboard', dashboardFactory);
+  });
+}
+
+export default App;
+
+// Module scripts are always deferred — by the time this runs, DOMContentLoaded
+// has either fired or is about to. Handle both cases so init never misses.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => App.init());
+} else {
+  App.init();
+}

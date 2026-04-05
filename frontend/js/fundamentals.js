@@ -1,3 +1,8 @@
+import Currency from './currency.js';
+import Filter from './filter.js';
+import I18n from './i18n.js';
+import Table from './table.js';
+
 const Fundamentals = {
   HEALTH_METRICS: ['pe', 'forward_pe', 'pb', 'roe', 'debt_to_equity', 'profit_margin'],
   HEALTH_LABELS: { pe: 'PE', forward_pe: 'FwdPE', pb: 'PB', roe: 'ROE', debt_to_equity: 'DE', profit_margin: 'Margin' },
@@ -93,3 +98,5 @@ const Fundamentals = {
     `;
   }
 };
+
+export default Fundamentals;

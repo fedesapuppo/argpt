@@ -1,3 +1,8 @@
+import Currency from './currency.js';
+import Filter from './filter.js';
+import Form from './form.js';
+import I18n from './i18n.js';
+
 const Table = {
   sortState: {},
 
@@ -164,3 +169,5 @@ const Table = {
     return tips[broker] ? I18n.t(tips[broker]) : I18n.t('broker.unknown');
   }
 };
+
+export default Table;

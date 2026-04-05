@@ -28,3 +28,5 @@ const HttpApi = {
     }
   }
 };
+
+export default HttpApi;

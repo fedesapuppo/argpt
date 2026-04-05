@@ -1,3 +1,6 @@
+import Currency from './currency.js';
+import I18n from './i18n.js';
+
 const Chart = {
   render(holdings) {
     const container = document.getElementById('chart-container');
@@ -75,3 +78,5 @@ const Chart = {
     `;
   }
 };
+
+export default Chart;

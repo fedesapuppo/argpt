@@ -14,78 +14,19 @@
   <meta name="twitter:image" content="https://fedesapuppo.github.io/argpt/argpt-logo.png">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/tailwind.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            surface: { DEFAULT: '#0d1117', secondary: '#161b22', tertiary: '#21262d', border: '#30363d' },
-            gain: '#3fb950',
-            loss: '#f85149',
-            caution: '#d29922',
-            accent: '#58a6ff',
-            muted: '#9da5ae',
-          },
-          fontFamily: {
-            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
-            sans: ['IBM Plex Sans', 'system-ui', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    html, body { background: #0d1117; color: #e6edf3; overflow-x: hidden !important; max-width: 100vw; }
-    main { max-width: min(80rem, 100vw); overflow-x: hidden; }
-    main > section, #filter-bar { max-width: 100%; min-width: 0; }
-    .tabular-nums { font-variant-numeric: tabular-nums; }
-    table th { cursor: pointer; user-select: none; }
-    table th:hover { color: #58a6ff; }
-    #portfolio-table thead th, #technicals-table thead th, #fundamentals-table thead th { position: sticky; top: 0; background: #0d1117; z-index: 10; }
-    #portfolio-table td:first-child, #technicals-table td:first-child, #fundamentals-table td:first-child,
-    #portfolio-table thead th:first-child, #technicals-table thead th:first-child, #fundamentals-table thead th:first-child { position: sticky; left: 0; z-index: 5; background: #0d1117; }
-    #portfolio-table thead th:first-child, #technicals-table thead th:first-child, #fundamentals-table thead th:first-child { z-index: 15; }
-    tr:hover > td:first-child { background: rgba(22,27,34,0.5) !important; }
-    .sort-asc::after { content: ' ▲'; font-size: 0.7em; }
-    .sort-desc::after { content: ' ▼'; font-size: 0.7em; }
-    .tip {
-      display: none;
-      position: fixed; left: 0; top: 0;
-      white-space: normal; width: max-content; max-width: 220px;
-      background: #21262d; color: #e6edf3; border: 1px solid #30363d;
-      font-size: 0.65rem; font-weight: 400; font-family: 'IBM Plex Sans', sans-serif;
-      line-height: 1.4;
-      padding: 4px 8px; border-radius: 4px;
-      pointer-events: none;
-      z-index: 50;
-    }
-    .tip.tip-show { display: block; }
-    .col-help { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; font-size: 9px; font-weight: 600; font-family: 'IBM Plex Sans', sans-serif; color: #8b949e; background: transparent; border: 1px solid #30363d; cursor: pointer; margin-left: 4px; vertical-align: middle; line-height: 1; }
-    .col-help:hover { color: #58a6ff; border-color: #58a6ff; }
-    .lang-toggle {
-      padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.65rem; font-weight: 600;
-      font-family: 'JetBrains Mono', monospace; letter-spacing: 0.08em;
-      background: transparent; color: #8b949e; border: 1px solid #30363d;
-      cursor: pointer; transition: color 0.2s, border-color 0.2s;
-    }
-    .lang-toggle:hover { color: #e6edf3; border-color: #8b949e; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner { width: 32px; height: 32px; border: 3px solid #30363d; border-top-color: #58a6ff; border-radius: 50%; animation: spin 0.8s linear infinite; }
-    /* Mobile tweaks */
-    @media (max-width: 640px) {
-      table th, table td { font-size: 0.7rem; padding: 0.4rem 0.35rem !important; }
-      .tab-btn { white-space: nowrap; }
-    }
-    /* Allow tab row to scroll horizontally if it overflows */
-    .tabs-scroll { overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
-    .tabs-scroll::-webkit-scrollbar { display: none; }
-  </style>
+  <!-- Alpine.js — deferred, runs after parse but before DOMContentLoaded.
+       Placed before the module entrypoint so Alpine registers window.Alpine
+       first; app.js then calls Alpine.data('dashboard', ...) before Alpine's
+       internal start() runs on DOMContentLoaded. -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body class="font-sans min-h-screen">
+<div x-data="dashboard" x-cloak>
   <!-- Header -->
   <header class="border-b border-surface-border px-3 sm:px-6 py-3 sm:py-4">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
@@ -97,7 +38,7 @@
         </div>
       </div>
       <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-        <button class="lang-toggle" onclick="I18n.setLang(I18n.lang() === 'es' ? 'en' : 'es'); location.reload();">English</button>
+        <button class="lang-toggle" @click="toggleLang()" data-i18n="lang.toggle">English</button>
         <div class="hidden sm:block text-xs text-muted font-mono" id="last-updated"></div>
       </div>
     </div>
@@ -106,16 +47,24 @@
   <!-- Tabs -->
   <nav class="border-b border-surface-border px-3 sm:px-6">
     <div class="max-w-7xl mx-auto flex gap-0 tabs-scroll">
-      <button class="tab-btn px-3 sm:px-4 py-3 text-sm font-medium border-b-2 border-accent text-white whitespace-nowrap" data-tab="portfolio" data-i18n="tab.portfolio">Portafolio</button>
-      <button class="tab-btn px-3 sm:px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white whitespace-nowrap" data-tab="technicals" data-i18n="tab.technicals">Técnicos</button>
-      <button class="tab-btn px-3 sm:px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white whitespace-nowrap" data-tab="fundamentals" data-i18n="tab.fundamentals">Fundamentales</button>
-      <button class="tab-btn px-3 sm:px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white whitespace-nowrap" data-tab="glossary" data-i18n="tab.glossary">Glosario</button>
+      <button class="tab-btn px-3 sm:px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap"
+              :class="activeTab === 'portfolio' ? 'border-accent text-white' : 'border-transparent text-muted hover:text-white'"
+              @click="selectTab('portfolio')" data-i18n="tab.portfolio">Portafolio</button>
+      <button class="tab-btn px-3 sm:px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap"
+              :class="activeTab === 'technicals' ? 'border-accent text-white' : 'border-transparent text-muted hover:text-white'"
+              @click="selectTab('technicals')" data-i18n="tab.technicals">Técnicos</button>
+      <button class="tab-btn px-3 sm:px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap"
+              :class="activeTab === 'fundamentals' ? 'border-accent text-white' : 'border-transparent text-muted hover:text-white'"
+              @click="selectTab('fundamentals')" data-i18n="tab.fundamentals">Fundamentales</button>
+      <button class="tab-btn px-3 sm:px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap"
+              :class="activeTab === 'glossary' ? 'border-accent text-white' : 'border-transparent text-muted hover:text-white'"
+              @click="selectTab('glossary')" data-i18n="tab.glossary">Glosario</button>
     </div>
   </nav>
 
   <main class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 relative">
     <!-- Loading overlay -->
-    <div id="loading-overlay" class="absolute inset-0 bg-surface/80 flex items-center justify-center z-50 rounded-lg">
+    <div x-show="loading" x-cloak class="absolute inset-0 bg-surface/80 flex items-center justify-center z-50 rounded-lg">
       <div class="flex flex-col items-center gap-3">
         <div class="spinner"></div>
         <span class="text-sm text-muted">Loading...</span>
@@ -123,9 +72,9 @@
     </div>
 
     <!-- Sample data banner -->
-    <div id="sample-banner" class="hidden mb-4 p-3 rounded border border-accent/30 bg-accent/10 text-accent text-sm flex items-center justify-between">
+    <div x-show="sampleMode" x-cloak class="mb-4 p-3 rounded border border-accent/30 bg-accent/10 text-accent text-sm flex items-center justify-between">
       <span data-i18n="banner.sample">Viewing sample portfolio — import your own holdings to get started.</span>
-      <button onclick="App._sampleMode = false; document.getElementById('sample-banner').classList.add('hidden')" class="text-xs underline hover:text-white" data-i18n="banner.sample_dismiss">Dismiss</button>
+      <button @click="sampleMode = false" class="text-xs underline hover:text-white" data-i18n="banner.sample_dismiss">Dismiss</button>
     </div>
 
     <!-- Warning banner -->
@@ -133,16 +82,24 @@
       ⚠ Algunas tenencias no tienen tipo de cambio de entrada — los retornos en USD son aproximados. Edita las tenencias para agregar tu tipo MEP de compra para resultados precisos.
     </div>
 
-    <!-- Filter bar -->
-    <div id="filter-bar" class="flex flex-wrap gap-2 mb-4">
-      <button class="filter-btn bg-accent/20 text-accent border border-accent/30 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors" data-filter="all" data-i18n="filter.all">Todos</button>
-      <button class="filter-btn text-muted border border-surface-border rounded-lg px-3 py-1.5 text-xs font-medium transition-colors" data-filter="cedear" data-i18n="option.cedear">CEDEAR</button>
-      <button class="filter-btn text-muted border border-surface-border rounded-lg px-3 py-1.5 text-xs font-medium transition-colors" data-filter="arg_stock" data-i18n="option.arg_stock">Accion Arg</button>
-      <button class="filter-btn text-muted border border-surface-border rounded-lg px-3 py-1.5 text-xs font-medium transition-colors" data-filter="us_stock" data-i18n="option.us_stock">Accion US</button>
+    <!-- Filter bar — hidden on the glossary tab (nothing to filter there). -->
+    <div id="filter-bar" x-show="activeTab !== 'glossary'" class="flex flex-wrap gap-2 mb-4">
+      <button class="rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors"
+              :class="filter === 'all' ? 'bg-accent/20 text-accent border-accent/30' : 'text-muted border-surface-border'"
+              @click="setFilter('all')" data-i18n="filter.all">Todos</button>
+      <button class="rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors"
+              :class="filter === 'cedear' ? 'bg-accent/20 text-accent border-accent/30' : 'text-muted border-surface-border'"
+              @click="setFilter('cedear')" data-i18n="option.cedear">CEDEAR</button>
+      <button class="rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors"
+              :class="filter === 'arg_stock' ? 'bg-accent/20 text-accent border-accent/30' : 'text-muted border-surface-border'"
+              @click="setFilter('arg_stock')" data-i18n="option.arg_stock">Accion Arg</button>
+      <button class="rounded-lg px-3 py-1.5 text-xs font-medium border transition-colors"
+              :class="filter === 'us_stock' ? 'bg-accent/20 text-accent border-accent/30' : 'text-muted border-surface-border'"
+              @click="setFilter('us_stock')" data-i18n="option.us_stock">Accion US</button>
     </div>
 
     <!-- Portfolio Tab -->
-    <section id="tab-portfolio">
+    <section id="tab-portfolio" x-show="activeTab === 'portfolio'" x-cloak>
       <!-- Summary cards -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
         <div class="bg-surface-secondary rounded-lg p-3 sm:p-4 border border-surface-border border-t-2 border-t-accent">
@@ -253,7 +210,7 @@
     </section>
 
     <!-- Technicals Tab -->
-    <section id="tab-technicals" class="hidden">
+    <section id="tab-technicals" x-show="activeTab === 'technicals'" x-cloak>
       <div class="overflow-x-auto">
         <table class="w-full text-sm font-mono tabular-nums" id="technicals-table">
           <caption class="sr-only">Technical indicators</caption>
@@ -276,7 +233,7 @@
     </section>
 
     <!-- Fundamentals Tab -->
-    <section id="tab-fundamentals" class="hidden">
+    <section id="tab-fundamentals" x-show="activeTab === 'fundamentals'" x-cloak>
       <div class="overflow-x-auto">
         <table class="w-full text-sm font-mono tabular-nums" id="fundamentals-table">
           <caption class="sr-only">Fundamental metrics</caption>
@@ -301,7 +258,7 @@
     </section>
 
     <!-- Glossary Tab -->
-    <section id="tab-glossary" class="hidden text-sm text-muted space-y-6">
+    <section id="tab-glossary" x-show="activeTab === 'glossary'" x-cloak class="text-sm text-muted space-y-6">
 
       <!-- Asset Types & FX -->
       <div class="bg-surface-secondary rounded-lg border border-surface-border p-4 space-y-3">
@@ -363,29 +320,11 @@
 
     </section>
   </main>
+</div>
 
+  <!-- SheetJS is a non-module global (window.XLSX) — loaded synchronously before the module entrypoint. -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-  <script src="js/i18n.js"></script>
-  <script src="js/currency.js"></script>
-  <script src="js/cache.js"></script>
-  <script src="js/api/http.js"></script>
-  <script src="js/api/data912.js"></script>
-  <script src="js/api/finance_query.js"></script>
-  <script src="js/analyzers/fundamentals.js"></script>
-  <script src="js/analyzers/technicals.js"></script>
-  <script src="js/api/live_data.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/portfolio.js"></script>
-  <script src="js/tabs.js"></script>
-  <script src="js/filter.js"></script>
-  <script src="js/table.js"></script>
-  <script src="js/toast.js"></script>
-  <script src="js/import.js"></script>
-  <script src="js/form.js"></script>
-  <script src="js/technicals.js"></script>
-  <script src="js/fundamentals.js"></script>
-  <script src="js/chart.js"></script>
-  <script src="js/column-help.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Single module entrypoint. app.js imports the full module graph. -->
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>

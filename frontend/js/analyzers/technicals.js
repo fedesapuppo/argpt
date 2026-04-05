@@ -36,4 +36,4 @@ const TechnicalsAnalyzer = {
   }
 };
 
-if (typeof module !== 'undefined') module.exports = TechnicalsAnalyzer;
+export default TechnicalsAnalyzer;

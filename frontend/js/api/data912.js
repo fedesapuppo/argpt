@@ -1,3 +1,5 @@
+import HttpApi from './http.js';
+
 const Data912 = {
   BASE: 'https://data912.com',
 
@@ -66,4 +68,4 @@ const Data912 = {
   }
 };
 
-if (typeof module !== 'undefined') module.exports = Data912;
+export default Data912;

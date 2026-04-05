@@ -65,3 +65,5 @@ const Storage = {
     return holdings;
   }
 };
+
+export default Storage;

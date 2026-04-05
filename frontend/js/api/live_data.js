@@ -1,3 +1,9 @@
+import Cache from '../cache.js';
+import Data912 from './data912.js';
+import FinanceQuery from './finance_query.js';
+import FundamentalsAnalyzer from '../analyzers/fundamentals.js';
+import TechnicalsAnalyzer from '../analyzers/technicals.js';
+
 // Runtime data orchestrator. Fetches live prices/fundamentals/technicals
 // from data912 + finance-query, with caching and static JSON fallback.
 const LiveData = {
@@ -108,4 +114,4 @@ const LiveData = {
   }
 };
 
-if (typeof module !== 'undefined') module.exports = LiveData;
+export default LiveData;

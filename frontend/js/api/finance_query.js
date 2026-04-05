@@ -1,3 +1,5 @@
+import HttpApi from './http.js';
+
 const FinanceQuery = {
   BASE: 'https://finance-query.com',
 
@@ -41,4 +43,4 @@ const FinanceQuery = {
   }
 };
 
-if (typeof module !== 'undefined') module.exports = FinanceQuery;
+export default FinanceQuery;

@@ -1,0 +1,19 @@
+/* Design tokens — shared between the landing page (index.html) and the
+   dashboard (dashboard.html). Colors here mirror the Tailwind theme in
+   tailwind.config.js so plain CSS selectors and Tailwind utility classes
+   stay in sync. */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --surface:    #0d1117;
+  --surface-2:  #161b22;
+  --surface-3:  #21262d;
+  --border:     #30363d;
+  --text:       #e6edf3;
+  --muted:      #8b949e;
+  --accent:     #58a6ff;
+  --celeste:    #74ACDF;
+  --gain:       #3fb950;
+  --loss:       #f85149;
+}

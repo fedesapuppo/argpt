@@ -47,4 +47,4 @@ const Cache = {
   }
 };
 
-if (typeof module !== 'undefined') module.exports = Cache;
+export default Cache;

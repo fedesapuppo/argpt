@@ -4,3 +4,6 @@ frontend/data/*.json
 config/holdings.yml
 .env
 .bundle/
+node_modules/
+npm-debug.log*
+
