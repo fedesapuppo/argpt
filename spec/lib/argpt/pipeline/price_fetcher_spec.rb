@@ -29,16 +29,31 @@ RSpec.describe Argpt::Pipeline::PriceFetcher do
       expect(result["AAPL:us_stock"]).to eq({ last: 185.5, change: 1.2, volume: 45000000, currency: :usd, type: :us_stock })
     end
 
-    it "filters to only requested tickers" do
+    it "includes every ticker returned by data912, not just the configured ones" do
       data912 = stub_data912(arg_stocks: [
         { ticker: "GGAL", last: 5200.0, change: 2.5, volume: 1500000 },
-        { ticker: "YPF", last: 38000.0, change: -1.2, volume: 800000 }
+        { ticker: "YPFD", last: 38000.0, change: -1.2, volume: 800000 }
       ])
       entries = [{ ticker: "GGAL", type: :arg_stock }]
 
       result = Argpt::Pipeline::PriceFetcher.new(data912:, entries:).call
 
-      expect(result.keys).to eq(["GGAL:arg_stock"])
+      expect(result.keys).to contain_exactly("GGAL:arg_stock", "YPFD:arg_stock")
+    end
+
+    it "fetches every configured type even if no entries of that type exist" do
+      data912 = stub_data912(
+        arg_stocks: [{ ticker: "GGAL", last: 5200.0, change: 2.5, volume: 1500000 }],
+        arg_cedears: [{ ticker: "AAPL", last: 18000.0, change: 1.0, volume: 10000 }],
+        usa_stocks: [{ ticker: "TSLA", last: 250.0, change: -0.5, volume: 500000 }]
+      )
+      entries = []
+
+      result = Argpt::Pipeline::PriceFetcher.new(data912:, entries:).call
+
+      expect(result.keys).to contain_exactly(
+        "GGAL:arg_stock", "AAPL:cedear", "TSLA:us_stock"
+      )
     end
 
     it "handles mixed asset types" do

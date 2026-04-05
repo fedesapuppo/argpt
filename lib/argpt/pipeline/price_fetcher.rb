@@ -23,16 +23,13 @@ module Argpt
 
       def call
         result = {}
-        by_type = @entries.group_by { |e| e[:type] }
 
-        by_type.each do |type, entries|
-          endpoint = ENDPOINT_MAP.fetch(type)
+        ENDPOINT_MAP.each do |type, endpoint|
           all_prices = @data912.public_send(endpoint)
-          tickers = entries.map { |e| e[:ticker] }.to_set
 
           all_prices.each do |row|
             sym = row[:symbol] || row[:ticker]
-            next unless tickers.include?(sym)
+            next unless sym
 
             key = "#{sym}:#{type}"
             result[key] = {
@@ -44,7 +41,7 @@ module Argpt
             }
           end
 
-          backfill_from_finance_query(result, type, tickers) if type == :us_stock && @finance_query
+          backfill_us_stocks_from_finance_query(result) if type == :us_stock && @finance_query
         end
 
         result
@@ -52,8 +49,13 @@ module Argpt
 
       private
 
-      def backfill_from_finance_query(result, type, tickers)
-        missing = tickers.reject { |t| result.key?("#{t}:#{type}") }
+      def backfill_us_stocks_from_finance_query(result)
+        type = :us_stock
+        missing = @entries
+          .select { |e| e[:type] == type }
+          .map { |e| e[:ticker] }
+          .uniq
+          .reject { |t| result.key?("#{t}:#{type}") }
         return if missing.empty?
 
         missing.each do |ticker|

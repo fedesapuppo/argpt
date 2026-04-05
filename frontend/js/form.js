@@ -52,6 +52,7 @@ const Form = {
       form.reset();
       hint.textContent = I18n.t('form.hint_default');
       App.refresh();
+      App.fetchForHoldings([holding]);
     });
 
     const cancelBtn = document.getElementById('cancel-edit');

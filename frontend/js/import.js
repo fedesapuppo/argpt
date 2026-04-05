@@ -50,6 +50,7 @@ const Import = {
         Storage.mergeHoldings(holdings, 'balanz');
         App._sampleMode = false;
         App.refresh();
+        App.fetchForHoldings(holdings);
 
         Toast.success(I18n.t('import.balanz_success', { count: holdings.length }));
       } catch (err) {
@@ -69,6 +70,7 @@ const Import = {
         Storage.mergeHoldings(holdings, 'ib');
         App._sampleMode = false;
         App.refresh();
+        App.fetchForHoldings(holdings);
         Toast.success(I18n.t('import.ib_success', { count: holdings.length }));
       } catch (err) {
         Toast.error(`Error: ${err.message}`);

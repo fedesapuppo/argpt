@@ -23,6 +23,25 @@ const App = {
   },
 
   async loadData() {
+    const fallback = await this._loadStaticFallback();
+
+    // Bulk prices + exchange rates from data912, with fallback to static JSON.
+    const bulk = await LiveData.loadBulk(fallback).catch(() => fallback);
+    this.data = {
+      exchangeRates: bulk.exchangeRates || fallback.exchangeRates || null,
+      prices: bulk.prices || fallback.prices || {},
+      technicals: fallback.technicals || {},
+      fundamentals: fallback.fundamentals || {}
+    };
+
+    this._updateLastUpdated();
+
+    // Kick off analytics for the current holdings in the background.
+    // refresh() will be called again once they arrive.
+    this._loadAnalyticsForCurrentHoldings(fallback);
+  },
+
+  async _loadStaticFallback() {
     const files = ['exchange_rates', 'prices', 'technicals', 'fundamentals'];
     const results = await Promise.allSettled(
       files.map(f =>
@@ -31,17 +50,51 @@ const App = {
           .catch(() => fetch(`data/${f}.sample.json`).then(r => r.json()).catch(() => null))
       )
     );
-
     const [exchangeRates, prices, technicals, fundamentals] = results.map(r =>
       r.status === 'fulfilled' ? r.value : null
     );
+    return { exchangeRates, prices, technicals, fundamentals };
+  },
 
-    this.data = { exchangeRates, prices, technicals, fundamentals };
-
-    if (exchangeRates?.fetched_at) {
-      const d = new Date(exchangeRates.fetched_at);
-      document.getElementById('last-updated').textContent = I18n.t('updated', { date: d.toLocaleString() });
+  async _loadAnalyticsForCurrentHoldings(fallback) {
+    const holdings = Storage.getHoldings();
+    if (!holdings.length) return;
+    try {
+      const { fundamentals, technicals } = await LiveData.loadAnalytics(holdings, {
+        fundamentals: fallback.fundamentals,
+        technicals: fallback.technicals
+      });
+      this.data.fundamentals = fundamentals;
+      this.data.technicals = technicals;
+      this.refresh();
+    } catch (e) {
+      console.warn('[App] analytics load failed', e);
     }
+  },
+
+  // Called after a user adds/imports a new ticker — fetches its analytics
+  // so the fundamentals/technicals tabs populate without a reload.
+  async fetchForHoldings(newHoldings) {
+    if (!newHoldings?.length) return;
+    try {
+      const { fundamentals, technicals } = await LiveData.loadAnalytics(newHoldings, {
+        fundamentals: this.data.fundamentals,
+        technicals: this.data.technicals
+      });
+      this.data.fundamentals = fundamentals;
+      this.data.technicals = technicals;
+      this.refresh();
+    } catch (e) {
+      console.warn('[App] on-demand fetch failed', e);
+    }
+  },
+
+  _updateLastUpdated() {
+    const rates = this.data.exchangeRates;
+    if (!rates?.fetched_at) return;
+    const d = new Date(rates.fetched_at);
+    const el = document.getElementById('last-updated');
+    if (el) el.textContent = I18n.t('updated', { date: d.toLocaleString() });
   },
 
   currentMepRate() {
