@@ -26,10 +26,9 @@ const LiveData = {
   },
 
   // Fetches fundamentals + technicals for a list of holdings. Uses per-ticker
-  // cache so repeat calls are cheap. Each ticker fetches fundamentals then
-  // technicals, and all tickers run in parallel. Calls onProgress after each
-  // ticker completes so the UI can render incrementally.
-  async loadAnalytics(holdings, fallback = {}, { onProgress } = {}) {
+  // cache so repeat calls are cheap. Each ticker fetches its fundamentals then
+  // technicals in sequence, but all tickers run in parallel.
+  async loadAnalytics(holdings, fallback = {}) {
     const fundamentals = { ...(fallback.fundamentals || {}) };
     const technicals = { ...(fallback.technicals || {}) };
 
@@ -39,7 +38,6 @@ const LiveData = {
     await Promise.all(unique.map(async (h) => {
       await this._loadFundamentalsFor(h, fundamentals);
       await this._loadTechnicalsFor(h, technicals, fundamentals);
-      if (onProgress) onProgress({ fundamentals, technicals });
     }));
 
     return { fundamentals, technicals };

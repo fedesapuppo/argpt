@@ -90,12 +90,6 @@ const App = {
       const { fundamentals, technicals } = await LiveData.loadAnalytics(holdings, {
         fundamentals: fallback.fundamentals,
         technicals: fallback.technicals
-      }, {
-        onProgress: ({ fundamentals: f, technicals: t }) => {
-          this.data.fundamentals = f;
-          this.data.technicals = t;
-          this.refresh();
-        }
       });
       this.data.fundamentals = fundamentals;
       this.data.technicals = technicals;
@@ -114,12 +108,6 @@ const App = {
       const { fundamentals, technicals } = await LiveData.loadAnalytics(newHoldings, {
         fundamentals: this.data.fundamentals,
         technicals: this.data.technicals
-      }, {
-        onProgress: ({ fundamentals: f, technicals: t }) => {
-          this.data.fundamentals = f;
-          this.data.technicals = t;
-          this.refresh();
-        }
       });
       this.data.fundamentals = fundamentals;
       this.data.technicals = technicals;
