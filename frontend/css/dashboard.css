@@ -5,7 +5,24 @@ html, body { background: #0d1117; color: #e6edf3; overflow-x: hidden !important;
 main { max-width: min(80rem, 100vw); overflow-x: hidden; }
 main > section, #filter-bar { max-width: 100%; min-width: 0; }
 .tabular-nums { font-variant-numeric: tabular-nums; }
+.arrow-cell { display: flex; align-items: baseline; }
+.arrow-slot { flex: 0 0 0.85em; text-align: center; font-size: 10px; }
+
+/* Subtle vertical separators between table columns */
+#portfolio-table td, #portfolio-table th,
+#technicals-table td, #technicals-table th,
+#fundamentals-table td, #fundamentals-table th {
+  border-right: 1px solid rgba(48, 54, 61, 0.5);
+}
+#portfolio-table td:last-child, #portfolio-table th:last-child,
+#technicals-table td:last-child, #technicals-table th:last-child,
+#fundamentals-table td:last-child, #fundamentals-table th:last-child {
+  border-right: none;
+}
 table th { cursor: pointer; user-select: none; white-space: nowrap; }
+#portfolio-table th:not(.text-left), #technicals-table th:not(.text-left), #fundamentals-table th:not(.text-left) { text-align: center; }
+#portfolio-table td, #technicals-table td, #fundamentals-table td { text-align: center; }
+#portfolio-table td:first-child, #technicals-table td:first-child, #fundamentals-table td:first-child { text-align: left; }
 table th:hover { color: #58a6ff; }
 
 /* Table scroll containers — internal scroll (both axes), hidden scrollbar,

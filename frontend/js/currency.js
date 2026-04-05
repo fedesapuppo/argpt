@@ -43,16 +43,29 @@ const Currency = {
   },
 
   pctArrow(value) {
-    if (value == null || typeof value !== 'number' || isNaN(value)) return '';
-    if (value > 0) return '▲ ';
-    if (value < 0) return '▼ ';
-    return '';
+    if (value == null || typeof value !== 'number' || isNaN(value)) return this._arrowSlot('');
+    if (value > 0) return this._arrowSlot('▲');
+    if (value < 0) return this._arrowSlot('▼');
+    return this._arrowSlot('');
   },
 
   thresholdArrow(threshold) {
-    if (threshold === 'green') return '▲ ';
-    if (threshold === 'red') return '▼ ';
-    return '';
+    if (threshold === 'green') return this._arrowSlot('▲');
+    if (threshold === 'red') return this._arrowSlot('▼');
+    return this._arrowSlot('');
+  },
+
+  _arrow(char) {
+    return `<span class="arrow-slot">${char}</span>`;
+  },
+
+  // Wraps arrow + value in a flex row so arrows form a consistent column.
+  cell(arrow, value) {
+    return `<span class="arrow-cell">${arrow}<span style="flex:1;text-align:center">${value}</span></span>`;
+  },
+
+  _arrowSlot(char) {
+    return this._arrow(char);
   }
 };
 

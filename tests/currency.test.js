@@ -95,19 +95,20 @@ describe('Currency.thresholdClass', () => {
 });
 
 describe('Currency.pctArrow', () => {
-  it('uses ▲ for positive, ▼ for negative, empty otherwise', () => {
-    expect(Currency.pctArrow(5)).toBe('▲ ');
-    expect(Currency.pctArrow(-5)).toBe('▼ ');
-    expect(Currency.pctArrow(0)).toBe('');
-    expect(Currency.pctArrow(null)).toBe('');
+  it('uses ▲ for positive, ▼ for negative, empty slot otherwise', () => {
+    expect(Currency.pctArrow(5)).toContain('▲');
+    expect(Currency.pctArrow(-5)).toContain('▼');
+    expect(Currency.pctArrow(0)).not.toContain('▲');
+    expect(Currency.pctArrow(0)).not.toContain('▼');
+    expect(Currency.pctArrow(null)).not.toContain('▲');
   });
 });
 
 describe('Currency.thresholdArrow', () => {
-  it('uses ▲ only for green, ▼ only for red, empty otherwise', () => {
-    expect(Currency.thresholdArrow('green')).toBe('▲ ');
-    expect(Currency.thresholdArrow('red')).toBe('▼ ');
-    expect(Currency.thresholdArrow('yellow')).toBe('');
-    expect(Currency.thresholdArrow(null)).toBe('');
+  it('uses ▲ only for green, ▼ only for red, empty slot otherwise', () => {
+    expect(Currency.thresholdArrow('green')).toContain('▲');
+    expect(Currency.thresholdArrow('red')).toContain('▼');
+    expect(Currency.thresholdArrow('yellow')).not.toContain('▲');
+    expect(Currency.thresholdArrow(null)).not.toContain('▲');
   });
 });

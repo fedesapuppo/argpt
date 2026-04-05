@@ -48,9 +48,9 @@ const Technicals = {
           <span class="tip">${Table._esc(r.ticker)}${r.type ? ' · ' + Table._typeTip(r.type) : ''}${r.is_etf ? ' · ' + I18n.t('tip.etf') : ''}</span>
         </td>
         <td class="py-2 px-2 text-right relative">${Currency.formatUSD(r.price)}<span class="tip">${I18n.t('tip.current_price_usd')}</span></td>
-        <td class="py-2 px-2 text-right relative" style="${this._athColor(r.pct_below_ath)}">${this._athArrow(r.pct_below_ath)}${Currency.formatNum(r.pct_below_ath, 1)}%<span class="tip">${r.pct_below_ath != null && r.pct_below_ath < 1 ? I18n.t('tip.at_ath') : r.pct_below_ath != null && r.pct_below_ath > 50 ? I18n.t('tip.far_ath') : I18n.t('tip.below_ath')}</span></td>
-        <td class="py-2 px-2 text-right relative" style="${this._rsiColor(r.rsi14)}">${this._rsiArrow(r.rsi14)}${Currency.formatNum(r.rsi14, 1)}<span class="tip">${this._rsiTip(r.rsi14)}</span></td>
-        <td class="py-2 px-2 text-right relative" style="${this._stochColor(r.stochastic_k)}">${this._stochArrow(r.stochastic_k)}${Currency.formatNum(r.stochastic_k, 1)}/${Currency.formatNum(r.stochastic_d, 1)}<span class="tip">${this._stochTip(r.stochastic_k, r.stochastic_d)}</span></td>
+        <td class="py-2 px-2 text-right relative whitespace-nowrap" style="${this._athColor(r.pct_below_ath)}">${Currency.cell(this._athArrow(r.pct_below_ath), Currency.formatNum(r.pct_below_ath, 1) + '%')}<span class="tip">${r.pct_below_ath != null && r.pct_below_ath < 1 ? I18n.t('tip.at_ath') : r.pct_below_ath != null && r.pct_below_ath > 50 ? I18n.t('tip.far_ath') : I18n.t('tip.below_ath')}</span></td>
+        <td class="py-2 px-2 text-right relative whitespace-nowrap" style="${this._rsiColor(r.rsi14)}">${Currency.cell(this._rsiArrow(r.rsi14), Currency.formatNum(r.rsi14, 1))}<span class="tip">${this._rsiTip(r.rsi14)}</span></td>
+        <td class="py-2 px-2 text-right relative whitespace-nowrap" style="${this._stochColor(r.stochastic_k)}">${Currency.cell(this._stochArrow(r.stochastic_k), Currency.formatNum(r.stochastic_k, 1) + '/' + Currency.formatNum(r.stochastic_d, 1))}<span class="tip">${this._stochTip(r.stochastic_k, r.stochastic_d)}</span></td>
         <td class="py-2 px-2 text-center relative ${r.supertrend_trend === 'up' ? 'text-gain' : 'text-loss'}">${r.supertrend_trend === 'up' ? I18n.t('tip.supertrend_up_short') : I18n.t('tip.supertrend_down_short')}<span class="tip">${r.supertrend_trend === 'up' ? I18n.t('tip.supertrend_up') : I18n.t('tip.supertrend_down')}</span></td>
         <td class="py-2 px-2 text-right relative" style="${this._smaPctColor(r.sma20_pct)}">${r.sma20_pct != null ? Currency.formatPct(r.sma20_pct) : '--'}<span class="tip">${r.sma20 != null ? I18n.t('tip.price_vs_sma', { period: '20', value: Currency.formatUSD(r.sma20) }) : I18n.t('tip.sma_label', { period: '20' })}</span></td>
         <td class="py-2 px-2 text-right relative" style="${this._smaPctColor(r.sma50_pct)}">${r.sma50_pct != null ? Currency.formatPct(r.sma50_pct) : '--'}<span class="tip">${r.sma50 != null ? I18n.t('tip.price_vs_sma', { period: '50', value: Currency.formatUSD(r.sma50) }) : I18n.t('tip.sma_label', { period: '50' })}</span></td>
@@ -195,25 +195,29 @@ const Technicals = {
     return badge('bg-loss/20', 'text-loss');
   },
 
+  _arrowSlot(char) {
+    return `<span style="display:inline-block;width:1em;text-align:center;font-size:10px;vertical-align:baseline">${char}</span>`;
+  },
+
   _athArrow(pct) {
-    if (pct == null) return '';
-    if (pct < 5) return '▲ ';
-    if (pct > 20) return '▼ ';
-    return '';
+    if (pct == null) return this._arrowSlot('');
+    if (pct < 5) return this._arrowSlot('▲');
+    if (pct > 20) return this._arrowSlot('▼');
+    return this._arrowSlot('');
   },
 
   _rsiArrow(rsi) {
-    if (rsi == null) return '';
-    if (rsi < 30) return '▼ ';
-    if (rsi > 70) return '▲ ';
-    return '';
+    if (rsi == null) return this._arrowSlot('');
+    if (rsi < 30) return this._arrowSlot('▼');
+    if (rsi > 70) return this._arrowSlot('▲');
+    return this._arrowSlot('');
   },
 
   _stochArrow(k) {
-    if (k == null) return '';
-    if (k < 20) return '▼ ';
-    if (k > 80) return '▲ ';
-    return '';
+    if (k == null) return this._arrowSlot('');
+    if (k < 20) return this._arrowSlot('▼');
+    if (k > 80) return this._arrowSlot('▲');
+    return this._arrowSlot('');
   }
 };
 
