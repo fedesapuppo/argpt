@@ -26,19 +26,21 @@ const LiveData = {
   },
 
   // Fetches fundamentals + technicals for a list of holdings. Uses per-ticker
-  // cache so repeat calls are cheap. Runs all fetches in parallel. Returns
-  // `{ fundamentals, technicals }` merged with the provided fallbacks.
-  async loadAnalytics(holdings, fallback = {}) {
+  // cache so repeat calls are cheap. Each ticker fetches fundamentals then
+  // technicals, and all tickers run in parallel. Calls onProgress after each
+  // ticker completes so the UI can render incrementally.
+  async loadAnalytics(holdings, fallback = {}, { onProgress } = {}) {
     const fundamentals = { ...(fallback.fundamentals || {}) };
     const technicals = { ...(fallback.technicals || {}) };
 
     const unique = this._uniqueHoldings(holdings);
     if (!unique.length) return { fundamentals, technicals };
 
-    // Fundamentals first (parallel), then technicals so they can reference
-    // the freshly-fetched 52wk high / current price for the ATH calculation.
-    await Promise.all(unique.map(h => this._loadFundamentalsFor(h, fundamentals)));
-    await Promise.all(unique.map(h => this._loadTechnicalsFor(h, technicals, fundamentals)));
+    await Promise.all(unique.map(async (h) => {
+      await this._loadFundamentalsFor(h, fundamentals);
+      await this._loadTechnicalsFor(h, technicals, fundamentals);
+      if (onProgress) onProgress({ fundamentals, technicals });
+    }));
 
     return { fundamentals, technicals };
   },

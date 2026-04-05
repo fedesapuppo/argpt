@@ -50,20 +50,22 @@ const App = {
   async loadData() {
     const fallback = await this._loadStaticFallback();
 
-    // Bulk prices + exchange rates from data912, with fallback to static JSON.
-    const bulk = await LiveData.loadBulk(fallback).catch(() => fallback);
+    // Seed with fallback so the first render has data immediately.
     this.data = {
-      exchangeRates: bulk.exchangeRates || fallback.exchangeRates || null,
-      prices: bulk.prices || fallback.prices || {},
+      exchangeRates: fallback.exchangeRates || null,
+      prices: fallback.prices || {},
       technicals: fallback.technicals || {},
       fundamentals: fallback.fundamentals || {}
     };
 
-    this._updateLastUpdated();
-
-    // Kick off analytics for the current holdings in the background.
-    // refresh() will be called again once they arrive.
+    // Bulk prices + analytics run in parallel — neither depends on the other.
+    const bulkPromise = LiveData.loadBulk(fallback).catch(() => fallback);
     this._loadAnalyticsForCurrentHoldings(fallback);
+
+    const bulk = await bulkPromise;
+    this.data.exchangeRates = bulk.exchangeRates || fallback.exchangeRates || null;
+    this.data.prices = bulk.prices || fallback.prices || {};
+    this._updateLastUpdated();
   },
 
   async _loadStaticFallback() {
@@ -88,6 +90,12 @@ const App = {
       const { fundamentals, technicals } = await LiveData.loadAnalytics(holdings, {
         fundamentals: fallback.fundamentals,
         technicals: fallback.technicals
+      }, {
+        onProgress: ({ fundamentals: f, technicals: t }) => {
+          this.data.fundamentals = f;
+          this.data.technicals = t;
+          this.refresh();
+        }
       });
       this.data.fundamentals = fundamentals;
       this.data.technicals = technicals;
@@ -106,6 +114,12 @@ const App = {
       const { fundamentals, technicals } = await LiveData.loadAnalytics(newHoldings, {
         fundamentals: this.data.fundamentals,
         technicals: this.data.technicals
+      }, {
+        onProgress: ({ fundamentals: f, technicals: t }) => {
+          this.data.fundamentals = f;
+          this.data.technicals = t;
+          this.refresh();
+        }
       });
       this.data.fundamentals = fundamentals;
       this.data.technicals = technicals;
