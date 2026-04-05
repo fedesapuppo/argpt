@@ -17,11 +17,6 @@
   <link rel="stylesheet" href="css/tailwind.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <!-- Alpine.js — deferred, runs after parse but before DOMContentLoaded.
-       Placed before the module entrypoint so Alpine registers window.Alpine
-       first; app.js then calls Alpine.data('dashboard', ...) before Alpine's
-       internal start() runs on DOMContentLoaded. -->
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/dashboard.css">
 </head>
@@ -182,7 +177,7 @@
       </details>
 
       <!-- Holdings table -->
-      <div class="overflow-x-auto">
+      <div class="table-scroll">
         <table class="w-full text-sm font-mono tabular-nums" id="portfolio-table">
           <caption class="sr-only">Portfolio holdings</caption>
           <thead>
@@ -211,7 +206,7 @@
 
     <!-- Technicals Tab -->
     <section id="tab-technicals" x-show="activeTab === 'technicals'" x-cloak>
-      <div class="overflow-x-auto">
+      <div class="table-scroll">
         <table class="w-full text-sm font-mono tabular-nums" id="technicals-table">
           <caption class="sr-only">Technical indicators</caption>
           <thead>
@@ -234,7 +229,7 @@
 
     <!-- Fundamentals Tab -->
     <section id="tab-fundamentals" x-show="activeTab === 'fundamentals'" x-cloak>
-      <div class="overflow-x-auto">
+      <div class="table-scroll">
         <table class="w-full text-sm font-mono tabular-nums" id="fundamentals-table">
           <caption class="sr-only">Fundamental metrics</caption>
           <thead>

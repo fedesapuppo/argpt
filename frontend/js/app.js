@@ -1,3 +1,8 @@
+// Alpine is imported from its ESM build so that we control when Alpine.start()
+// runs — specifically, AFTER Alpine.data('dashboard', ...) has been registered.
+// The auto-start CDN build races the module graph and fires start() before
+// app.js has finished evaluating, which leaves x-data="dashboard" unresolved.
+import Alpine from './vendor/alpine.esm.min.js';
 import Toast from './toast.js';
 import I18n from './i18n.js';
 import Filter from './filter.js';
@@ -244,16 +249,13 @@ function dashboardFactory() {
   };
 }
 
-// Register with Alpine. alpine:init fires once, before Alpine scans the DOM.
-// If Alpine has already fired the event (it's loaded before us), fall through
-// to register directly.
-if (window.Alpine) {
-  window.Alpine.data('dashboard', dashboardFactory);
-} else {
-  document.addEventListener('alpine:init', () => {
-    window.Alpine.data('dashboard', dashboardFactory);
-  });
-}
+// Register the component, then start Alpine. Because we imported the ESM
+// (manual-start) build of Alpine, nothing runs until we call Alpine.start().
+// This guarantees Alpine.data('dashboard', ...) is registered before any DOM
+// scanning happens.
+Alpine.data('dashboard', dashboardFactory);
+window.Alpine = Alpine; // expose for debugging from DevTools
+Alpine.start();
 
 export default App;
 
