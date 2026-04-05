@@ -5,7 +5,7 @@ const I18n = {
     es: {
       // Nav & header
       'nav.open_dashboard': 'Abrir Dashboard',
-      'nav.subtitle': 'Monitor de Portafolio Argentino',
+      'nav.subtitle': 'Gestor de Portafolio Argentino',
       'lang.toggle': 'ENGLISH',
 
       // Hero

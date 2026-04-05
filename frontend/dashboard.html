@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ARGPT — Monitor de Portafolio Argentino</title>
+  <title>ARGPT — Gestor de Portafolio Argentino</title>
   <meta name="description" content="Seguimiento de tu portafolio argentino en USD real. CEDEARs, acciones argentinas y US stocks con conversion MEP.">
-  <meta property="og:title" content="ARGPT — Monitor de Portafolio Argentino">
+  <meta property="og:title" content="ARGPT — Gestor de Portafolio Argentino">
   <meta property="og:description" content="Seguimiento de tu portafolio argentino en USD real. CEDEARs, acciones argentinas y US stocks con conversion MEP.">
   <meta property="og:image" content="https://fedesapuppo.github.io/argpt/argpt-logo.png">
   <meta property="og:url" content="https://fedesapuppo.github.io/argpt/">
@@ -77,37 +77,49 @@
     .lang-toggle:hover { color: #e6edf3; border-color: #8b949e; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner { width: 32px; height: 32px; border: 3px solid #30363d; border-top-color: #58a6ff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    /* Mobile tweaks */
+    @media (max-width: 640px) {
+      table th, table td { font-size: 0.7rem; padding: 0.4rem 0.35rem !important; }
+      .tab-btn { white-space: nowrap; }
+      /* Hide "?" help buttons on mobile — too cluttered; users can tap the cell */
+      .col-help { display: none !important; }
+      /* Hover-based tips don't work on touch; make them tap-to-show */
+      th:active .tip, td:active .tip { opacity: 1; pointer-events: auto; }
+    }
+    /* Allow tab row to scroll horizontally if it overflows */
+    .tabs-scroll { overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+    .tabs-scroll::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body class="font-sans min-h-screen">
   <!-- Header -->
-  <header class="border-b border-surface-border px-6 py-4">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <img src="argpt-logo.png" alt="ARGPT" class="w-10 h-10 rounded-lg">
-        <div>
-          <h1 class="text-xl font-semibold tracking-tight">ARGPT</h1>
-          <p class="text-xs text-muted" data-i18n="nav.subtitle">Monitor de Portafolio Argentino</p>
+  <header class="border-b border-surface-border px-3 sm:px-6 py-3 sm:py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <img src="argpt-logo.png" alt="ARGPT" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex-shrink-0">
+        <div class="min-w-0">
+          <h1 class="text-lg sm:text-xl font-semibold tracking-tight">ARGPT</h1>
+          <p class="text-[10px] sm:text-xs text-muted truncate" data-i18n="nav.subtitle">Gestor de Portafolio Argentino</p>
         </div>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         <button class="lang-toggle" onclick="I18n.setLang(I18n.lang() === 'es' ? 'en' : 'es'); location.reload();">ENGLISH</button>
-        <div class="text-xs text-muted font-mono" id="last-updated"></div>
+        <div class="hidden sm:block text-xs text-muted font-mono" id="last-updated"></div>
       </div>
     </div>
   </header>
 
   <!-- Tabs -->
-  <nav class="border-b border-surface-border px-6">
-    <div class="max-w-7xl mx-auto flex gap-0">
-      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-accent text-white" data-tab="portfolio" data-i18n="tab.portfolio">Portafolio</button>
-      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="technicals" data-i18n="tab.technicals">Técnicos</button>
-      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="fundamentals" data-i18n="tab.fundamentals">Fundamentales</button>
-      <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white" data-tab="glossary" data-i18n="tab.glossary">Glosario</button>
+  <nav class="border-b border-surface-border px-3 sm:px-6">
+    <div class="max-w-7xl mx-auto flex gap-0 tabs-scroll">
+      <button class="tab-btn px-3 sm:px-4 py-3 text-sm font-medium border-b-2 border-accent text-white whitespace-nowrap" data-tab="portfolio" data-i18n="tab.portfolio">Portafolio</button>
+      <button class="tab-btn px-3 sm:px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white whitespace-nowrap" data-tab="technicals" data-i18n="tab.technicals">Técnicos</button>
+      <button class="tab-btn px-3 sm:px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white whitespace-nowrap" data-tab="fundamentals" data-i18n="tab.fundamentals">Fundamentales</button>
+      <button class="tab-btn px-3 sm:px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted hover:text-white whitespace-nowrap" data-tab="glossary" data-i18n="tab.glossary">Glosario</button>
     </div>
   </nav>
 
-  <main class="max-w-7xl mx-auto px-6 py-6 relative">
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 relative">
     <!-- Loading overlay -->
     <div id="loading-overlay" class="absolute inset-0 bg-surface/80 flex items-center justify-center z-50 rounded-lg">
       <div class="flex flex-col items-center gap-3">
@@ -128,7 +140,7 @@
     </div>
 
     <!-- Filter bar -->
-    <div id="filter-bar" class="flex gap-2 mb-4">
+    <div id="filter-bar" class="flex flex-wrap gap-2 mb-4">
       <button class="filter-btn bg-accent/20 text-accent border border-accent/30 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors" data-filter="all" data-i18n="filter.all">Todos</button>
       <button class="filter-btn text-muted border border-surface-border rounded-lg px-3 py-1.5 text-xs font-medium transition-colors" data-filter="cedear" data-i18n="option.cedear">CEDEAR</button>
       <button class="filter-btn text-muted border border-surface-border rounded-lg px-3 py-1.5 text-xs font-medium transition-colors" data-filter="arg_stock" data-i18n="option.arg_stock">Accion Arg</button>
@@ -138,22 +150,22 @@
     <!-- Portfolio Tab -->
     <section id="tab-portfolio">
       <!-- Summary cards -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border border-t-2 border-t-accent">
-          <div class="text-xs text-muted mb-1" data-i18n="summary.total_value">Valor Total USD</div>
-          <div class="text-2xl font-mono font-semibold tabular-nums" id="total-usd">$0.00</div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
+        <div class="bg-surface-secondary rounded-lg p-3 sm:p-4 border border-surface-border border-t-2 border-t-accent">
+          <div class="text-[10px] sm:text-xs text-muted mb-1" data-i18n="summary.total_value">Valor Total USD</div>
+          <div class="text-lg sm:text-2xl font-mono font-semibold tabular-nums break-all" id="total-usd">$0.00</div>
         </div>
-        <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border border-t-2 border-t-accent">
-          <div class="text-xs text-muted mb-1" data-i18n="summary.total_pnl">P&L Total USD</div>
-          <div class="text-2xl font-mono font-semibold tabular-nums" id="total-pnl-usd">$0.00</div>
+        <div class="bg-surface-secondary rounded-lg p-3 sm:p-4 border border-surface-border border-t-2 border-t-accent">
+          <div class="text-[10px] sm:text-xs text-muted mb-1" data-i18n="summary.total_pnl">P&L Total USD</div>
+          <div class="text-lg sm:text-2xl font-mono font-semibold tabular-nums break-all" id="total-pnl-usd">$0.00</div>
         </div>
-        <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border">
-          <div class="text-xs text-muted mb-1" data-i18n="summary.arg_pnl">P&L Acc. Arg. USD</div>
-          <div class="text-lg font-mono font-medium tabular-nums" id="arg-pnl-usd">$0.00</div>
+        <div class="bg-surface-secondary rounded-lg p-3 sm:p-4 border border-surface-border">
+          <div class="text-[10px] sm:text-xs text-muted mb-1" data-i18n="summary.arg_pnl">P&L Acc. Arg. USD</div>
+          <div class="text-base sm:text-lg font-mono font-medium tabular-nums break-all" id="arg-pnl-usd">$0.00</div>
         </div>
-        <div class="bg-surface-secondary rounded-lg p-4 border border-surface-border">
-          <div class="text-xs text-muted mb-1" data-i18n="summary.ced_pnl">P&L CEDEARs USD</div>
-          <div class="text-lg font-mono font-medium tabular-nums" id="ced-pnl-usd">$0.00</div>
+        <div class="bg-surface-secondary rounded-lg p-3 sm:p-4 border border-surface-border">
+          <div class="text-[10px] sm:text-xs text-muted mb-1" data-i18n="summary.ced_pnl">P&L CEDEARs USD</div>
+          <div class="text-base sm:text-lg font-mono font-medium tabular-nums break-all" id="ced-pnl-usd">$0.00</div>
         </div>
       </div>
 
@@ -161,17 +173,17 @@
       <div id="chart-container" class="mb-4"></div>
 
       <!-- Import / Add -->
-      <div class="flex gap-3 mb-4">
-        <label class="cursor-pointer bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-accent hover:text-accent transition-colors">
+      <div class="flex flex-wrap gap-2 sm:gap-3 mb-4">
+        <label class="cursor-pointer bg-surface-secondary border border-surface-border rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium hover:border-accent hover:text-accent transition-colors">
           <span data-i18n="import.balanz">Importar Balanz XLSX</span>
           <input type="file" accept=".xlsx,.xls" id="import-balanz" class="hidden">
         </label>
-        <label class="cursor-pointer bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-accent hover:text-accent transition-colors">
+        <label class="cursor-pointer bg-surface-secondary border border-surface-border rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium hover:border-accent hover:text-accent transition-colors">
           <span data-i18n="import.ib">Importar IB CSV</span>
           <input type="file" accept=".csv" id="import-ib" class="hidden">
         </label>
-        <button id="clear-holdings" class="bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-loss hover:text-loss transition-colors" data-i18n="import.clear">Limpiar Todo</button>
-        <button id="export-csv" class="bg-surface-secondary border border-surface-border rounded-lg px-4 py-2.5 text-sm font-medium hover:border-accent hover:text-accent transition-colors">Export CSV</button>
+        <button id="clear-holdings" class="bg-surface-secondary border border-surface-border rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium hover:border-loss hover:text-loss transition-colors" data-i18n="import.clear">Limpiar Todo</button>
+        <button id="export-csv" class="bg-surface-secondary border border-surface-border rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium hover:border-accent hover:text-accent transition-colors">Export CSV</button>
       </div>
 
       <!-- Add holding form -->
