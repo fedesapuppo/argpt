@@ -7,8 +7,11 @@ const Technicals = {
     (holdings || []).forEach(h => { typeMap[h.ticker] = h.type; });
     const mepRate = mep?.mark;
     const fund = fundamentals || {};
+    const held = new Set((holdings || []).map(h => h.ticker));
 
-    const rows = Object.entries(technicalsData).map(([ticker, t]) => {
+    if (!held.size) { tbody.innerHTML = ''; return; }
+
+    const rows = Object.entries(technicalsData).filter(([ticker]) => held.has(ticker)).map(([ticker, t]) => {
       const price = this._findPrice(ticker, pricesData);
       const type = typeMap[ticker];
       const isArs = type === 'cedear' || type === 'arg_stock';
@@ -19,6 +22,7 @@ const Technicals = {
       const sma20Pct = smaRef && sma20Usd ? ((smaRef - sma20Usd) / sma20Usd) * 100 : null;
       const sma50Pct = smaRef && sma50Usd ? ((smaRef - sma50Usd) / sma50Usd) * 100 : null;
       const row = { ticker, price: priceUsd, type, ...t, sma20: sma20Usd, sma50: sma50Usd, sma20_pct: sma20Pct, sma50_pct: sma50Pct };
+      row.is_etf = Table._isEtf(fund[ticker]);
       row.health = this._healthScore(row);
       return row;
     });
@@ -33,9 +37,10 @@ const Technicals = {
     return rows.filter(r => Filter.matches(r.type)).map(r => `
       <tr class="border-b border-surface-border/50 hover:bg-surface-secondary/50">
         <td class="py-2 px-2 text-left relative">
-          <span class="text-white font-medium">${Table._esc(r.ticker)}</span>
+          <span class="text-white font-medium inline-block" style="min-width:3.25rem">${Table._esc(r.ticker)}</span>
           ${r.type ? Table._typeBadge(r.type) : ''}
-          <span class="tip">${Table._esc(r.ticker)}${r.type ? ' · ' + Table._typeTip(r.type) : ''}</span>
+          ${r.is_etf ? Table._etfBadge() : ''}
+          <span class="tip">${Table._esc(r.ticker)}${r.type ? ' · ' + Table._typeTip(r.type) : ''}${r.is_etf ? ' · ' + I18n.t('tip.etf') : ''}</span>
         </td>
         <td class="py-2 px-2 text-right relative">${Currency.formatUSD(r.price)}<span class="tip">${I18n.t('tip.current_price_usd')}</span></td>
         <td class="py-2 px-2 text-right relative" style="${this._athColor(r.pct_below_ath)}">${this._athArrow(r.pct_below_ath)}${Currency.formatNum(r.pct_below_ath, 1)}%<span class="tip">${r.pct_below_ath != null && r.pct_below_ath < 1 ? I18n.t('tip.at_ath') : r.pct_below_ath != null && r.pct_below_ath > 50 ? I18n.t('tip.far_ath') : I18n.t('tip.below_ath')}</span></td>

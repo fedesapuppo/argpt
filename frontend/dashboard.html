@@ -39,7 +39,9 @@
     }
   </script>
   <style>
-    body { background: #0d1117; color: #e6edf3; }
+    html, body { background: #0d1117; color: #e6edf3; overflow-x: hidden !important; max-width: 100vw; }
+    main { max-width: min(80rem, 100vw); overflow-x: hidden; }
+    main > section, #filter-bar { max-width: 100%; min-width: 0; }
     .tabular-nums { font-variant-numeric: tabular-nums; }
     table th { cursor: pointer; user-select: none; }
     table th:hover { color: #58a6ff; }
@@ -51,21 +53,17 @@
     .sort-asc::after { content: ' ▲'; font-size: 0.7em; }
     .sort-desc::after { content: ' ▼'; font-size: 0.7em; }
     .tip {
-      position: absolute; left: 50%; transform: translateX(-50%);
-      top: calc(100% + 4px); white-space: nowrap;
+      display: none;
+      position: fixed; left: 0; top: 0;
+      white-space: normal; width: max-content; max-width: 220px;
       background: #21262d; color: #e6edf3; border: 1px solid #30363d;
       font-size: 0.65rem; font-weight: 400; font-family: 'IBM Plex Sans', sans-serif;
+      line-height: 1.4;
       padding: 4px 8px; border-radius: 4px;
-      opacity: 0; pointer-events: none; transition: opacity 0.15s;
+      pointer-events: none;
       z-index: 50;
     }
-    .tip::before {
-      content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
-      border: 4px solid transparent; border-bottom-color: #30363d;
-    }
-    .text-left .tip { left: 0; transform: none; }
-    .text-left .tip::before { left: 12px; transform: none; }
-    th:hover .tip, td:hover .tip, th.tip-visible .tip, th:focus-within .tip { opacity: 1; pointer-events: auto; }
+    .tip.tip-show { display: block; }
     .col-help { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; font-size: 9px; font-weight: 600; font-family: 'IBM Plex Sans', sans-serif; color: #8b949e; background: transparent; border: 1px solid #30363d; cursor: pointer; margin-left: 4px; vertical-align: middle; line-height: 1; }
     .col-help:hover { color: #58a6ff; border-color: #58a6ff; }
     .lang-toggle {
@@ -81,10 +79,6 @@
     @media (max-width: 640px) {
       table th, table td { font-size: 0.7rem; padding: 0.4rem 0.35rem !important; }
       .tab-btn { white-space: nowrap; }
-      /* Hide "?" help buttons on mobile — too cluttered; users can tap the cell */
-      .col-help { display: none !important; }
-      /* Hover-based tips don't work on touch; make them tap-to-show */
-      th:active .tip, td:active .tip { opacity: 1; pointer-events: auto; }
     }
     /* Allow tab row to scroll horizontally if it overflows */
     .tabs-scroll { overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
@@ -103,7 +97,7 @@
         </div>
       </div>
       <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-        <button class="lang-toggle" onclick="I18n.setLang(I18n.lang() === 'es' ? 'en' : 'es'); location.reload();">ENGLISH</button>
+        <button class="lang-toggle" onclick="I18n.setLang(I18n.lang() === 'es' ? 'en' : 'es'); location.reload();">English</button>
         <div class="hidden sm:block text-xs text-muted font-mono" id="last-updated"></div>
       </div>
     </div>
@@ -135,7 +129,7 @@
     </div>
 
     <!-- Warning banner -->
-    <div id="fx-warning" class="hidden mb-4 p-3 rounded border border-caution/30 bg-caution/10 text-caution text-sm" data-i18n="warning.fx">
+    <div id="fx-warning" class="hidden mb-3 text-xs text-muted/80 italic" data-i18n="warning.fx">
       ⚠ Algunas tenencias no tienen tipo de cambio de entrada — los retornos en USD son aproximados. Edita las tenencias para agregar tu tipo MEP de compra para resultados precisos.
     </div>
 
@@ -182,8 +176,8 @@
           <span data-i18n="import.ib">Importar IB CSV</span>
           <input type="file" accept=".csv" id="import-ib" class="hidden">
         </label>
+        <button id="load-sample" class="bg-surface-secondary border border-surface-border rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium hover:border-accent hover:text-accent transition-colors" data-i18n="import.sample">Cargar Datos de Ejemplo</button>
         <button id="clear-holdings" class="bg-surface-secondary border border-surface-border rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium hover:border-loss hover:text-loss transition-colors" data-i18n="import.clear">Limpiar Todo</button>
-        <button id="export-csv" class="bg-surface-secondary border border-surface-border rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium hover:border-accent hover:text-accent transition-colors">Export CSV</button>
       </div>
 
       <!-- Add holding form -->
@@ -236,19 +230,19 @@
           <caption class="sr-only">Portfolio holdings</caption>
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
-              <th class="text-left py-2 px-2 relative" data-sort="ticker"><span data-i18n="th.ticker">Ticker</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.ticker_tip"></span></th>
-              <th class="text-center py-2 px-2 relative" data-sort="broker"><span data-i18n="th.broker">Broker</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.broker_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="shares"><span data-i18n="th.shares">Cantidad</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.shares_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="avg_price"><span data-i18n="th.avg_ars">Prom ARS</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.avg_ars_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="cost_basis_usd"><span data-i18n="th.avg_usd">Prom USD</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.avg_usd_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="current_price_usd"><span data-i18n="th.price_usd">Precio USD</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.price_usd_tip"></span></th>
+              <th class="text-left py-2 px-2 relative" data-sort="ticker"><span data-i18n="th.ticker">Ticker</span><span class="tip" data-i18n="th.ticker_tip"></span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="broker"><span data-i18n="th.broker">Broker</span><span class="tip" data-i18n="th.broker_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="shares"><span data-i18n="th.shares">Cantidad</span><span class="tip" data-i18n="th.shares_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="avg_price"><span data-i18n="th.avg_ars">Prom ARS</span><span class="tip" data-i18n="th.avg_ars_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="cost_basis_usd"><span data-i18n="th.avg_usd">Prom USD</span><span class="tip" data-i18n="th.avg_usd_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="current_price_usd"><span data-i18n="th.price_usd">Precio USD</span><span class="tip" data-i18n="th.price_usd_tip"></span></th>
 
-              <th class="text-right py-2 px-2 relative" data-sort="capital_return_pct"><span data-i18n="th.price_pct">Precio %</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.price_pct_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="currency_return_pct"><span data-i18n="th.currency_pct">Moneda %</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.currency_pct_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="total_return_usd_pct"><span data-i18n="th.usd_ret">Ret USD %</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.usd_ret_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="value_usd"><span data-i18n="th.value_usd">Valor USD</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.value_usd_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pnl_usd"><span data-i18n="th.pnl_usd">P&amp;L USD</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.pnl_usd_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="weight_pct"><span data-i18n="th.weight">Peso %</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.weight_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="capital_return_pct"><span data-i18n="th.price_pct">Precio %</span><span class="tip" data-i18n="th.price_pct_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="currency_return_pct"><span data-i18n="th.currency_pct">Moneda %</span><span class="tip" data-i18n="th.currency_pct_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="total_return_usd_pct"><span data-i18n="th.usd_ret">Ret USD %</span><span class="tip" data-i18n="th.usd_ret_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="value_usd"><span data-i18n="th.value_usd">Valor USD</span><span class="tip" data-i18n="th.value_usd_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pnl_usd"><span data-i18n="th.pnl_usd">P&amp;L USD</span><span class="tip" data-i18n="th.pnl_usd_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="weight_pct"><span data-i18n="th.weight">Peso %</span><span class="tip" data-i18n="th.weight_tip"></span></th>
               <th class="text-center py-2 px-2 w-8"></th>
             </tr>
           </thead>
@@ -265,15 +259,15 @@
           <caption class="sr-only">Technical indicators</caption>
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
-              <th class="text-left py-2 px-2 relative" data-sort="ticker"><span data-i18n="th.ticker">Ticker</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.ticker_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="price"><span data-i18n="th.price_usd">Precio USD</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.tech_price_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pct_below_ath"><span data-i18n="th.ath">% Bajo ATH</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.ath_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="rsi14"><span data-i18n="th.rsi">RSI(14)</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.rsi_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="stochastic_k"><span data-i18n="th.stoch">Estoc K/D</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.stoch_tip"></span></th>
-              <th class="text-center py-2 px-2 relative" data-sort="supertrend_trend"><span data-i18n="th.supertrend">Supertrend</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.supertrend_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="sma20_pct"><span data-i18n="th.sma20">vs SMA20</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.sma20_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="sma50_pct"><span data-i18n="th.sma50">vs SMA50</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.sma50_tip"></span></th>
-              <th class="text-center py-2 px-2 relative" data-sort="health"><span data-i18n="th.health">Salud</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.health_tip"></span></th>
+              <th class="text-left py-2 px-2 relative" data-sort="ticker"><span data-i18n="th.ticker">Ticker</span><span class="tip" data-i18n="th.ticker_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="price"><span data-i18n="th.price_usd">Precio USD</span><span class="tip" data-i18n="th.tech_price_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pct_below_ath"><span data-i18n="th.ath">% Bajo ATH</span><span class="tip" data-i18n="th.ath_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="rsi14"><span data-i18n="th.rsi">RSI(14)</span><span class="tip" data-i18n="th.rsi_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="stochastic_k"><span data-i18n="th.stoch">Estoc K/D</span><span class="tip" data-i18n="th.stoch_tip"></span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="supertrend_trend"><span data-i18n="th.supertrend">Supertrend</span><span class="tip" data-i18n="th.supertrend_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="sma20_pct"><span data-i18n="th.sma20">vs SMA20</span><span class="tip" data-i18n="th.sma20_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="sma50_pct"><span data-i18n="th.sma50">vs SMA50</span><span class="tip" data-i18n="th.sma50_tip"></span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="health"><span data-i18n="th.health">Salud</span><span class="tip" data-i18n="th.health_tip"></span></th>
             </tr>
           </thead>
           <tbody id="technicals-body"></tbody>
@@ -288,17 +282,17 @@
           <caption class="sr-only">Fundamental metrics</caption>
           <thead>
             <tr class="text-xs text-muted border-b border-surface-border">
-              <th class="text-left py-2 px-2 relative" data-sort="ticker"><span data-i18n="th.ticker">Ticker</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.ticker_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pe">P/E<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.pe_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="forward_pe">Fwd P/E<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.fwd_pe_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="pb">P/B<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.pb_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="roe">ROE %<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.roe_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="eps_growth">EPS Gr %<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.eps_gr_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="dividend_yield">Div Yld %<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.div_yld_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="debt_to_equity">D/E<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.de_tip"></span></th>
-              <th class="text-right py-2 px-2 relative" data-sort="profit_margin">Margin %<button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.margin_tip"></span></th>
-              <th class="text-left py-2 pl-8 pr-4 relative"><span data-i18n="th.sector">Sector</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.sector_tip"></span></th>
-              <th class="text-center py-2 px-2 relative" data-sort="health"><span data-i18n="th.health">Salud</span><button class="col-help" aria-label="Help">?</button><span class="tip" data-i18n="th.health_tip"></span></th>
+              <th class="text-left py-2 px-2 relative" data-sort="ticker"><span data-i18n="th.ticker">Ticker</span><span class="tip" data-i18n="th.ticker_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pe">P/E<span class="tip" data-i18n="th.pe_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="forward_pe">Fwd P/E<span class="tip" data-i18n="th.fwd_pe_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="pb">P/B<span class="tip" data-i18n="th.pb_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="roe">ROE %<span class="tip" data-i18n="th.roe_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="eps_growth">EPS Gr %<span class="tip" data-i18n="th.eps_gr_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="dividend_yield">Div Yld %<span class="tip" data-i18n="th.div_yld_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="debt_to_equity">D/E<span class="tip" data-i18n="th.de_tip"></span></th>
+              <th class="text-right py-2 px-2 relative" data-sort="profit_margin">Margin %<span class="tip" data-i18n="th.margin_tip"></span></th>
+              <th class="text-left py-2 pl-8 pr-4 relative"><span data-i18n="th.sector">Sector</span><span class="tip" data-i18n="th.sector_tip"></span></th>
+              <th class="text-center py-2 px-2 relative" data-sort="health"><span data-i18n="th.health">Salud</span><span class="tip" data-i18n="th.health_tip"></span></th>
             </tr>
           </thead>
           <tbody id="fundamentals-body"></tbody>
@@ -391,7 +385,6 @@
   <script src="js/technicals.js"></script>
   <script src="js/fundamentals.js"></script>
   <script src="js/chart.js"></script>
-  <script src="js/export.js"></script>
   <script src="js/column-help.js"></script>
   <script src="js/app.js"></script>
 </body>

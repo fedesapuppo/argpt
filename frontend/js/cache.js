@@ -33,6 +33,17 @@ const Cache = {
     const fresh = await fn();
     if (fresh != null) this.set(key, fresh, ttlMs);
     return fresh;
+  },
+
+  // Removes every cache entry in our namespace. Leaves unrelated
+  // localStorage keys alone.
+  clearAll() {
+    const toRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(this.PREFIX)) toRemove.push(k);
+    }
+    for (const k of toRemove) localStorage.removeItem(k);
   }
 };
 

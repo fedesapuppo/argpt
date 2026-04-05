@@ -29,13 +29,17 @@ const Form = {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const data = new FormData(form);
+      const type = data.get('type');
       const holding = {
         ticker: data.get('ticker').toUpperCase().trim(),
-        type: data.get('type'),
+        type,
         shares: parseFloat(data.get('shares')),
         avg_price: parseFloat(data.get('avg_price')),
         purchase_date: data.get('purchase_date') || null,
-        entry_fx_rate: data.get('entry_fx_rate') ? parseFloat(data.get('entry_fx_rate')) : null
+        entry_fx_rate: data.get('entry_fx_rate') ? parseFloat(data.get('entry_fx_rate')) : null,
+        broker: this._editIndex !== null
+          ? (Storage.getHoldings()[this._editIndex]?.broker || (type === 'us_stock' ? 'ib' : 'balanz'))
+          : (type === 'us_stock' ? 'ib' : 'balanz')
       };
 
       if (!holding.ticker || !holding.shares || !holding.avg_price) return;

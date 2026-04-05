@@ -6,7 +6,7 @@ const I18n = {
       // Nav & header
       'nav.open_dashboard': 'Abrir Dashboard',
       'nav.subtitle': 'Gestor de Portafolio Argentino',
-      'lang.toggle': 'ENGLISH',
+      'lang.toggle': 'English',
 
       // Hero
       'hero.title_1': 'Monitoreá tu portafolio',
@@ -229,6 +229,7 @@ const I18n = {
       'type.cedear_tip': 'CEDEAR — Certificado de depósito argentino (cotizado en ARS, convertido via MEP)',
       'type.arg_stock_tip': 'Acción argentina listada en BYMA (cotizada en ARS, convertida via MEP)',
       'type.us_stock_tip': 'Acción US (cotizada en USD)',
+      'tip.etf': 'ETF — fondo cotizado. Los fundamentales clásicos (P/E, ROE, margen, etc.) no aplican',
 
       // Broker tips
       'broker.balanz_tip': 'Balanz — Broker argentino',
@@ -284,7 +285,7 @@ const I18n = {
     en: {
       'nav.open_dashboard': 'Open Dashboard',
       'nav.subtitle': 'Argentine Portfolio Tracker',
-      'lang.toggle': 'ESPANOL',
+      'lang.toggle': 'Español',
 
       'hero.title_1': 'Track your Argentine',
       'hero.title_2': 'portfolio in ',
@@ -487,6 +488,7 @@ const I18n = {
       'type.cedear_tip': 'CEDEAR \u2014 Argentine depositary receipt (priced in ARS, converted via MEP)',
       'type.arg_stock_tip': 'Argentine equity listed on BYMA (priced in ARS, converted via MEP)',
       'type.us_stock_tip': 'US equity (priced in USD)',
+      'tip.etf': 'ETF — exchange-traded fund. Classic fundamentals (P/E, ROE, margin, etc.) do not apply',
 
       'broker.balanz_tip': 'Balanz \u2014 Argentine broker',
       'broker.ib_tip': 'Interactive Brokers \u2014 US broker',

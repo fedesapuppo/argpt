@@ -8,8 +8,11 @@ const Fundamentals = {
 
     const typeMap = {};
     (holdings || []).forEach(h => { typeMap[h.ticker] = h.type; });
+    const held = new Set((holdings || []).map(h => h.ticker));
 
-    const rows = Object.entries(fundamentalsData).map(([ticker, f]) => {
+    if (!held.size) { tbody.innerHTML = ''; return; }
+
+    const rows = Object.entries(fundamentalsData).filter(([ticker]) => held.has(ticker)).map(([ticker, f]) => {
       const row = { ticker, type: typeMap[ticker], ...f };
       row.health = this._healthScore(row);
       return row;
@@ -71,9 +74,10 @@ const Fundamentals = {
     return `
       <tr class="border-b border-surface-border/50 hover:bg-surface-secondary/50">
         <td class="py-2 px-2 text-left relative">
-          <span class="text-white font-medium">${Table._esc(r.ticker)}</span>
+          <span class="text-white font-medium inline-block" style="min-width:3.25rem">${Table._esc(r.ticker)}</span>
           ${r.type ? Table._typeBadge(r.type) : ''}
-          <span class="tip">${Table._esc(r.ticker)}${r.type ? ' · ' + Table._typeTip(r.type) : ''}</span>
+          ${etf ? Table._etfBadge() : ''}
+          <span class="tip">${Table._esc(r.ticker)}${r.type ? ' · ' + Table._typeTip(r.type) : ''}${etf ? ' · ' + I18n.t('tip.etf') : ''}</span>
         </td>
         <td class="py-2 px-2 text-right relative ${Currency.thresholdClass(th.pe)}">${Currency.thresholdArrow(th.pe)}${Currency.formatNum(r.pe, 1)}<span class="tip">${this._thresholdTip(th.pe, 'P/E', sec, med.pe, etf)}</span></td>
         <td class="py-2 px-2 text-right relative ${Currency.thresholdClass(th.forward_pe)}">${Currency.thresholdArrow(th.forward_pe)}${Currency.formatNum(r.forward_pe, 1)}<span class="tip">${this._thresholdTip(th.forward_pe, 'Fwd P/E', sec, med.pe, etf)}</span></td>

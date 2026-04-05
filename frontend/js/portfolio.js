@@ -56,9 +56,14 @@ const Portfolio = {
       : (ccl ? (last - h.avg_price) * h.shares * ccl.mark : 0);
     const pnlPct = freeLot ? null : ((last - h.avg_price) / h.avg_price) * 100;
 
-    const costBasisUsd = freeLot ? null : isArs && h.entry_fx_rate
-      ? h.avg_price / h.entry_fx_rate
-      : (!isArs ? h.avg_price : null);
+    // When entry_fx_rate is unknown for an ARS-quoted holding, fall back to the
+    // current MEP — currency drag becomes 0 and USD return equals capital return.
+    // The fx-warning banner flags these as estimates.
+    const effectiveEntryFx = isArs ? (h.entry_fx_rate || mep.mark) : null;
+
+    const costBasisUsd = freeLot ? null : isArs
+      ? h.avg_price / effectiveEntryFx
+      : h.avg_price;
 
     let pnlUsd = null;
     if (costBasisUsd != null) {
@@ -74,8 +79,8 @@ const Portfolio = {
     } else if (!isArs) {
       currencyReturn = 0;
       totalReturnUsd = capitalReturn;
-    } else if (h.entry_fx_rate) {
-      currencyReturn = (h.entry_fx_rate / mep.mark - 1) * 100;
+    } else {
+      currencyReturn = (effectiveEntryFx / mep.mark - 1) * 100;
       totalReturnUsd = ((1 + capitalReturn / 100) * (1 + currencyReturn / 100) - 1) * 100;
     }
 

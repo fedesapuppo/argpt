@@ -7,7 +7,9 @@ global.localStorage = {
   getItem: (k) => (k in store ? store[k] : null),
   setItem: (k, v) => { store[k] = v; },
   removeItem: (k) => { delete store[k]; },
-  clear: () => { for (const k of Object.keys(store)) delete store[k]; }
+  clear: () => { for (const k of Object.keys(store)) delete store[k]; },
+  key: (i) => Object.keys(store)[i] ?? null,
+  get length() { return Object.keys(store).length; }
 };
 
 const Cache = require('../../frontend/js/cache.js');
@@ -64,4 +66,21 @@ test('fetch does not store null results', async () => {
   const result = await Cache.fetch('k', 10_000, async () => null);
   assert.equal(result, null);
   assert.equal(Cache.get('k'), null);
+});
+
+test('clearAll removes every argpt_cache: key', () => {
+  Cache.set('a', 1, 10_000);
+  Cache.set('b', 2, 10_000);
+  Cache.set('c', 3, 10_000);
+  Cache.clearAll();
+  assert.equal(Cache.get('a'), null);
+  assert.equal(Cache.get('b'), null);
+  assert.equal(Cache.get('c'), null);
+});
+
+test('clearAll leaves non-argpt keys alone', () => {
+  Cache.set('mine', 'yes', 10_000);
+  global.localStorage.setItem('unrelated', 'keep me');
+  Cache.clearAll();
+  assert.equal(global.localStorage.getItem('unrelated'), 'keep me');
 });

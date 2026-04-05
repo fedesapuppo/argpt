@@ -32,13 +32,15 @@ const Table = {
     const filtered = holdings.filter(h => Filter.matches(h.type));
     tbody.innerHTML = filtered.map(h => {
       const ratio = h.type === 'cedear' ? fund[h.ticker]?.cedear_ratio : null;
+      const isEtf = this._isEtf(fund[h.ticker]);
       return `
       <tr class="border-b border-surface-border/50 hover:bg-surface-secondary/50 cursor-pointer" data-index="${h.index}">
         <td class="py-2 px-2 text-left relative">
-          <span class="text-white font-medium">${this._esc(h.ticker)}</span>
+          <span class="text-white font-medium inline-block" style="min-width:3.25rem">${this._esc(h.ticker)}</span>
           ${this._typeBadge(h.type)}
+          ${isEtf ? this._etfBadge() : ''}
           ${ratio ? '<span class="text-[10px] text-accent/60 ml-0.5">' + this._esc(ratio) + '</span>' : ''}
-          <span class="tip">${this._esc(h.ticker)} · ${this._typeTip(h.type)}${ratio ? ' · ' + I18n.t('tip.ratio', { ratio: this._esc(ratio) }) : ''}</span>
+          <span class="tip">${this._esc(h.ticker)} · ${this._typeTip(h.type)}${isEtf ? ' · ' + I18n.t('tip.etf') : ''}${ratio ? ' · ' + I18n.t('tip.ratio', { ratio: this._esc(ratio) }) : ''}</span>
         </td>
         <td class="py-2 px-2 text-center text-xs text-muted relative">${this._brokerLabel(h.broker)}<span class="tip">${this._brokerTip(h.broker)}</span></td>
         <td class="py-2 px-2 text-right relative">${Currency.formatNum(h.shares, h.shares % 1 ? 2 : 0)}<span class="tip">${I18n.t('tip.shares_held')}</span></td>
@@ -121,7 +123,7 @@ const Table = {
   },
 
   _typeBadge(type) {
-    const base = 'font-size:10px;margin-left:4px;padding:1px 5px;border-radius:3px;';
+    const base = 'font-size:10px;margin-left:4px;padding:1px 5px;border-radius:3px;display:inline-block;min-width:2.4rem;text-align:center;box-sizing:border-box;';
     if (type === 'arg_stock') {
       return `<span style="${base}background:linear-gradient(180deg,#74ACDF 30%,#fff 30%,#fff 70%,#74ACDF 70%);color:#1a4a6e;font-weight:600;">${this._typeLabel(type)}</span>`;
     }
@@ -141,6 +143,15 @@ const Table = {
       cedear:    '<span style="display:inline-block;width:14px;height:9px;border-radius:2px;vertical-align:middle;margin-right:4px;background:linear-gradient(135deg,#74ACDF,#8b5cf6);"></span>'
     };
     return (flags[type] || '') + I18n.t('type.' + type + '_tip');
+  },
+
+  _isEtf(fund) {
+    return !!(fund && !fund.sector && fund.pe == null && fund.current_price != null);
+  },
+
+  _etfBadge() {
+    const base = 'font-size:10px;margin-left:4px;padding:1px 5px;border-radius:3px;';
+    return `<span style="${base}background:rgba(234,179,8,0.15);color:#eab308;font-weight:600;border:1px solid rgba(234,179,8,0.4);">ETF</span>`;
   },
 
   _brokerLabel(broker) {

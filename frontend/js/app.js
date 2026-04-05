@@ -1,5 +1,7 @@
 const App = {
   data: { prices: null, exchangeRates: null, technicals: null, fundamentals: null },
+  AUTO_REFRESH_MS: 3 * 60 * 60 * 1000,
+  _autoRefreshTimer: null,
 
   async init() {
     Toast.init();
@@ -8,7 +10,6 @@ const App = {
     Filter.init();
     Form.init();
     Import.init();
-    Export.init();
     ColumnHelp.init();
 
     await Storage.loadFromJson();
@@ -20,6 +21,7 @@ const App = {
     document.getElementById('loading-overlay').classList.add('hidden');
     this.refresh();
     this._updateSampleBanner();
+    this._scheduleAutoRefresh();
   },
 
   async loadData() {
@@ -73,7 +75,8 @@ const App = {
   },
 
   // Called after a user adds/imports a new ticker — fetches its analytics
-  // so the fundamentals/technicals tabs populate without a reload.
+  // so the fundamentals/technicals tabs populate without a reload. Also
+  // counts as a manual refresh, resetting the auto-refresh timer.
   async fetchForHoldings(newHoldings) {
     if (!newHoldings?.length) return;
     try {
@@ -84,8 +87,35 @@ const App = {
       this.data.fundamentals = fundamentals;
       this.data.technicals = technicals;
       this.refresh();
+      this._scheduleAutoRefresh();
     } catch (e) {
       console.warn('[App] on-demand fetch failed', e);
+    }
+  },
+
+  // (Re)schedules the auto-refresh timer. Called on init and on every manual
+  // refresh — so while the user is active, the 3h timer never fires.
+  _scheduleAutoRefresh() {
+    if (this._autoRefreshTimer) clearTimeout(this._autoRefreshTimer);
+    this._autoRefreshTimer = setTimeout(() => this.autoRefresh(), this.AUTO_REFRESH_MS);
+  },
+
+  // Forces a full reload of prices, rates, fundamentals, and technicals,
+  // bypassing the cache. Reschedules the 3h timer afterwards.
+  async autoRefresh() {
+    try {
+      Cache.clearAll();
+      const fallback = await this._loadStaticFallback();
+      const bulk = await LiveData.loadBulk(fallback).catch(() => fallback);
+      this.data.exchangeRates = bulk.exchangeRates || fallback.exchangeRates || null;
+      this.data.prices = bulk.prices || fallback.prices || {};
+      this._updateLastUpdated();
+      this.refresh();
+      await this._loadAnalyticsForCurrentHoldings(fallback);
+    } catch (e) {
+      console.warn('[App] auto-refresh failed', e);
+    } finally {
+      this._scheduleAutoRefresh();
     }
   },
 
