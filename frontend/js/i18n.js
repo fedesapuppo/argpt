@@ -72,6 +72,8 @@ const I18n = {
 
       // Dashboard - warning
       'warning.fx': '\u26A0 Algunas tenencias no tienen tipo de cambio de entrada — los retornos en USD son aproximados. Editá las tenencias para agregar tu tipo MEP de compra para resultados precisos.',
+      'banner.sample': 'Portafolio de ejemplo — importá tus tenencias para comenzar.',
+      'banner.sample_dismiss': 'Cerrar',
 
       // Dashboard - summary cards
       'summary.total_value': 'Valor Total USD',
@@ -343,6 +345,8 @@ const I18n = {
       'tab.glossary': 'Glossary',
 
       'warning.fx': '\u26A0 Some holdings are missing entry exchange rates \u2014 USD returns are approximate. Edit holdings to add your MEP rate at purchase for accurate results.',
+      'banner.sample': 'Viewing sample portfolio \u2014 import your own holdings to get started.',
+      'banner.sample_dismiss': 'Dismiss',
 
       'summary.total_value': 'Total USD Value',
       'summary.total_pnl': 'Total USD P&L',

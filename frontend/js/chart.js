@@ -74,7 +74,7 @@ const Chart = {
 
     container.innerHTML = `
       <svg width="100%" height="${barHeight}" class="rounded overflow-hidden">${defs}${rects.join('')}</svg>
-      <div class="flex gap-4 mt-2">${legend}</div>
+      <div class="flex flex-wrap gap-4 mt-2">${legend}</div>
     `;
   }
 };

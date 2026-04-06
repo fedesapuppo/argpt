@@ -1,6 +1,8 @@
-// localStorage wrapper with TTL. Keys are namespaced under "argpt_cache:".
+// localStorage wrapper with TTL and in-flight deduplication.
+// Keys are namespaced under "argpt_cache:".
 const Cache = {
   PREFIX: 'argpt_cache:',
+  _pending: new Map(),
 
   get(key) {
     try {
@@ -26,13 +28,22 @@ const Cache = {
     }
   },
 
-  // Runs fn() unless the cache has a fresh value. Returns the cached or fresh value.
+  // Runs fn() unless the cache has a fresh value. Deduplicates concurrent
+  // calls for the same key so only one HTTP request fires.
   async fetch(key, ttlMs, fn) {
     const cached = this.get(key);
     if (cached != null) return cached;
-    const fresh = await fn();
-    if (fresh != null) this.set(key, fresh, ttlMs);
-    return fresh;
+    if (this._pending.has(key)) return this._pending.get(key);
+    const promise = fn().then(fresh => {
+      if (fresh != null) this.set(key, fresh, ttlMs);
+      this._pending.delete(key);
+      return fresh;
+    }).catch(err => {
+      this._pending.delete(key);
+      throw err;
+    });
+    this._pending.set(key, promise);
+    return promise;
   },
 
   // Removes every cache entry in our namespace. Leaves unrelated

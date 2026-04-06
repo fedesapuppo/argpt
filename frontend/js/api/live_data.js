@@ -7,10 +7,10 @@ import TechnicalsAnalyzer from '../analyzers/technicals.js';
 // Runtime data orchestrator. Fetches live prices/fundamentals/technicals
 // from data912 + finance-query, with caching and static JSON fallback.
 const LiveData = {
-  PRICES_TTL: 5 * 60 * 1000,           // 5 min
-  RATES_TTL:  5 * 60 * 1000,           // 5 min
-  FUNDAMENTALS_TTL: 60 * 60 * 1000,    // 1 h
-  TECHNICALS_TTL:   60 * 60 * 1000,    // 1 h
+  PRICES_TTL: 3 * 60 * 60 * 1000,      // 3 h
+  RATES_TTL:  3 * 60 * 60 * 1000,      // 3 h
+  FUNDAMENTALS_TTL: 3 * 60 * 60 * 1000, // 3 h
+  TECHNICALS_TTL:   3 * 60 * 60 * 1000, // 3 h
 
   // Loads bulk prices + exchange rates. Merges with fallback to handle
   // empty API responses (weekends, API downtime).
@@ -25,9 +25,9 @@ const LiveData = {
     return { prices: mergedPrices, exchangeRates: mergedRates };
   },
 
-  // Fetches fundamentals + technicals for a list of holdings. Uses per-ticker
-  // cache so repeat calls are cheap. Each ticker fetches its fundamentals then
-  // technicals in sequence, but all tickers run in parallel.
+  // Fetches fundamentals + technicals for a list of holdings. Serves cached
+  // data instantly, then batch-fetches uncached tickers via GraphQL aliases
+  // (quotes + indicators in parallel). Patches ATH into technicals after both resolve.
   async loadAnalytics(holdings, fallback = {}) {
     const fundamentals = { ...(fallback.fundamentals || {}) };
     const technicals = { ...(fallback.technicals || {}) };
@@ -35,57 +35,55 @@ const LiveData = {
     const unique = this._uniqueHoldings(holdings);
     if (!unique.length) return { fundamentals, technicals };
 
-    await Promise.all(unique.map(async (h) => {
-      await this._loadFundamentalsFor(h, fundamentals);
-      await this._loadTechnicalsFor(h, technicals, fundamentals);
-    }));
+    const uncachedFund = [];
+    const uncachedTech = [];
 
-    return { fundamentals, technicals };
-  },
+    for (const h of unique) {
+      const fundCached = Cache.get(`fund:${h.ticker}`);
+      if (fundCached) { fundamentals[h.ticker] = fundCached; }
+      else { uncachedFund.push(h); }
 
-  async _loadFundamentalsFor(holding, fundamentals) {
-    const { ticker, type } = holding;
-    const cached = Cache.get(`fund:${ticker}`);
-    if (cached) {
-      fundamentals[ticker] = cached;
-      return;
+      const techCached = Cache.get(`tech:${h.ticker}`);
+      if (techCached) { technicals[h.ticker] = techCached; }
+      else { uncachedTech.push(h); }
     }
-    try {
-      const symbol = FinanceQuery.fqSymbol(ticker, type);
-      const quote = await FinanceQuery.quote(symbol);
-      if (!quote) return;
+
+    const fundSymbols = uncachedFund.map(h => ({ ticker: h.ticker, symbol: FinanceQuery.fqSymbol(h.ticker, h.type) }));
+    const techSymbols = uncachedTech.map(h => ({ ticker: h.ticker, symbol: FinanceQuery.fqSymbol(h.ticker, h.type) }));
+
+    const [quotesMap, indicatorsMap] = await Promise.all([
+      fundSymbols.length
+        ? FinanceQuery.batchQuotes(fundSymbols.map(s => s.symbol)).catch(e => { console.warn('[LiveData] batch quotes failed', e); return {}; })
+        : {},
+      techSymbols.length
+        ? FinanceQuery.batchIndicators(techSymbols.map(s => s.symbol)).catch(e => { console.warn('[LiveData] batch indicators failed', e); return {}; })
+        : {}
+    ]);
+
+    for (const { ticker, symbol } of fundSymbols) {
+      const quote = quotesMap[symbol];
+      if (!quote) continue;
       const analyzed = FundamentalsAnalyzer.analyze(quote);
-      if (!analyzed) return;
+      if (!analyzed) continue;
       fundamentals[ticker] = analyzed;
       Cache.set(`fund:${ticker}`, analyzed, this.FUNDAMENTALS_TTL);
-    } catch (e) {
-      console.warn(`[LiveData] fundamentals ${ticker} failed`, e);
     }
-  },
 
-  async _loadTechnicalsFor(holding, technicals, fundamentals) {
-    const { ticker, type } = holding;
-    const cached = Cache.get(`tech:${ticker}`);
-    if (cached) {
-      technicals[ticker] = cached;
-      return;
-    }
-    try {
-      const symbol = FinanceQuery.fqSymbol(ticker, type);
-      const indicators = await FinanceQuery.indicators(symbol);
-      if (!indicators) return;
+    for (const { ticker, symbol } of techSymbols) {
+      const indicators = indicatorsMap[symbol];
+      if (!indicators) continue;
       const fund = fundamentals[ticker];
       const analyzed = TechnicalsAnalyzer.analyze({
         indicators,
         fiftyTwoWeekHigh: fund?.fifty_two_week_high,
         currentPrice: fund?.current_price
       });
-      if (!analyzed) return;
+      if (!analyzed) continue;
       technicals[ticker] = analyzed;
       Cache.set(`tech:${ticker}`, analyzed, this.TECHNICALS_TTL);
-    } catch (e) {
-      console.warn(`[LiveData] technicals ${ticker} failed`, e);
     }
+
+    return { fundamentals, technicals };
   },
 
   _uniqueHoldings(holdings) {
@@ -100,8 +98,9 @@ const LiveData = {
   },
 
   _preferNonEmpty(fresh, fallback) {
-    if (fresh && Object.keys(fresh).length > 0) return fresh;
-    return fallback || {};
+    if (!fallback || !Object.keys(fallback).length) return fresh || {};
+    if (!fresh || !Object.keys(fresh).length) return fallback;
+    return { ...fallback, ...fresh };
   },
 
   _mergeRates(fresh, fallback) {
