@@ -1,15 +1,15 @@
 {
   "mep": {
     "ticker": "AL30",
-    "bid": 1410.0,
-    "ask": 1420.0,
-    "mark": 1415.0
+    "bid": 1428.8727,
+    "ask": 1429.7306,
+    "mark": 1429.3016
   },
   "ccl": {
-    "ticker": "AL30",
-    "bid": 1430.0,
-    "ask": 1440.0,
-    "mark": 1435.0
+    "ticker": null,
+    "bid": null,
+    "ask": null,
+    "mark": null
   },
-  "fetched_at": "2026-04-05T14:01:57-03:00"
+  "fetched_at": "2026-04-06T21:34:43+00:00"
 }
