@@ -1,8 +1,8 @@
 {
   "GGAL": {
-    "pe": 57.84482053797727,
-    "forward_pe": 5.42404368551617,
-    "pb": 1.4632311,
+    "pe": 58.29248366013071,
+    "forward_pe": 5.470042642566484,
+    "pb": 1.47564,
     "roe": 2.493,
     "eps_growth": null,
     "dividend_yield": 4.4099998000000005,
@@ -11,10 +11,10 @@
     "operating_margin": -3.5350002,
     "sector": "Financial Services",
     "industry": "Banks - Regional",
-    "current_price": 7075.0,
+    "current_price": 7135.0,
     "fifty_two_week_high": 9395.0,
     "fifty_two_week_low": 3990.0,
-    "market_cap": 11364244389888,
+    "market_cap": 11460620058624,
     "thresholds": {
       "pe": "red",
       "forward_pe": "green",
@@ -32,9 +32,9 @@
     }
   },
   "AAPL": {
-    "pe": 33.01394169835235,
-    "forward_pe": 27.928570279789636,
-    "pb": 43.42781,
+    "pe": 32.851711026615966,
+    "forward_pe": 27.834364056729697,
+    "pb": 43.214405,
     "roe": 152.02099,
     "eps_growth": 18.3,
     "dividend_yield": 0.4,
@@ -43,10 +43,10 @@
     "operating_margin": 35.374,
     "sector": "Technology",
     "industry": "Consumer Electronics",
-    "current_price": 260.48,
+    "current_price": 259.2,
     "fifty_two_week_high": 288.62,
-    "fifty_two_week_low": 186.06,
-    "market_cap": 3828515864576,
+    "fifty_two_week_low": 189.81,
+    "market_cap": 3809702576128,
     "thresholds": {
       "pe": "yellow",
       "forward_pe": "green",
@@ -64,9 +64,9 @@
     }
   },
   "MSFT": {
-    "pe": 23.22291797119599,
-    "forward_pe": 19.677066272350718,
-    "pb": 7.04875,
+    "pe": 24.0531914893617,
+    "forward_pe": 20.329012992755242,
+    "pb": 7.3053308,
     "roe": 34.390998,
     "eps_growth": 59.8,
     "dividend_yield": 0.98,
@@ -75,10 +75,10 @@
     "operating_margin": 47.094002,
     "sector": "Technology",
     "industry": "Software - Infrastructure",
-    "current_price": 370.87,
+    "current_price": 384.37,
     "fifty_two_week_high": 555.45,
     "fifty_two_week_low": 355.67,
-    "market_cap": 2756445995008,
+    "market_cap": 2856782921728,
     "thresholds": {
       "pe": "green",
       "forward_pe": "green",
