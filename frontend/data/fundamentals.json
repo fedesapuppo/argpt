@@ -1,20 +1,20 @@
 {
   "GGAL": {
-    "pe": 121.28898910184141,
-    "forward_pe": 7.005305561227206,
-    "pb": 1.1896144,
-    "roe": 0.8920000000000001,
-    "eps_growth": -57.199999999999996,
-    "dividend_yield": 17.27,
+    "pe": 121.4072415080254,
+    "forward_pe": 7.059568191445852,
+    "pb": 1.198829,
+    "roe": 2.493,
+    "eps_growth": null,
+    "dividend_yield": 17.36,
     "debt_to_equity": null,
-    "profit_margin": 1.086,
-    "operating_margin": -306.889,
+    "profit_margin": 3.0869998,
+    "operating_margin": -3.5350002,
     "sector": "Financial Services",
     "industry": "Banks - Regional",
-    "current_price": 6455.0,
+    "current_price": 6505.0,
     "fifty_two_week_high": 9395.0,
     "fifty_two_week_low": 3990.0,
-    "market_cap": 10368367722496,
+    "market_cap": 10448680255488,
     "thresholds": {
       "pe": "red",
       "forward_pe": "green",
@@ -32,7 +32,7 @@
     }
   },
   "AAPL": {
-    "pe": 37.342200725513905,
+    "pe": 37.43272727272727,
     "forward_pe": 32.15592112730025,
     "pb": 42.53719,
     "roe": 141.47099,
@@ -45,7 +45,7 @@
     "industry": "Consumer Electronics",
     "current_price": 308.82,
     "fifty_two_week_high": 311.4,
-    "fifty_two_week_low": 193.46,
+    "fifty_two_week_low": 195.07,
     "market_cap": 4535749181440,
     "thresholds": {
       "pe": "yellow",
@@ -64,7 +64,7 @@
     }
   },
   "MSFT": {
-    "pe": 24.900059488399762,
+    "pe": 24.9445768772348,
     "forward_pe": 21.645249985391253,
     "pb": 7.504348,
     "roe": 34.013999,
