@@ -1,24 +1,24 @@
 {
   "GGAL": {
-    "rsi14": 81.23344350799215,
+    "rsi14": 66.24742180475369,
     "macd": {
-      "histogram": 91.0229661511379,
-      "macd": 455.37392674049624,
-      "signal": 364.35096058935835
+      "histogram": 68.23234639462498,
+      "macd": 446.97208213556587,
+      "signal": 378.7397357409409
     },
-    "stochastic_k": 85.84905660377359,
-    "stochastic_d": 80.73855879603828,
-    "supertrend_value": 7602.760112995224,
+    "stochastic_k": 70.75471698113208,
+    "stochastic_d": 78.15062495024284,
+    "supertrend_value": 7602.597242618055,
     "supertrend_trend": "up",
-    "sma20": 7539.25,
-    "sma50": 6923.6,
+    "sma20": 7629.5,
+    "sma50": 6947.3,
     "sma200": null,
-    "bollinger_upper": 8707.262307298173,
-    "bollinger_middle": 7539.25,
-    "bollinger_lower": 6371.237692701828,
-    "atr14": 313.67596799351276,
+    "bollinger_upper": 8725.150035367133,
+    "bollinger_middle": 7629.5,
+    "bollinger_lower": 6533.849964632867,
+    "atr14": 316.4882170521304,
     "ath": 9395.0,
-    "pct_below_ath": 9.260244811069718
+    "pct_below_ath": 11.974454497072912
   },
   "AAPL": {
     "rsi14": 48.37644687090674,

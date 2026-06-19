@@ -1,8 +1,8 @@
 {
   "GGAL": {
-    "pe": 160.25641025641025,
-    "forward_pe": 9.010029859238953,
-    "pb": 1.5896634,
+    "pe": 155.7315233785822,
+    "forward_pe": 8.75562901615456,
+    "pb": 1.5447788,
     "roe": 0.899,
     "eps_growth": -65.8,
     "dividend_yield": null,
@@ -11,10 +11,10 @@
     "operating_margin": 1.7770000000000001,
     "sector": "Financial Services",
     "industry": "Banks - Regional",
-    "current_price": 8500.0,
+    "current_price": 8260.0,
     "fifty_two_week_high": 9395.0,
     "fifty_two_week_low": 3990.0,
-    "market_cap": 13653156823040,
+    "market_cap": 13267655196672,
     "thresholds": {
       "pe": "red",
       "forward_pe": "green",
