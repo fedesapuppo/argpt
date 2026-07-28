@@ -1,1 +1,98 @@
-{}
+{
+  "GGAL": {
+    "pe": 147.29045565347835,
+    "forward_pe": 8.265009778595592,
+    "pb": 1.469036,
+    "roe": 0.899,
+    "eps_growth": -65.8,
+    "dividend_yield": 1.25,
+    "debt_to_equity": null,
+    "profit_margin": 1.1360001,
+    "operating_margin": 1.7770000000000001,
+    "sector": "Financial Services",
+    "industry": "Banks - Regional",
+    "current_price": 7855.0,
+    "fifty_two_week_high": 9395.0,
+    "fifty_two_week_low": 3990.0,
+    "market_cap": 12617122840576,
+    "thresholds": {
+      "pe": "red",
+      "forward_pe": "green",
+      "pb": "yellow",
+      "roe": "red",
+      "debt_to_equity": null,
+      "profit_margin": "red"
+    },
+    "medians": {
+      "pe": 12.0,
+      "pb": 1.2,
+      "roe": 12.0,
+      "debt_to_equity": 3.0,
+      "profit_margin": 25.0
+    }
+  },
+  "AAPL": {
+    "pe": 41.22181818181818,
+    "forward_pe": 35.255589547310684,
+    "pb": 46.84297,
+    "roe": 141.47099,
+    "eps_growth": 21.8,
+    "dividend_yield": 0.32,
+    "debt_to_equity": 0.79548,
+    "profit_margin": 27.152001999999996,
+    "operating_margin": 32.275,
+    "sector": "Technology",
+    "industry": "Consumer Electronics",
+    "current_price": 340.08,
+    "fifty_two_week_high": 342.89,
+    "fifty_two_week_low": 201.5,
+    "market_cap": 4994876047360,
+    "thresholds": {
+      "pe": "yellow",
+      "forward_pe": "yellow",
+      "pb": "red",
+      "roe": "green",
+      "debt_to_equity": "yellow",
+      "profit_margin": "green"
+    },
+    "medians": {
+      "pe": 28.0,
+      "pb": 6.0,
+      "roe": 20.0,
+      "debt_to_equity": 0.6,
+      "profit_margin": 22.0
+    }
+  },
+  "MSFT": {
+    "pe": 23.399762046400955,
+    "forward_pe": 20.28518384817699,
+    "pb": 7.05219,
+    "roe": 34.013999,
+    "eps_growth": 23.400000000000002,
+    "dividend_yield": 0.9400000000000001,
+    "debt_to_equity": 0.30271000000000003,
+    "profit_margin": 39.341998000000004,
+    "operating_margin": 46.326,
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "current_price": 393.35,
+    "fifty_two_week_high": 555.45,
+    "fifty_two_week_low": 349.2,
+    "market_cap": 2921974988800,
+    "thresholds": {
+      "pe": "green",
+      "forward_pe": "green",
+      "pb": "yellow",
+      "roe": "green",
+      "debt_to_equity": "green",
+      "profit_margin": "green"
+    },
+    "medians": {
+      "pe": 28.0,
+      "pb": 6.0,
+      "roe": 20.0,
+      "debt_to_equity": 0.6,
+      "profit_margin": 22.0
+    }
+  }
+}
