@@ -1,11 +1,11 @@
 {
   "GGAL": {
-    "pe": 128.73520015034768,
+    "pe": 128.2051282051282,
     "forward_pe": 7.207551493746633,
     "pb": 1.2810817,
     "roe": 0.899,
     "eps_growth": -65.8,
-    "dividend_yield": 1.39999995,
+    "dividend_yield": 1.45000005,
     "debt_to_equity": null,
     "profit_margin": 1.1360001,
     "operating_margin": 1.7770000000000001,
@@ -32,9 +32,9 @@
     }
   },
   "AAPL": {
-    "pe": 35.04352806414662,
-    "forward_pe": 32.177043683494766,
-    "pb": 41.566574,
+    "pe": 35.0447247706422,
+    "forward_pe": 32.14128323223994,
+    "pb": 41.52038,
     "roe": 148.75101,
     "eps_growth": 28.7,
     "dividend_yield": 0.34999999,
@@ -43,10 +43,10 @@
     "operating_margin": 32.623002,
     "sector": "Technology",
     "industry": "Consumer Electronics",
-    "current_price": 305.93,
+    "current_price": 305.59,
     "fifty_two_week_high": 344.57,
     "fifty_two_week_low": 223.78,
-    "market_cap": 4464797286400,
+    "market_cap": 4459835424768,
     "thresholds": {
       "pe": "yellow",
       "forward_pe": "yellow",
@@ -64,9 +64,9 @@
     }
   },
   "MSFT": {
-    "pe": 27.614269788182828,
-    "forward_pe": 21.015319039183346,
-    "pb": 8.316965,
+    "pe": 26.790295593976577,
+    "forward_pe": 20.37688433684239,
+    "pb": 8.0643,
     "roe": 34.039003,
     "eps_growth": 31.7,
     "dividend_yield": 0.73,
@@ -75,10 +75,10 @@
     "operating_margin": 45.111000000000004,
     "sector": "Technology",
     "industry": "Software - Infrastructure",
-    "current_price": 495.4,
+    "current_price": 480.35,
     "fifty_two_week_high": 553.72,
     "fifty_two_week_low": 349.2,
-    "market_cap": 3678615371776,
+    "market_cap": 3566861025280,
     "thresholds": {
       "pe": "green",
       "forward_pe": "green",
