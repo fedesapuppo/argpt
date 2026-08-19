@@ -1,8 +1,8 @@
 {
   "GGAL": {
-    "pe": 124.46191278308066,
-    "forward_pe": 6.997112034075199,
-    "pb": 1.2436779,
+    "pe": 123.1203007518797,
+    "forward_pe": 6.891892304239482,
+    "pb": 1.224976,
     "roe": 0.899,
     "eps_growth": -65.8,
     "dividend_yield": null,
@@ -11,10 +11,10 @@
     "operating_margin": 1.7770000000000001,
     "sector": "Financial Services",
     "industry": "Banks - Regional",
-    "current_price": 6650.0,
+    "current_price": 6550.0,
     "fifty_two_week_high": 9395.0,
     "fifty_two_week_low": 3990.0,
-    "market_cap": 10681586810880,
+    "market_cap": 10520961744896,
     "thresholds": {
       "pe": "red",
       "forward_pe": "green",
@@ -32,9 +32,9 @@
     }
   },
   "AAPL": {
-    "pe": 35.59471871412169,
-    "forward_pe": 32.608272654508816,
-    "pb": 42.123642,
+    "pe": 36.37543053960964,
+    "forward_pe": 33.21312884593209,
+    "pb": 43.04755,
     "roe": 148.75101,
     "eps_growth": 28.7,
     "dividend_yield": 0.34999999,
@@ -43,10 +43,10 @@
     "operating_margin": 32.623002,
     "sector": "Technology",
     "industry": "Consumer Electronics",
-    "current_price": 310.03,
+    "current_price": 316.83,
     "fifty_two_week_high": 344.57,
     "fifty_two_week_low": 223.78,
-    "market_cap": 4524633751552,
+    "market_cap": 4623874129920,
     "thresholds": {
       "pe": "yellow",
       "forward_pe": "yellow",
@@ -64,9 +64,9 @@
     }
   },
   "MSFT": {
-    "pe": 26.80189204229271,
-    "forward_pe": 20.431183102224214,
-    "pb": 8.085789,
+    "pe": 26.966035634743875,
+    "forward_pe": 20.544871142242403,
+    "pb": 8.130781,
     "roe": 34.039003,
     "eps_growth": 31.7,
     "dividend_yield": 0.76,
@@ -75,10 +75,10 @@
     "operating_margin": 45.111000000000004,
     "sector": "Technology",
     "industry": "Software - Infrastructure",
-    "current_price": 481.63,
+    "current_price": 484.31,
     "fifty_two_week_high": 553.72,
     "fifty_two_week_low": 349.2,
-    "market_cap": 3576365580288,
+    "market_cap": 3596265979904,
     "thresholds": {
       "pe": "green",
       "forward_pe": "green",
