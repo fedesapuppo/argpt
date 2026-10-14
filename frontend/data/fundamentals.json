@@ -1,8 +1,8 @@
 {
   "GGAL": {
-    "pe": 47.55804643714972,
-    "forward_pe": 6.087555652710484,
-    "pb": 1.0373474,
+    "pe": 46.036829463570854,
+    "forward_pe": 5.892835859105267,
+    "pb": 1.0041664,
     "roe": 1.0930001,
     "eps_growth": 12.0,
     "dividend_yield": 5.19,
@@ -11,10 +11,10 @@
     "operating_margin": 17.318001,
     "sector": "Financial Services",
     "industry": "Banks - Regional",
-    "current_price": 5940.0,
+    "current_price": 5750.0,
     "fifty_two_week_high": 9395.0,
-    "fifty_two_week_low": 4610.0,
-    "market_cap": 9541147164672,
+    "fifty_two_week_low": 4652.5,
+    "market_cap": 9235959119872,
     "thresholds": {
       "pe": "red",
       "forward_pe": "green",
@@ -32,9 +32,9 @@
     }
   },
   "AAPL": {
-    "pe": 39.13646788990825,
-    "forward_pe": 35.58472839885926,
-    "pb": 46.368206,
+    "pe": 39.330275229357795,
+    "forward_pe": 35.76001501470189,
+    "pb": 46.597824,
     "roe": 148.75101,
     "eps_growth": 28.7,
     "dividend_yield": 0.32,
@@ -43,10 +43,10 @@
     "operating_margin": 32.623002,
     "sector": "Technology",
     "industry": "Consumer Electronics",
-    "current_price": 341.27,
-    "fifty_two_week_high": 348.1499,
+    "current_price": 342.96,
+    "fifty_two_week_high": 348.15,
     "fifty_two_week_low": 243.42,
-    "market_cap": 4980555644928,
+    "market_cap": 5005219725312,
     "thresholds": {
       "pe": "yellow",
       "forward_pe": "yellow",
@@ -64,9 +64,9 @@
     }
   },
   "MSFT": {
-    "pe": 30.275766016713096,
-    "forward_pe": 22.95548549299487,
-    "pb": 9.123647,
+    "pe": 29.732033426183847,
+    "forward_pe": 22.519430070943653,
+    "pb": 8.959792,
     "roe": 34.039003,
     "eps_growth": 31.7,
     "dividend_yield": 0.72000003,
@@ -75,14 +75,14 @@
     "operating_margin": 45.111000000000004,
     "sector": "Technology",
     "industry": "Software - Infrastructure",
-    "current_price": 543.45,
+    "current_price": 533.69,
     "fifty_two_week_high": 553.72,
     "fifty_two_week_low": 349.2,
-    "market_cap": 4035413016576,
+    "market_cap": 3962939637760,
     "thresholds": {
       "pe": "yellow",
       "forward_pe": "green",
-      "pb": "red",
+      "pb": "yellow",
       "roe": "green",
       "debt_to_equity": "green",
       "profit_margin": "green"
